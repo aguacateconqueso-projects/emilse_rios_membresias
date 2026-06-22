@@ -1,0 +1,164 @@
+---
+// Login por enlace mágico (passwordless) para miembros y para Emi.
+// Al volver del enlace del correo, enruta: admin → panel, miembro → aula.
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Entrar — Estudiemos Juntos · Emilse Rios</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
+<link rel="stylesheet" href="/colors_and_type.css" />
+<style is:inline>
+  :root {
+    --ink: #0c0c0c; --paper: #ffffff; --color-text: #0c0c0c;
+    --color-border: #e4e2dd; --color-text-soft: #71706b; --surface: #faf9f7;
+    --edge: clamp(20px, 5vw, 64px);
+  }
+  body { background: var(--paper); color: var(--ink); min-height: 100svh;
+         display: grid; place-items: center; padding: var(--edge); }
+  ::selection { background: #0c0c0c; color: #fff; }
+  .display { font-family: var(--font-display); font-weight: var(--weight-medium);
+             letter-spacing: -0.035em; line-height: 1; }
+  .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+         letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .card { width: 100%; max-width: 400px; }
+  .brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
+           letter-spacing: -0.02em; display: inline-flex; align-items: baseline; gap: 0.5em; margin-bottom: var(--space-7); }
+  .brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
+                 letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  h1 { font-size: var(--text-3xl); margin: var(--space-3) 0 var(--space-2); }
+  .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.5; }
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
+  .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+  .field input { font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
+                 padding: 13px 15px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
+  .field input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
+  .btn { appearance: none; cursor: pointer; width: 100%; display: inline-flex; align-items: center; justify-content: center;
+         gap: 9px; padding: 14px 22px; border-radius: var(--radius-full); font-family: var(--font-display);
+         font-weight: var(--weight-medium); font-size: var(--text-base); border: 1.5px solid var(--ink);
+         background: var(--ink); color: var(--paper); transition: transform 200ms var(--ease); }
+  .btn:hover { transform: translateY(-1px); }
+  .btn[disabled] { opacity: 0.55; cursor: default; transform: none; }
+  .msg { margin-top: var(--space-4); font-size: var(--text-base); line-height: 1.5; }
+  .msg.ok { color: var(--ink); }
+  .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
+  .msg[hidden] { display: none; }
+  .back { display: inline-block; margin-top: var(--space-6); color: var(--color-text-soft);
+          font-size: var(--text-sm); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+  <div class="card">
+    <span class="brand">Emilse Rios <small>Membresía</small></span>
+    <span class="ovl">Acceso de miembros</span>
+    <h1 class="display">Entrar</h1>
+    <p class="sub">Escribe tu correo y te enviamos un enlace para entrar. Sin contraseñas.</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">Tu correo</label>
+        <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+               spellcheck="false" placeholder="tucorreo@email.com" required />
+      </div>
+      <button class="btn" type="submit" id="submitBtn">Enviar enlace</button>
+    </form>
+
+    <p class="msg ok" id="msgOk" hidden></p>
+    <p class="msg err" id="msgErr" hidden></p>
+    <p class="msg" id="sessionNote" hidden></p>
+
+    <a class="back" href="/">← Volver a la membresía</a>
+  </div>
+
+<script>
+  import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+
+  const form = document.getElementById('loginForm');
+  const email = document.getElementById('email');
+  const btn = document.getElementById('submitBtn');
+  const msgOk = document.getElementById('msgOk');
+  const msgErr = document.getElementById('msgErr');
+  const sessionNote = document.getElementById('sessionNote');
+
+  if (!isSupabaseConfigured) {
+    msgErr.textContent = 'Falta configurar el archivo .env (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY). Créalo en la raíz del proyecto y reinicia el servidor.';
+    msgErr.hidden = false;
+    btn.disabled = true;
+  }
+
+  async function routeByRole() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', session.user.id).single();
+    window.location.href = profile && profile.role === 'admin'
+      ? '/panel/'
+      : '/aula/';
+  }
+
+  // Solo enrutamos tras un inicio de sesión REAL (volver del enlace mágico).
+  // Si ya había sesión al cargar (INITIAL_SESSION), NO expulsamos: así se puede
+  // cambiar de cuenta o salir. Mostramos un aviso con opciones.
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) routeByRole();
+  });
+
+  async function showSessionNote() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { sessionNote.hidden = true; return; }
+    sessionNote.replaceChildren();
+    sessionNote.append(document.createTextNode(`Ya tienes una sesión iniciada como ${session.user.email}. `));
+    const go = document.createElement('a');
+    go.href = '#'; go.textContent = 'Ir a tu espacio';
+    go.style.textDecoration = 'underline'; go.style.fontWeight = 'var(--weight-semibold)';
+    go.addEventListener('click', (e) => { e.preventDefault(); routeByRole(); });
+    const out = document.createElement('a');
+    out.href = '#'; out.textContent = 'Salir';
+    out.style.textDecoration = 'underline'; out.style.fontWeight = 'var(--weight-semibold)';
+    out.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      sessionNote.hidden = true;
+      email.focus();
+    });
+    sessionNote.append(go, document.createTextNode(' · '), out);
+    sessionNote.hidden = false;
+  }
+  showSessionNote();
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msgOk.hidden = true; msgErr.hidden = true;
+    btn.disabled = true; btn.textContent = 'Enviando…';
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email.value.trim(),
+        options: { emailRedirectTo: window.location.origin + '/entrar/' },
+      });
+      if (error) {
+        console.error('[login] signInWithOtp error:', error);
+        const detail = error.message || error.name
+          || (error.status ? 'HTTP ' + error.status : '')
+          || JSON.stringify(error) || 'error desconocido';
+        msgErr.textContent = 'No se pudo enviar el enlace: ' + detail;
+        msgErr.hidden = false;
+        btn.disabled = false; btn.textContent = 'Enviar enlace';
+      } else {
+        msgOk.textContent = 'Listo. Revisa tu correo y abre el enlace para entrar.';
+        msgOk.hidden = false;
+        btn.textContent = 'Enlace enviado';
+      }
+    } catch (err) {
+      console.error('[login] excepción:', err);
+      msgErr.textContent = 'No se pudo enviar el enlace: ' + (err && err.message ? err.message : String(err));
+      msgErr.hidden = false;
+      btn.disabled = false; btn.textContent = 'Enviar enlace';
+    }
+  });
+</script>
+</body>
+</html>

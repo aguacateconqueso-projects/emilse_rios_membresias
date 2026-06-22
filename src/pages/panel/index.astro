@@ -1,0 +1,756 @@
+---
+// Panel de control de Emi (admin) — datos reales desde Supabase.
+// Crea/edita/programa ejercicios bilingües, asigna el nivel de los miembros y
+// responde el foro. Protegido: solo entra quien tiene role = 'admin' (RLS).
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Panel — Estudiemos Juntos · Emilse Rios</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
+<link rel="stylesheet" href="/colors_and_type.css" />
+<style is:inline>
+  :root {
+    --ink:        #0c0c0c;
+    --paper:      #ffffff;
+    --color-text: #0c0c0c;
+    --color-border:    #e4e2dd;
+    --color-text-soft: #71706b;
+    --surface:    #faf9f7;
+    --edge: clamp(20px, 5vw, 64px);
+    --wrap: 1140px;
+  }
+  body { background: var(--paper); color: var(--ink); overflow-x: hidden; }
+  ::selection { background: #0c0c0c; color: #fff; }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; }
+  .display { font-family: var(--font-display); font-weight: var(--weight-medium);
+             letter-spacing: -0.035em; line-height: 0.95; text-wrap: balance; }
+  .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+         letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: var(--edge); }
+
+  /* ---------- APP BAR ---------- */
+  .bar { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.86);
+         backdrop-filter: saturate(140%) blur(10px); border-bottom: 1px solid var(--color-border); }
+  .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 14px var(--edge);
+             display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
+           letter-spacing: -0.02em; text-decoration: none; display: inline-flex; align-items: baseline; gap: 0.5em; }
+  .brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
+                 letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .bar__right { display: flex; align-items: center; gap: clamp(12px, 2vw, 20px); }
+  .acct { text-decoration: none; font-size: var(--text-sm); font-weight: var(--weight-semibold);
+          color: var(--color-text-soft); transition: color var(--duration) var(--ease); white-space: nowrap; }
+  .acct:hover { color: var(--ink); }
+
+  /* ---------- PILLS ---------- */
+  .pill { display: inline-flex; align-items: center; gap: 7px; padding: 5px 12px; border-radius: var(--radius-full);
+          border: 1px solid var(--color-border); background: var(--surface);
+          font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink); }
+  .pill--live { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .pill--sched { background: transparent; }
+  .pill--closed { color: var(--color-text-soft); }
+  .pill--warn { background: #fff7ed; border-color: #f0d9bd; color: #8a5a1e; }
+
+  /* ---------- HEAD ---------- */
+  .head { padding: clamp(28px, 5vh, 52px) 0 var(--space-5); }
+  .head h1 { font-size: clamp(2rem, 4.6vw, 3.2rem); margin: var(--space-3) 0 0; }
+
+  /* ---------- TABS ---------- */
+  .tabs { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--color-border);
+          border-radius: var(--radius-full); background: var(--surface); margin-bottom: var(--space-6); }
+  .tab { appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--color-text-soft);
+         font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-base);
+         padding: 9px 20px; border-radius: var(--radius-full); transition: all 240ms var(--ease); }
+  .tab[aria-selected="true"] { background: var(--ink); color: #fff; }
+  .panel[hidden] { display: none; }
+
+  /* ---------- BUTTONS ---------- */
+  .btn { appearance: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+         padding: 12px 20px; border-radius: var(--radius-full); font-family: var(--font-display);
+         font-weight: var(--weight-medium); font-size: var(--text-base); letter-spacing: -0.01em;
+         text-decoration: none; border: 1.5px solid var(--ink); transition: all 280ms var(--ease); white-space: nowrap; }
+  .btn--solid { background: var(--ink); color: var(--paper); }
+  .btn--solid:hover { transform: translateY(-1px); }
+  .btn--ghost { background: transparent; color: var(--ink); }
+  .btn--ghost:hover { background: var(--ink); color: var(--paper); }
+  .btn--sm { padding: 8px 14px; font-size: var(--text-sm); border-width: 1px; }
+  .btn[disabled] { opacity: 0.55; cursor: default; transform: none; }
+
+  /* ---------- STATUS STRIP (esta semana) ---------- */
+  .week { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-6); }
+  .wk { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: clamp(18px, 2.4vw, 26px);
+        background: var(--surface); }
+  .wk--live { background: var(--ink); color: #f4f3ef; border-color: var(--ink); }
+  .wk__label { font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .wk--live .wk__label { color: #b9b8b3; }
+  .wk__title { font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-lg);
+               letter-spacing: -0.02em; margin: 10px 0 6px; }
+  .wk__meta { font-size: var(--text-sm); color: var(--color-text-soft); }
+  .wk--live .wk__meta { color: #cbcac6; }
+
+  /* ---------- SECTION HEAD ---------- */
+  .sec-head { display: flex; align-items: center; justify-content: space-between; gap: var(--space-4);
+              margin-bottom: var(--space-4); flex-wrap: wrap; }
+  .sec-head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
+                 font-size: clamp(1.4rem, 2.8vw, 1.9rem); letter-spacing: -0.025em; }
+
+  /* ---------- TABLE ---------- */
+  .tbl { width: 100%; border-collapse: collapse; }
+  .tbl th { text-align: left; font-family: var(--font-body); font-size: 11px; letter-spacing: 0.12em;
+            text-transform: uppercase; color: var(--color-text-soft); font-weight: var(--weight-semibold);
+            padding: 0 14px 12px; border-bottom: 1px solid var(--ink); }
+  .tbl td { padding: 16px 14px; border-bottom: 1px solid var(--color-border); font-size: var(--text-base);
+            vertical-align: middle; }
+  .tbl tr:hover td { background: var(--surface); }
+  .tbl .name { font-weight: var(--weight-semibold); }
+  .tbl .sub { color: var(--color-text-soft); font-size: var(--text-sm); }
+  .ex-title { font-family: var(--font-display); font-weight: var(--weight-medium); letter-spacing: -0.015em;
+              font-size: var(--text-md); }
+
+  /* level select */
+  .lvl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+         padding: 7px 12px; border-radius: var(--radius-full); border: 1px solid var(--color-border);
+         background: var(--paper); cursor: pointer; }
+  .lvl:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+
+  /* ---------- NEW EXERCISE FORM ---------- */
+  .form { border: 1px solid var(--ink); border-radius: var(--radius-lg); padding: clamp(20px, 3vw, 32px);
+          margin-bottom: var(--space-6); background: var(--paper); }
+  .form[hidden] { display: none; }
+  .form h3 { font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-xl);
+             letter-spacing: -0.02em; margin-bottom: var(--space-5); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-5); }
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
+  .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+  .field .help { font-size: var(--text-xs); color: var(--color-text-soft); }
+  .field input, .field textarea {
+    font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
+    padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--ink); background: var(--paper); }
+  .field textarea { min-height: 90px; resize: vertical; }
+  .seg { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--color-border);
+         border-radius: var(--radius-full); background: var(--surface); width: fit-content; }
+  .seg button { appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--color-text-soft);
+                font-family: var(--font-body); font-weight: var(--weight-semibold); font-size: var(--text-sm);
+                padding: 8px 18px; border-radius: var(--radius-full); transition: all 220ms var(--ease); }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .form__actions { display: flex; gap: 12px; margin-top: var(--space-4); flex-wrap: wrap; }
+  .form-error { color: #8a2e2e; font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-top: var(--space-3); }
+  .form-error[hidden] { display: none; }
+  .lang-note { font-size: var(--text-sm); color: var(--color-text-soft); background: var(--surface);
+               border: 1px solid var(--color-border); border-radius: var(--radius); padding: 10px 14px;
+               margin-bottom: var(--space-4); }
+  .lang-note b { color: var(--ink); }
+  .lcol { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: clamp(16px, 2vw, 22px);
+          background: var(--surface); }
+  .lcol__tag { display: inline-flex; align-items: center; padding: 4px 11px; border-radius: var(--radius-full);
+               background: var(--ink); color: #fff; font-family: var(--font-body); font-size: 11px;
+               font-weight: var(--weight-semibold); letter-spacing: 0.1em; text-transform: uppercase;
+               margin-bottom: var(--space-4); }
+  .lcol .field:last-child { margin-bottom: 0; }
+  .qlang { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: var(--radius-full);
+           border: 1px solid var(--ink); font-size: 11px; font-weight: var(--weight-semibold);
+           letter-spacing: 0.1em; text-transform: uppercase; margin-left: auto; }
+
+  /* ---------- FORO (admin inbox) ---------- */
+  .qcard { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: clamp(18px, 2.4vw, 26px);
+           margin-bottom: var(--space-4); background: var(--paper); }
+  .qcard.is-answered { background: var(--surface); }
+  .qcard__top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .ava { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; flex: none;
+         font-family: var(--font-display); font-weight: var(--weight-medium); font-size: 13px;
+         background: var(--surface); border: 1px solid var(--color-border); }
+  .qcard__who { font-weight: var(--weight-semibold); }
+  .qcard__when { color: var(--color-text-soft); font-size: var(--text-sm); }
+  .qcard__q { font-size: var(--text-md); line-height: 1.55; color: #2c2c2a; max-width: 64ch; margin-bottom: var(--space-4); }
+  .reply textarea { width: 100%; font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
+                    padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius);
+                    background: var(--surface); min-height: 64px; resize: vertical; }
+  .reply textarea:focus { outline: none; border-color: var(--ink); background: var(--paper); }
+  .reply__row { display: flex; justify-content: flex-end; margin-top: 12px; }
+  .answered-note { display: flex; align-items: center; gap: 10px; color: var(--color-text-soft); font-size: var(--text-base); }
+  .answered-note .check { font-family: var(--font-display); color: var(--ink); }
+
+  .hint { color: var(--color-text-soft); font-size: var(--text-sm); margin-bottom: var(--space-5); max-width: 70ch; }
+  .empty { color: var(--color-text-soft); font-size: var(--text-base); padding: 20px 4px; }
+  .empty-row td { color: var(--color-text-soft); font-size: var(--text-base); }
+
+  /* ---------- TOAST ---------- */
+  .toast { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+           background: var(--ink); color: #fff; padding: 12px 20px; border-radius: var(--radius-full);
+           font-size: var(--text-sm); font-weight: var(--weight-semibold); z-index: 300;
+           opacity: 0; transition: opacity 250ms var(--ease); pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 760px) {
+    .week { grid-template-columns: 1fr; }
+    .grid2 { grid-template-columns: 1fr; }
+    .tbl thead { display: none; }
+    .tbl, .tbl tbody, .tbl tr, .tbl td { display: block; width: 100%; }
+    .tbl tr { border-bottom: 1px solid var(--ink); padding: 8px 0; }
+    .tbl td { border: 0; padding: 6px 4px; }
+  }
+
+  /* ---------- LOGIN GATE ---------- */
+  body.gated { overflow: hidden; }
+  .gate { position: fixed; inset: 0; z-index: 200; background: var(--paper);
+          display: grid; place-items: center; padding: var(--edge); }
+  .gate[hidden] { display: none; }
+  .gate__card { width: 100%; max-width: 380px; }
+  .gate__brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
+                 letter-spacing: -0.02em; display: inline-flex; align-items: baseline; gap: 0.5em; margin-bottom: var(--space-6); }
+  .gate__brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
+                       letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .gate h1 { font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-2xl);
+             letter-spacing: -0.03em; line-height: 1; margin: var(--space-3) 0 var(--space-2); }
+  .gate__sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); }
+  .gate__error { color: #8a2e2e; font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-top: 12px; }
+  .gate__error[hidden] { display: none; }
+  .gate .btn { width: 100%; margin-top: var(--space-3); }
+</style>
+</head>
+<body class="gated">
+
+  <!-- ============ ACCESS GATE (auth real de Supabase) ============ -->
+  <div class="gate" id="gate" aria-label="Acceso al panel">
+    <div class="gate__card">
+      <span class="gate__brand">Emilse Rios <small>Panel</small></span>
+      <span class="ovl">Acceso privado</span>
+      <h1 class="display" id="gateTitle">Verificando acceso…</h1>
+      <p class="gate__sub" id="gateMsg">Un momento.</p>
+      <div id="gateActions" hidden>
+        <a class="btn btn--solid" href="/entrar/">Iniciar sesión</a>
+        <button class="btn btn--ghost" id="gateLogout" type="button">Salir</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ APP BAR ============ -->
+  <header class="bar">
+    <div class="bar__in">
+      <a class="brand" href="/panel/">Emilse Rios <small>Panel</small></a>
+      <div class="bar__right">
+        <span class="pill"><span class="dot"></span> Vista de Emi · Admin</span>
+        <a class="acct" href="/aula/">Ver el aula →</a>
+        <button class="acct" id="logoutBtn" type="button" style="appearance:none;background:none;border:0;cursor:pointer;font-family:inherit;">Salir</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <div class="head">
+        <span class="ovl">Panel de control</span>
+        <h1 class="display">Tu membresía, semana a semana.</h1>
+      </div>
+
+      <!-- ============ TABS ============ -->
+      <div class="tabs" role="tablist" aria-label="Secciones del panel">
+        <button class="tab" role="tab" id="tab-ej" aria-controls="panel-ej" aria-selected="true">Ejercicios</button>
+        <button class="tab" role="tab" id="tab-mi" aria-controls="panel-mi" aria-selected="false">Miembros</button>
+        <button class="tab" role="tab" id="tab-fo" aria-controls="panel-fo" aria-selected="false">Foro</button>
+      </div>
+
+      <!-- ============ PANEL: EJERCICIOS ============ -->
+      <section class="panel" id="panel-ej" role="tabpanel" aria-labelledby="tab-ej">
+
+        <!-- estado de la semana (dinámico) -->
+        <div class="week" id="weekStrip" hidden></div>
+
+        <div class="sec-head">
+          <h2>Ejercicios</h2>
+          <button class="btn btn--solid" id="newBtn" type="button">+ Nuevo ejercicio</button>
+        </div>
+
+        <!-- formulario nuevo/editar ejercicio -->
+        <form class="form" id="newForm" hidden>
+          <h3 id="formTitle">Nuevo ejercicio</h3>
+          <input type="hidden" id="f-id" />
+          <div class="grid2">
+            <div class="field">
+              <label>Nivel</label>
+              <div class="seg" id="f-level" role="group" aria-label="Nivel">
+                <button type="button" data-level="iniciando" aria-pressed="true">Iniciando</button>
+                <button type="button" data-level="avanzando" aria-pressed="false">Avanzando</button>
+              </div>
+              <span class="help">Cada semana se publica una versión por nivel.</span>
+            </div>
+            <div class="field">
+              <label for="f-week">Etiqueta de semana</label>
+              <input id="f-week" type="text" placeholder="Ej. Semana 24" />
+              <span class="help">Texto corto que el miembro ve junto al título.</span>
+            </div>
+          </div>
+
+          <p class="lang-note">🌐 Este ejercicio se publica en <b>los dos idiomas</b>. Completa la columna en español y la columna en inglés.</p>
+          <div class="grid2">
+            <!-- Columna Español -->
+            <div class="lcol">
+              <span class="lcol__tag">Español</span>
+              <div class="field">
+                <label for="f-title-es">Título (ES)</label>
+                <input id="f-title-es" type="text" placeholder="Ej. Détaché controlado: peso y punto de contacto" />
+              </div>
+              <div class="field">
+                <label for="f-desc-es">Descripción (ES)</label>
+                <textarea id="f-desc-es" placeholder="Qué se trabaja, a qué tempo, en qué fijarse…"></textarea>
+              </div>
+              <div class="field">
+                <label for="f-vimeo-es">Video de Vimeo · ES</label>
+                <input id="f-vimeo-es" type="url" placeholder="https://vimeo.com/…" />
+              </div>
+              <div class="field">
+                <label for="f-pdf-es">PDF de apoyo · ES (opcional)</label>
+                <input id="f-pdf-es" type="file" accept="application/pdf" />
+              </div>
+            </div>
+            <!-- Columna English -->
+            <div class="lcol">
+              <span class="lcol__tag">English</span>
+              <div class="field">
+                <label for="f-title-en">Title (EN)</label>
+                <input id="f-title-en" type="text" placeholder="E.g. Controlled détaché: weight and contact point" />
+              </div>
+              <div class="field">
+                <label for="f-desc-en">Description (EN)</label>
+                <textarea id="f-desc-en" placeholder="What it works, at what tempo, what to watch for…"></textarea>
+              </div>
+              <div class="field">
+                <label for="f-vimeo-en">Vimeo video · EN</label>
+                <input id="f-vimeo-en" type="url" placeholder="https://vimeo.com/…" />
+              </div>
+              <div class="field">
+                <label for="f-pdf-en">Support PDF · EN (optional)</label>
+                <input id="f-pdf-en" type="file" accept="application/pdf" />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="f-up">Se publica</label>
+              <input id="f-up" type="datetime-local" />
+              <span class="help">Por defecto: próximo jueves 00:01 (hora local).</span>
+            </div>
+            <div class="field">
+              <label for="f-down">Se cierra</label>
+              <input id="f-down" type="datetime-local" />
+              <span class="help">Por defecto: jueves siguiente 00:00 (hora local).</span>
+            </div>
+          </div>
+          <div class="form__actions">
+            <button class="btn btn--solid" type="submit">Guardar y programar</button>
+            <button class="btn btn--ghost" type="button" id="cancelBtn">Cancelar</button>
+          </div>
+          <p class="form-error" id="formErr" hidden></p>
+        </form>
+
+        <!-- tabla de ejercicios -->
+        <table class="tbl">
+          <thead>
+            <tr><th>Ejercicio</th><th>Nivel</th><th>Estado</th><th>Ventana</th><th></th></tr>
+          </thead>
+          <tbody id="exRows">
+            <tr class="empty-row"><td colspan="5">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ============ PANEL: MIEMBROS ============ -->
+      <section class="panel" id="panel-mi" role="tabpanel" aria-labelledby="tab-mi" hidden>
+        <div class="sec-head">
+          <h2>Miembros</h2>
+          <span class="pill"><span class="dot"></span> <span id="miCount">…</span></span>
+        </div>
+        <p class="hint">Asigna o cambia el nivel de cada miembro. El cambio se refleja al instante en lo que ve en el aula.</p>
+        <table class="tbl">
+          <thead>
+            <tr><th>Miembro</th><th>Nivel</th><th>Suscripción</th><th>Alta</th></tr>
+          </thead>
+          <tbody id="miRows">
+            <tr class="empty-row"><td colspan="4">Cargando…</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ============ PANEL: FORO ============ -->
+      <section class="panel" id="panel-fo" role="tabpanel" aria-labelledby="tab-fo" hidden>
+        <div class="sec-head">
+          <h2>Foro · pendientes de responder</h2>
+          <span class="pill"><span class="dot"></span> <span id="foCount">…</span></span>
+        </div>
+        <p class="hint">Hay <b>dos foros</b>, español e inglés. Cada pregunta lleva su idioma; respondes en el idioma de la pregunta y lo lee todo ese grupo. Se muestran las preguntas sin responder del ejercicio que está en vivo.</p>
+        <div id="foRows">
+          <div class="empty">Cargando…</div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- UI pura (no necesita datos): pestañas y selector de nivel del formulario -->
+<script is:inline>
+  (function () {
+    /* ---- tabs ---- */
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    tabs.forEach(function (tab) {
+      tab.addEventListener('click', function () {
+        tabs.forEach(function (t) {
+          var sel = t === tab;
+          t.setAttribute('aria-selected', sel ? 'true' : 'false');
+          document.getElementById(t.getAttribute('aria-controls')).hidden = !sel;
+        });
+      });
+    });
+
+    /* ---- level segmented control (click manual) ---- */
+    var seg = document.getElementById('f-level');
+    if (seg) seg.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+        b.setAttribute('aria-pressed', 'true');
+      });
+    });
+  })();
+</script>
+
+<!-- Datos reales: auth de admin + ejercicios / miembros / foro desde Supabase -->
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const $ = (id) => document.getElementById(id);
+
+  // ---------- helpers ----------
+  function levelLabel(l) { return l === 'avanzando' ? 'Avanzando' : l === 'iniciando' ? 'Iniciando' : '—'; }
+  const pad = (n) => String(n).padStart(2, '0');
+  const toLocalInput = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  const isoToLocalInput = (iso) => toLocalInput(new Date(iso));
+
+  // Próximo jueves estricto (no hoy). Nota: usa la hora local del navegador; para
+  // Emi (Madrid) coincide con Europe/Madrid. Si algún día se administra desde otra
+  // zona habría que fijar la zona explícitamente.
+  function nextThursday(from) {
+    const d = new Date(from); let add = (4 - d.getDay() + 7) % 7; if (add === 0) add = 7;
+    d.setDate(d.getDate() + add); return d;
+  }
+  function fmtRange(a, b) {
+    const o = { day: 'numeric', month: 'short' };
+    return `${new Date(a).toLocaleDateString('es-ES', o)} – ${new Date(b).toLocaleDateString('es-ES', o)}`;
+  }
+  function fmtDateTime(iso) {
+    return new Date(iso).toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  }
+  function fmtDate(iso) {
+    return new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+  function timeAgo(iso) {
+    const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    const m = Math.floor(s / 60), h = Math.floor(s / 3600), d = Math.floor(s / 86400);
+    if (s < 60) return 'ahora';
+    if (m < 60) return `hace ${m} min`;
+    if (h < 24) return `hace ${h} h`;
+    if (d === 1) return 'hace 1 día';
+    return `hace ${d} días`;
+  }
+  function exStatus(ex) {
+    const now = Date.now(), p = new Date(ex.publish_at).getTime(), u = new Date(ex.unpublish_at).getTime();
+    if (now < p) return { key: 'sched', label: 'Programado', cls: 'pill--sched' };
+    if (now >= u) return { key: 'closed', label: 'Cerrado', cls: 'pill--closed' };
+    return { key: 'live', label: 'En vivo', cls: 'pill--live' };
+  }
+  const avatarLetter = (name) => ((name || '?').trim()[0] || '?').toUpperCase();
+  function emptyRow(cols, text) {
+    const tr = document.createElement('tr'); tr.className = 'empty-row';
+    const td = document.createElement('td'); td.colSpan = cols; td.textContent = text; tr.appendChild(td); return tr;
+  }
+  function emptyMsg(text) { const d = document.createElement('div'); d.className = 'empty'; d.textContent = text; return d; }
+
+  let toastTimer;
+  function toast(msg) {
+    const el = $('toast'); el.textContent = msg; el.classList.add('show');
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+  }
+
+  // ---------- AUTH GATE ----------
+  function deny(t, m) { $('gateTitle').textContent = t; $('gateMsg').textContent = m; $('gateActions').hidden = false; }
+  async function logout() { await supabase.auth.signOut(); window.location.href = '/entrar/'; }
+  $('logoutBtn')?.addEventListener('click', logout);
+  $('gateLogout')?.addEventListener('click', logout);
+
+  async function guard() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { deny('Necesitas iniciar sesión', 'Este panel es solo para Emi.'); return null; }
+    const { data: profile, error } = await supabase
+      .from('profiles').select('role, full_name').eq('id', session.user.id).single();
+    if (error) { deny('No se pudo verificar', 'Vuelve a intentarlo en un momento.'); return null; }
+    if (profile && profile.role === 'admin') {
+      $('gate').hidden = true; document.body.classList.remove('gated');
+      return session;
+    }
+    deny('No autorizado', 'Tu cuenta no es de administradora.'); return null;
+  }
+
+  // ---------- EJERCICIOS ----------
+  let exList = [], exMap = {};
+
+  function renderWeekStrip(exs) {
+    const strip = $('weekStrip'); strip.innerHTML = '';
+    const live = exs.filter((e) => exStatus(e).key === 'live');
+    const next = exs.filter((e) => exStatus(e).key === 'sched')
+      .sort((a, b) => new Date(a.publish_at) - new Date(b.publish_at))[0];
+    if (!live.length && !next) { strip.hidden = true; return; }
+    strip.hidden = false;
+    const card = (label, title, meta, isLive) => {
+      const d = document.createElement('div'); d.className = 'wk' + (isLive ? ' wk--live' : '');
+      const l = document.createElement('span'); l.className = 'wk__label'; l.textContent = label;
+      const t = document.createElement('div'); t.className = 'wk__title'; t.textContent = title;
+      const m = document.createElement('div'); m.className = 'wk__meta'; m.textContent = meta;
+      d.append(l, t, m); return d;
+    };
+    live.forEach((e) => strip.appendChild(card('En vivo · ' + levelLabel(e.level), e.title_es, 'Se cierra ' + fmtDateTime(e.unpublish_at) + ' (local)', true)));
+    if (next) strip.appendChild(card('Próximo · ' + levelLabel(next.level), next.title_es, 'Se publica ' + fmtDateTime(next.publish_at) + ' (local)', false));
+  }
+
+  function renderExRow(e) {
+    const tr = document.createElement('tr'); tr.dataset.exId = e.id;
+    const td1 = document.createElement('td');
+    const title = document.createElement('span'); title.className = 'ex-title'; title.textContent = e.title_es || '(sin título)';
+    td1.appendChild(title);
+    const td2 = document.createElement('td'); td2.textContent = levelLabel(e.level);
+    const td3 = document.createElement('td');
+    const st = exStatus(e); const pill = document.createElement('span'); pill.className = 'pill ' + st.cls; pill.textContent = st.label; td3.appendChild(pill);
+    const td4 = document.createElement('td'); td4.className = 'sub'; td4.textContent = fmtRange(e.publish_at, e.unpublish_at);
+    const td5 = document.createElement('td');
+    const btn = document.createElement('button'); btn.className = 'btn btn--ghost btn--sm'; btn.type = 'button'; btn.textContent = 'Editar';
+    btn.addEventListener('click', () => openEdit(e)); td5.appendChild(btn);
+    tr.append(td1, td2, td3, td4, td5); return tr;
+  }
+
+  async function loadExercises() {
+    const tb = $('exRows');
+    const { data, error } = await supabase.from('exercises').select('*').order('publish_at', { ascending: false });
+    if (error) { tb.innerHTML = ''; tb.appendChild(emptyRow(5, 'No se pudo cargar: ' + error.message)); return; }
+    exList = data || []; exMap = {}; exList.forEach((e) => { exMap[e.id] = e; });
+    renderWeekStrip(exList);
+    tb.innerHTML = '';
+    if (!exList.length) { tb.appendChild(emptyRow(5, 'Aún no hay ejercicios. Crea el primero con “+ Nuevo ejercicio”.')); return; }
+    exList.forEach((e) => tb.appendChild(renderExRow(e)));
+  }
+
+  // --- formulario ---
+  const newForm = $('newForm');
+  function setFormLevel(l) {
+    document.querySelectorAll('#f-level button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.level === l ? 'true' : 'false'));
+  }
+  function getFormLevel() {
+    const b = document.querySelector('#f-level button[aria-pressed="true"]'); return b ? b.dataset.level : 'iniciando';
+  }
+  function resetForm() {
+    $('f-id').value = '';
+    ['f-week', 'f-title-es', 'f-title-en', 'f-desc-es', 'f-desc-en', 'f-vimeo-es', 'f-vimeo-en', 'f-up', 'f-down', 'f-pdf-es', 'f-pdf-en']
+      .forEach((id) => { const el = $(id); if (el) el.value = ''; });
+    setFormLevel('iniciando'); $('formErr').hidden = true; $('formTitle').textContent = 'Nuevo ejercicio';
+  }
+  function openCreate() {
+    resetForm();
+    const pub = nextThursday(new Date()); pub.setHours(0, 1, 0, 0);
+    const unp = new Date(pub); unp.setDate(unp.getDate() + 7); unp.setHours(0, 0, 0, 0);
+    $('f-up').value = toLocalInput(pub); $('f-down').value = toLocalInput(unp);
+    newForm.hidden = false; newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  function openEdit(e) {
+    resetForm();
+    $('f-id').value = e.id; setFormLevel(e.level);
+    $('f-week').value = e.week_label || '';
+    $('f-title-es').value = e.title_es || ''; $('f-title-en').value = e.title_en || '';
+    $('f-desc-es').value = e.desc_es || ''; $('f-desc-en').value = e.desc_en || '';
+    $('f-vimeo-es').value = e.vimeo_url_es || ''; $('f-vimeo-en').value = e.vimeo_url_en || '';
+    $('f-up').value = isoToLocalInput(e.publish_at); $('f-down').value = isoToLocalInput(e.unpublish_at);
+    $('formTitle').textContent = 'Editar ejercicio';
+    newForm.hidden = false; newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Sube un PDF al bucket "pdfs" si hay archivo. Devuelve la ruta, o undefined si
+  // no se eligió archivo (para no tocar el valor existente). Lanza si falla.
+  async function uploadPdf(fileInput, level) {
+    const f = fileInput.files && fileInput.files[0];
+    if (!f) return undefined;
+    const path = `${level}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
+    const { error } = await supabase.storage.from('pdfs').upload(path, f, { contentType: 'application/pdf', upsert: false });
+    if (error) throw new Error('PDF (¿existe el bucket "pdfs"?): ' + error.message);
+    return path;
+  }
+
+  $('newBtn')?.addEventListener('click', () => {
+    if (newForm.hidden) openCreate(); else { newForm.hidden = true; resetForm(); }
+  });
+  $('cancelBtn')?.addEventListener('click', () => { newForm.hidden = true; resetForm(); });
+
+  newForm?.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const errEl = $('formErr'); errEl.hidden = true;
+    const level = getFormLevel();
+    const title_es = $('f-title-es').value.trim(), title_en = $('f-title-en').value.trim();
+    const upVal = $('f-up').value, downVal = $('f-down').value;
+    if (!title_es || !title_en) { errEl.textContent = 'Faltan los títulos (ES y EN).'; errEl.hidden = false; return; }
+    if (!upVal || !downVal) { errEl.textContent = 'Faltan las fechas de publicación y cierre.'; errEl.hidden = false; return; }
+    if (new Date(downVal) <= new Date(upVal)) { errEl.textContent = 'La fecha de cierre debe ser posterior a la de publicación.'; errEl.hidden = false; return; }
+
+    const saveBtn = newForm.querySelector('button[type="submit"]'); const lbl = saveBtn.textContent;
+    saveBtn.disabled = true; saveBtn.textContent = 'Guardando…';
+    try {
+      const editId = $('f-id').value || null;
+      const pdfEs = await uploadPdf($('f-pdf-es'), level);
+      const pdfEn = await uploadPdf($('f-pdf-en'), level);
+      const payload = {
+        level, week_label: $('f-week').value.trim() || null,
+        title_es, title_en,
+        desc_es: $('f-desc-es').value.trim() || null, desc_en: $('f-desc-en').value.trim() || null,
+        vimeo_url_es: $('f-vimeo-es').value.trim() || null, vimeo_url_en: $('f-vimeo-en').value.trim() || null,
+        publish_at: new Date(upVal).toISOString(), unpublish_at: new Date(downVal).toISOString(),
+      };
+      if (pdfEs !== undefined) payload.pdf_path_es = pdfEs;
+      if (pdfEn !== undefined) payload.pdf_path_en = pdfEn;
+      const resp = editId
+        ? await supabase.from('exercises').update(payload).eq('id', editId)
+        : await supabase.from('exercises').insert(payload);
+      if (resp.error) throw new Error(resp.error.message);
+      newForm.hidden = true; resetForm(); await loadExercises();
+      toast(editId ? 'Ejercicio actualizado' : 'Ejercicio creado');
+    } catch (err) {
+      errEl.textContent = 'No se pudo guardar: ' + err.message; errEl.hidden = false;
+    } finally {
+      saveBtn.disabled = false; saveBtn.textContent = lbl;
+    }
+  });
+
+  // ---------- MIEMBROS ----------
+  function renderMemberRow(p, active) {
+    const tr = document.createElement('tr');
+    const td1 = document.createElement('td');
+    const name = document.createElement('div'); name.className = 'name'; name.textContent = p.full_name || '(sin nombre)';
+    const mail = document.createElement('div'); mail.className = 'sub'; mail.textContent = p.email || '';
+    td1.append(name, mail);
+
+    const td2 = document.createElement('td');
+    const sel = document.createElement('select'); sel.className = 'lvl'; sel.setAttribute('aria-label', 'Nivel de ' + (p.full_name || p.email || ''));
+    [['', '— Sin asignar —'], ['iniciando', 'Iniciando'], ['avanzando', 'Avanzando']].forEach(([v, label]) => {
+      const o = document.createElement('option'); o.value = v; o.textContent = label; if ((p.level || '') === v) o.selected = true; sel.appendChild(o);
+    });
+    sel.addEventListener('change', async () => {
+      sel.disabled = true;
+      const { error } = await supabase.from('profiles').update({ level: sel.value || null }).eq('id', p.id);
+      sel.disabled = false;
+      if (error) { toast('No se pudo cambiar el nivel: ' + error.message); return; }
+      p.level = sel.value || null; toast('Nivel actualizado');
+    });
+    td2.appendChild(sel);
+
+    const td3 = document.createElement('td');
+    const pill = document.createElement('span');
+    if (active) { pill.className = 'pill pill--live'; pill.textContent = 'Activa'; }
+    else { pill.className = 'pill pill--closed'; pill.textContent = 'Inactiva'; }
+    td3.appendChild(pill);
+    if (p.role === 'admin') { const a = document.createElement('span'); a.className = 'pill'; a.style.marginLeft = '8px'; a.textContent = 'Admin'; td3.appendChild(a); }
+
+    const td4 = document.createElement('td'); td4.className = 'sub'; td4.textContent = fmtDate(p.created_at);
+    tr.append(td1, td2, td3, td4); return tr;
+  }
+
+  async function loadMembers() {
+    const tb = $('miRows');
+    const [{ data: profiles, error: pe }, { data: subs }] = await Promise.all([
+      supabase.from('profiles').select('id, full_name, email, level, role, created_at').order('created_at', { ascending: false }),
+      supabase.from('subscriptions').select('user_id, status, current_period_end'),
+    ]);
+    if (pe) { tb.innerHTML = ''; tb.appendChild(emptyRow(4, 'No se pudo cargar: ' + pe.message)); $('miCount').textContent = '—'; return; }
+    const activeMap = {};
+    (subs || []).forEach((s) => {
+      const active = s.status === 'active' && (!s.current_period_end || new Date(s.current_period_end) > new Date());
+      if (active) activeMap[s.user_id] = true;
+    });
+    const members = profiles || [];
+    $('miCount').textContent = members.filter((p) => activeMap[p.id]).length + ' con suscripción activa';
+    tb.innerHTML = '';
+    if (!members.length) { tb.appendChild(emptyRow(4, 'Aún no hay miembros registrados.')); return; }
+    members.forEach((p) => tb.appendChild(renderMemberRow(p, !!activeMap[p.id])));
+  }
+
+  // ---------- FORO ----------
+  function renderQCard(q, adminId) {
+    const ex = q.exercises || {};
+    const art = document.createElement('article'); art.className = 'qcard';
+    const top = document.createElement('div'); top.className = 'qcard__top';
+    const ava = document.createElement('span'); ava.className = 'ava'; ava.setAttribute('aria-hidden', 'true'); ava.textContent = avatarLetter(q.author_name);
+    const whoWrap = document.createElement('div');
+    const who = document.createElement('div'); who.className = 'qcard__who';
+    who.textContent = q.author_name || '(miembro)';
+    const when = document.createElement('span'); when.className = 'qcard__when';
+    when.textContent = ' · ' + levelLabel(ex.level) + ' · ' + timeAgo(q.created_at);
+    who.appendChild(when); whoWrap.appendChild(who);
+    const lang = document.createElement('span'); lang.className = 'qlang'; lang.textContent = (q.lang || '').toUpperCase();
+    const exPill = document.createElement('span'); exPill.className = 'pill pill--sched';
+    exPill.textContent = q.lang === 'en' ? (ex.title_en || ex.title_es || '') : (ex.title_es || '');
+    top.append(ava, whoWrap, lang, exPill);
+
+    const body = document.createElement('p'); body.className = 'qcard__q'; body.textContent = q.body;
+
+    const reply = document.createElement('div'); reply.className = 'reply';
+    const ta = document.createElement('textarea');
+    ta.placeholder = q.lang === 'en'
+      ? 'Write your answer… (visible to all members of that exercise)'
+      : 'Escribe tu respuesta… (la verán todos los miembros del ejercicio)';
+    const row = document.createElement('div'); row.className = 'reply__row';
+    const btn = document.createElement('button'); btn.className = 'btn btn--solid'; btn.type = 'button'; btn.textContent = 'Responder';
+    btn.addEventListener('click', async () => {
+      const txt = (ta.value || '').trim(); if (!txt) return;
+      const lbl = btn.textContent; btn.disabled = true; btn.textContent = 'Enviando…';
+      const { error } = await supabase.from('answers').insert({ question_id: q.id, user_id: adminId, body: txt });
+      if (error) { btn.disabled = false; btn.textContent = lbl; toast('No se pudo responder: ' + error.message); return; }
+      const note = document.createElement('div'); note.className = 'answered-note';
+      note.innerHTML = '<span class="check">✓</span> ';
+      note.appendChild(document.createTextNode('Respondido. Visible para el grupo.'));
+      reply.replaceWith(note); art.classList.add('is-answered');
+      const left = Math.max(0, (parseInt($('foCount').textContent, 10) || 1) - 1);
+      $('foCount').textContent = left + (left === 1 ? ' sin responder' : ' sin responder');
+      toast('Respuesta publicada');
+    });
+    row.appendChild(btn); reply.append(ta, row);
+
+    art.append(top, body, reply); return art;
+  }
+
+  async function loadForum(adminId) {
+    const cont = $('foRows');
+    const { data, error } = await supabase
+      .from('questions')
+      .select('id, body, author_name, lang, created_at, exercise_id, answers(id), exercises(title_es, title_en, level, publish_at, unpublish_at)')
+      .order('created_at', { ascending: true });
+    if (error) { cont.innerHTML = ''; cont.appendChild(emptyMsg('No se pudo cargar el foro: ' + error.message)); $('foCount').textContent = '—'; return; }
+    // Pendientes (sin respuesta) de ejercicios que están en vivo ahora.
+    const pend = (data || []).filter((q) =>
+      (!q.answers || q.answers.length === 0) && q.exercises && exStatus(q.exercises).key === 'live');
+    $('foCount').textContent = pend.length + ' sin responder';
+    cont.innerHTML = '';
+    if (!pend.length) { cont.appendChild(emptyMsg('No hay preguntas pendientes. ✦')); return; }
+    pend.forEach((q) => cont.appendChild(renderQCard(q, adminId)));
+  }
+
+  // ---------- ARRANQUE ----------
+  (async () => {
+    const session = await guard();
+    if (!session) return;
+    await Promise.all([loadExercises(), loadMembers(), loadForum(session.user.id)]);
+  })();
+</script>
+</body>
+</html>

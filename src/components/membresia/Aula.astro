@@ -1,0 +1,563 @@
+---
+// Aula (área de miembros) — componente bilingüe (prop lang: 'es' | 'en').
+// Rutas: /aula/ (es) y /aula/en/ (en).
+// Toggle EN/ES arriba cambia toda la experiencia (UI + foro de ese idioma).
+// El video tiene además su propio selector ES/EN encima del placeholder.
+// Datos reales desde Supabase: ejercicio vigente, "completado" y foro (ver el
+// <script> al final). El bloque `t` de abajo es solo el texto/UI por defecto
+// (lo que se ve antes de que cargue el JS); el contenido real lo pinta el script.
+interface Props { lang?: 'es' | 'en'; }
+const { lang = 'es' } = Astro.props;
+const isEN = lang === 'en';
+
+const t = isEN ? {
+  htmlLang: 'en',
+  metaTitle: 'Classroom — Let’s Study Together · Emilse Rios',
+  brandSmall: 'Classroom', level: 'Advancing level', account: 'My account',
+  home: '/aula/en/',
+  eyebrow: 'Hi, María · Your exercise this week',
+  title: 'Controlled détaché: weight and contact point',
+  meta: 'Week 24 · June 12–19', tag: 'Available until Thursday',
+  videoEs: 'Spanish', videoEn: 'English', nowPlaying: 'Now playing',
+  playerHint: 'This week’s exercise', playerLabel: 'Video · Vimeo',
+  desc: [
+    'This week we work the <strong>détaché</strong> from the weight of the arm, not from hand pressure. The goal is a round, sustained sound, controlling the <strong>contact point</strong> between the bow and the string.',
+    'Start slow, metronome at 60. Aim for every note to have the same body, with no involuntary accents when crossing strings. When it feels stable, build up gradually.',
+    'The PDF has the fingering and rhythmic pattern to print and keep on the stand.',
+  ],
+  sideH: 'This week',
+  points: ['Détaché at 60 bpm, relaxed arm', 'Same contact point on all 4 strings', 'No accent when crossing strings'],
+  pdf: '↓ Download PDF', done: 'Mark as completed', doneOk: '✓ Completed',
+  forumEyebrow: 'This week’s forum', forumH2: 'Questions & answers',
+  forumNote: 'I answer on Fridays. Everyone reads the questions and answers.',
+  composePlaceholder: 'Write your question about this week’s exercise…',
+  composeHint: 'Visible to all members of your level.', composeBtn: 'Post question',
+  youName: 'María (you)', now: 'now', pending: 'Emilse answers on Friday.',
+  answerRole: 'Answer',
+  thread: [
+    { ava: 'S', who: 'Sarah K.', when: '2 days ago',
+      q: 'When I switch from the D string to the A I get an unwanted accent. Is it the arm or the bow speed?',
+      a: 'It’s almost always speed: you accelerate right at the crossing. Try keeping the same bow speed and anticipate the change with the elbow, not the wrist. Slow first.' },
+    { ava: 'J', who: 'James P.', when: '1 day ago',
+      q: 'Is the metronome at 60 per quarter note or per eighth? I want to make sure I’m not going too fast.',
+      a: null },
+  ],
+  noteHtml: '<b>No library.</b> On Thursday at 00:00 this exercise closes and the new one comes in. We work the present: only this week’s.',
+} : {
+  htmlLang: 'es',
+  metaTitle: 'Aula — Estudiemos Juntos · Emilse Rios',
+  brandSmall: 'Aula', level: 'Nivel Avanzando', account: 'Mi cuenta',
+  home: '/aula/',
+  eyebrow: 'Hola, María · Tu ejercicio de esta semana',
+  title: 'Détaché controlado: peso y punto de contacto',
+  meta: 'Semana 24 · del 12 al 19 de junio', tag: 'Disponible hasta el jueves',
+  videoEs: 'Español', videoEn: 'English', nowPlaying: 'Reproduciendo',
+  playerHint: 'Ejercicio de la semana', playerLabel: 'Video · Vimeo',
+  desc: [
+    'Esta semana trabajamos el <strong>détaché</strong> desde el peso del brazo, no desde la presión de la mano. La idea es que el sonido nazca redondo y sostenido, controlando el <strong>punto de contacto</strong> entre el arco y la cuerda.',
+    'Empieza lento, con el metrónomo a 60. Busca que cada nota tenga el mismo cuerpo, sin acentos involuntarios al cambiar de cuerda. Cuando lo sientas estable, sube de a poco.',
+    'En el PDF tienes la digitación y el patrón rítmico para imprimir y tener en el atril.',
+  ],
+  sideH: 'Esta semana',
+  points: ['Détaché a 60 bpm, brazo relajado', 'Mismo punto de contacto en las 4 cuerdas', 'Sin acento al cambiar de cuerda'],
+  pdf: '↓ Descargar PDF', done: 'Marcar como completado', doneOk: '✓ Completado',
+  forumEyebrow: 'Foro de la semana', forumH2: 'Preguntas y respuestas',
+  forumNote: 'Respondo los viernes. Todos leen las preguntas y las respuestas.',
+  composePlaceholder: 'Escribe tu pregunta sobre el ejercicio de esta semana…',
+  composeHint: 'Visible para todos los miembros de tu nivel.', composeBtn: 'Publicar pregunta',
+  youName: 'María (tú)', now: 'ahora', pending: 'Emilse responde el viernes.',
+  answerRole: 'Respuesta',
+  thread: [
+    { ava: 'L', who: 'Lucía F.', when: 'hace 2 días',
+      q: 'Cuando cambio de la cuerda Re a la La se me escapa un acento. ¿Es del brazo o de la velocidad del arco?',
+      a: 'Casi siempre es velocidad: aceleras justo en el cruce. Prueba mantener la misma velocidad de arco y anticipar el cambio con el codo, no con la muñeca. Lento primero.' },
+    { ava: 'D', who: 'Diego M.', when: 'hace 1 día',
+      q: '¿El metrónomo a 60 es por negra o por corchea? Quiero asegurarme de no ir demasiado rápido.',
+      a: null },
+  ],
+  noteHtml: '<b>Sin biblioteca.</b> El jueves a las 00:00 este ejercicio se cierra y entra el nuevo. Trabajamos el presente: solo lo de esta semana.',
+};
+const altHref = isEN ? '/aula/' : '/aula/en/';
+---
+<!DOCTYPE html>
+<html lang={t.htmlLang}>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{t.metaTitle}</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
+<link rel="stylesheet" href="/colors_and_type.css" />
+<style is:inline>
+  :root {
+    --ink:#0c0c0c; --paper:#ffffff; --color-text:#0c0c0c;
+    --color-border:#e4e2dd; --color-text-soft:#71706b; --surface:#faf9f7;
+    --edge: clamp(20px, 5vw, 72px); --wrap: 1080px;
+  }
+  html { scroll-behavior: smooth; }
+  body { background: var(--paper); color: var(--ink); overflow-x: hidden; }
+  ::selection { background: #0c0c0c; color: #fff; }
+  a { color: inherit; }
+  img { display: block; max-width: 100%; }
+  .display { font-family: var(--font-display); font-weight: var(--weight-medium);
+             letter-spacing: -0.035em; line-height: 0.95; text-wrap: balance; }
+  .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+         letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: var(--edge); }
+
+  .bar { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.86);
+         backdrop-filter: saturate(140%) blur(10px); border-bottom: 1px solid var(--color-border); }
+  .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 14px var(--edge);
+             display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  .brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
+           letter-spacing: -0.02em; text-decoration: none; display: inline-flex; align-items: baseline; gap: 0.5em; }
+  .brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
+                 letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .bar__right { display: flex; align-items: center; gap: clamp(10px, 2vw, 18px); }
+  .lang { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-body);
+          font-size: var(--text-sm); font-weight: var(--weight-semibold); letter-spacing: 0.06em; }
+  .lang a { text-decoration: none; padding: 3px 6px; border-radius: var(--radius-full); color: var(--color-text-soft);
+            transition: color var(--duration) var(--ease); }
+  .lang a[aria-current="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .lang span { color: #c9c8c3; }
+  .pill { display: inline-flex; align-items: center; gap: 8px; padding: 6px 13px; border-radius: var(--radius-full);
+          border: 1px solid var(--color-border); background: var(--surface);
+          font-size: var(--text-sm); font-weight: var(--weight-semibold); white-space: nowrap; }
+  .pill .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink); }
+  .acct { text-decoration: none; font-size: var(--text-sm); font-weight: var(--weight-semibold);
+          color: var(--color-text-soft); transition: color var(--duration) var(--ease); white-space: nowrap; }
+  .acct:hover { color: var(--ink); }
+
+  .lead { padding: clamp(32px, 6vh, 64px) 0 clamp(20px, 3vh, 32px); }
+  .lead__title { font-size: clamp(2.2rem, 5.4vw, 3.8rem); margin: var(--space-4) 0 var(--space-3); }
+  .lead__meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+                color: var(--color-text-soft); font-size: var(--text-base); }
+  .tag { display: inline-flex; align-items: center; gap: 8px; padding: 6px 13px; border-radius: var(--radius-full);
+         border: 1px solid var(--ink); font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--ink); }
+  .tag .blink { width: 7px; height: 7px; border-radius: 50%; background: var(--ink); animation: blink 2.4s var(--ease) infinite; }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
+
+  .vtabs { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--color-border);
+           border-radius: var(--radius-full); background: var(--surface); margin-bottom: 12px; }
+  .vtab { appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--color-text-soft);
+          font-family: var(--font-body); font-weight: var(--weight-semibold); font-size: var(--text-sm);
+          padding: 7px 16px; border-radius: var(--radius-full); transition: all 220ms var(--ease); }
+  .vtab[aria-selected="true"] { background: var(--ink); color: #fff; }
+
+  .player { position: relative; aspect-ratio: 16/9; width: 100%; background: #0c0c0c; color: #f4f3ef;
+            border-radius: var(--radius-lg); overflow: hidden; display: grid; place-items: center; }
+  .player__hint { position: absolute; left: 16px; top: 14px; font-size: 11px; letter-spacing: 0.16em;
+                  text-transform: uppercase; color: rgba(244,243,239,0.7); }
+  .player__play { width: clamp(62px, 8vw, 84px); aspect-ratio: 1; border-radius: 50%;
+                  border: 1.5px solid rgba(244,243,239,0.55); display: grid; place-items: center;
+                  transition: transform 360ms var(--ease), border-color 360ms var(--ease); }
+  .player:hover .player__play { transform: scale(1.06); border-color: #fff; }
+  .player__play::before { content: ""; border-style: solid; border-width: 11px 0 11px 18px;
+                          border-color: transparent transparent transparent #f4f3ef; margin-left: 5px; }
+  .player__label { position: absolute; right: 16px; bottom: 14px; font-size: 11px; letter-spacing: 0.16em;
+                   text-transform: uppercase; color: rgba(244,243,239,0.7); }
+
+  .ex { padding: clamp(24px, 4vh, 40px) 0 clamp(36px, 6vh, 64px);
+        display: grid; grid-template-columns: 1.5fr 1fr; gap: clamp(28px, 5vw, 64px); align-items: start; }
+  .ex__desc { color: #3a3a38; font-size: var(--text-md); line-height: 1.6; }
+  .ex__desc p { margin-bottom: 1em; max-width: 60ch; }
+  .ex__desc strong { font-weight: var(--weight-semibold); color: var(--ink); }
+  .ex__side { position: sticky; top: 96px; border: 1px solid var(--color-border); border-radius: var(--radius-lg);
+              padding: clamp(22px, 2.6vw, 30px); background: var(--surface); display: flex; flex-direction: column; gap: var(--space-4); }
+  .ex__side h3 { font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-lg); letter-spacing: -0.02em; }
+  .ex__points { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 11px; }
+  .ex__points li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: var(--text-base); line-height: 1.4; color: #3a3a38; }
+  .ex__points .tick { font-family: var(--font-display); color: var(--ink); line-height: 1.1; }
+
+  .btn { appearance: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+         padding: 14px 22px; border-radius: var(--radius-full); font-family: var(--font-display);
+         font-weight: var(--weight-medium); font-size: var(--text-base); letter-spacing: -0.01em;
+         text-decoration: none; border: 1.5px solid var(--ink); transition: all 320ms var(--ease); white-space: nowrap; }
+  .btn--solid { background: var(--ink); color: var(--paper); }
+  .btn--solid:hover { transform: translateY(-1px); }
+  .btn--ghost { background: transparent; color: var(--ink); }
+  .btn--ghost:hover { background: var(--ink); color: var(--paper); }
+  .btn--solid.is-done { background: var(--paper); color: var(--ink); }
+  .btn--block { width: 100%; }
+
+  .forum { border-top: 1px solid var(--ink); padding: clamp(40px, 7vh, 72px) 0 clamp(56px, 9vh, 96px); }
+  .forum__head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4);
+                 flex-wrap: wrap; margin-bottom: var(--space-5); }
+  .forum__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
+                    font-size: clamp(1.7rem, 3.4vw, 2.6rem); letter-spacing: -0.03em; }
+  .forum__note { color: var(--color-text-soft); font-size: var(--text-base); max-width: 30ch; text-align: right; }
+  .compose { border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: clamp(16px, 2vw, 22px);
+             background: var(--surface); margin-bottom: var(--space-6); }
+  .compose textarea { width: 100%; border: 0; background: transparent; resize: vertical; min-height: 76px;
+                      font-family: var(--font-body); font-size: var(--text-md); color: var(--ink); line-height: 1.5; }
+  .compose textarea:focus { outline: none; }
+  .compose textarea::placeholder { color: #a4a39e; }
+  .compose__row { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3);
+                  border-top: 1px solid var(--color-border); padding-top: var(--space-3); margin-top: var(--space-2); }
+  .compose__hint { font-size: var(--text-sm); color: var(--color-text-soft); }
+
+  .thread { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+  .q { padding: var(--space-5) 0; border-bottom: 1px solid var(--color-border); }
+  .q__top { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .ava { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none;
+         font-family: var(--font-display); font-weight: var(--weight-medium); font-size: 14px;
+         background: var(--surface); border: 1px solid var(--color-border); }
+  .q__who { font-weight: var(--weight-semibold); font-size: var(--text-base); }
+  .q__when { color: var(--color-text-soft); font-size: var(--text-sm); }
+  .q__body { font-size: var(--text-md); line-height: 1.55; color: #2c2c2a; max-width: 62ch; }
+  .answer { margin: var(--space-4) 0 0 clamp(0px, 2vw, 46px); padding: var(--space-4);
+            background: var(--ink); color: #f4f3ef; border-radius: var(--radius-lg); max-width: 64ch; }
+  .answer .q__top { margin-bottom: 10px; }
+  .answer .ava { background: #f4f3ef; color: var(--ink); border: 0; }
+  .answer .q__who { color: #fff; }
+  .answer .q__role { color: #b9b8b3; font-size: var(--text-sm); }
+  .answer .q__body { color: #e7e6e2; }
+  .answer--pending { background: transparent; color: var(--color-text-soft); border: 1px dashed var(--color-border);
+                     font-size: var(--text-sm); display: flex; align-items: center; gap: 10px; }
+  .answer--pending .ava { background: var(--surface); color: var(--color-text-soft); border: 1px dashed var(--color-border); }
+
+  .note-strip { border-top: 1px solid var(--color-border); padding: clamp(28px, 4vh, 44px) 0; }
+  .note-strip p { color: var(--color-text-soft); font-size: var(--text-base); max-width: 60ch; }
+  .note-strip b { color: var(--ink); font-weight: var(--weight-semibold); }
+
+  @media (max-width: 860px) {
+    .ex { grid-template-columns: 1fr; }
+    .ex__side { position: static; }
+    .forum__note { text-align: left; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; } }
+</style>
+</head>
+<body data-page-lang={lang}>
+
+  <header class="bar">
+    <div class="bar__in">
+      <a class="brand" href={t.home}>Emilse Rios <small>{t.brandSmall}</small></a>
+      <div class="bar__right">
+        <div class="lang" aria-label="Idioma / Language">
+          <a href="/aula/" aria-current={(!isEN).toString()}>ES</a>
+          <span aria-hidden="true">/</span>
+          <a href="/aula/en/" aria-current={isEN.toString()}>EN</a>
+        </div>
+        <span class="pill" id="levelPill"><span class="dot"></span> {t.level}</span>
+        <a class="acct" href="#">{t.account}</a>
+        <a class="acct" href="/salir/">{isEN ? 'Log out' : 'Salir'}</a>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+
+      <section class="lead">
+        <div class="ovl" id="greeting">{t.eyebrow}</div>
+        <h1 class="lead__title display" id="exTitle">{t.title}</h1>
+        <div class="lead__meta">
+          <span id="exMeta">{t.meta}</span>
+          <span class="tag"><span class="blink"></span> {t.tag}</span>
+        </div>
+      </section>
+
+      <section aria-label="Video">
+        <div class="vtabs" role="tablist" aria-label="Video language">
+          <button class="vtab" type="button" aria-selected={(!isEN).toString()} data-vlang="es">{t.videoEs}</button>
+          <button class="vtab" type="button" aria-selected={isEN.toString()} data-vlang="en">{t.videoEn}</button>
+        </div>
+        <div class="player" id="player" role="button" tabindex="0" aria-label="Play">
+          <span class="player__hint">{t.playerHint}</span>
+          <span class="player__play" aria-hidden="true"></span>
+          <span class="player__label" id="vlabel">{t.playerLabel} · {isEN ? t.videoEn : t.videoEs}</span>
+        </div>
+      </section>
+
+      <section class="ex">
+        <div class="ex__desc" id="exDesc">
+          {t.desc.map((p) => (<p set:html={p} />))}
+        </div>
+        <aside class="ex__side">
+          <h3>{t.sideH}</h3>
+          <ul class="ex__points">
+            {t.points.map((p) => (<li><span class="tick">→</span> {p}</li>))}
+          </ul>
+          <a class="btn btn--ghost btn--block" id="pdfBtn" href="#">{t.pdf}</a>
+          <button class="btn btn--solid btn--block" id="doneBtn" type="button" data-done={t.done} data-doneok={t.doneOk}>{t.done}</button>
+        </aside>
+      </section>
+
+      <section class="forum" id="foro">
+        <div class="forum__head">
+          <div>
+            <span class="ovl">{t.forumEyebrow}</span>
+            <h2>{t.forumH2}</h2>
+          </div>
+          <p class="forum__note">{t.forumNote}</p>
+        </div>
+
+        <form class="compose" id="composeForm">
+          <textarea id="composeText" placeholder={t.composePlaceholder} aria-label="Q"></textarea>
+          <div class="compose__row">
+            <span class="compose__hint">{t.composeHint}</span>
+            <button class="btn btn--solid" type="submit">{t.composeBtn}</button>
+          </div>
+        </form>
+
+        <ul class="thread" id="thread">
+          <li class="q" data-empty>
+            <p class="q__body">{isEN ? 'Loading questions…' : 'Cargando preguntas…'}</p>
+          </li>
+        </ul>
+      </section>
+
+      <section class="note-strip">
+        <p set:html={t.noteHtml} />
+      </section>
+
+    </div>
+  </main>
+
+<!-- Datos reales: login + ejercicio vigente + foro, desde Supabase -->
+<script>
+  import { supabase } from '../../lib/supabase';
+
+  const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
+  const EN = pageLang === 'en';
+  const $ = (id) => document.getElementById(id);
+  const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
+
+  const T = {
+    locked: EN
+      ? 'No exercise available. Your subscription may be inactive or your level isn’t set yet.'
+      : 'No hay ejercicio disponible. Puede que tu suscripción no esté activa o que aún no tengas nivel asignado.',
+    greeting: (n) => EN ? `Hi, ${n} · Your exercise this week` : `Hola, ${n} · Tu ejercicio de esta semana`,
+    level: (l) => l ? (EN ? `${cap(l)} level` : `Nivel ${cap(l)}`) : (EN ? 'No level yet' : 'Sin nivel asignado'),
+    doneTxt: EN ? 'Mark as completed' : 'Marcar como completado',
+    doneOk: EN ? '✓ Completed' : '✓ Completado',
+    answerRole: EN ? 'Answer' : 'Respuesta',
+    pending: EN ? 'Emilse answers on Friday.' : 'Emilse responde el viernes.',
+    you: EN ? 'you' : 'tú',
+    emptyForum: EN ? 'No questions yet. Be the first to ask.' : 'Aún no hay preguntas. Sé el primero en preguntar.',
+    forumError: EN ? 'Couldn’t load the forum.' : 'No se pudo cargar el foro.',
+    postError: EN ? 'Couldn’t post your question. Try again.' : 'No se pudo publicar tu pregunta. Inténtalo de nuevo.',
+    sending: EN ? 'Posting…' : 'Publicando…',
+  };
+
+  // Nombre a mostrar: "Nombre Inicial." (sin correo). Si no hay nombre, parte del correo.
+  function displayName(p) {
+    const full = ((p && p.full_name) || '').trim();
+    if (full) {
+      const parts = full.split(/\s+/);
+      return parts.length > 1 ? `${parts[0]} ${parts[1][0].toUpperCase()}.` : parts[0];
+    }
+    return ((p && p.email) || '').split('@')[0] || (EN ? 'Member' : 'Miembro');
+  }
+
+  function timeAgo(iso) {
+    const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+    const mins = Math.floor(secs / 60), hrs = Math.floor(secs / 3600), days = Math.floor(secs / 86400);
+    if (secs < 60) return EN ? 'now' : 'ahora';
+    if (mins < 60) return EN ? `${mins} min ago` : `hace ${mins} min`;
+    if (hrs < 24) return EN ? `${hrs} h ago` : `hace ${hrs} h`;
+    if (days === 1) return EN ? '1 day ago' : 'hace 1 día';
+    return EN ? `${days} days ago` : `hace ${days} días`;
+  }
+  const avatarLetter = (name) => ((name || '?').trim()[0] || '?').toUpperCase();
+
+  function vimeoEmbed(url) {
+    if (!url) return null;
+    const m = String(url).match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/(\w+))?/);
+    if (!m) return null;
+    return `https://player.vimeo.com/video/${m[1]}${m[2] ? '?h=' + m[2] : ''}`;
+  }
+
+  function showLocked() {
+    $('exTitle').textContent = T.locked;
+    ['exDesc'].forEach((id) => { const el = $(id); if (el) el.innerHTML = ''; });
+    document.querySelectorAll('section[aria-label="Video"], .ex, .forum, .note-strip')
+      .forEach((s) => { s.style.display = 'none'; });
+  }
+
+  (async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.replace('/entrar/'); return; }
+
+    const { data: profile } = await supabase
+      .from('profiles').select('full_name, email, level, role').eq('id', session.user.id).single();
+    const name = (profile && (profile.full_name || (profile.email || '').split('@')[0])) || '';
+    $('greeting').textContent = T.greeting(name);
+    if ($('levelPill')) $('levelPill').innerHTML = '<span class="dot"></span> ' + T.level(profile && profile.level);
+
+    // Ejercicio vigente. Para un miembro, la RLS ya solo deja ver el vigente de su
+    // nivel; aun así filtramos explícitamente por ventana de vigencia y nivel para
+    // que el admin (que ve TODOS los ejercicios por su política) también vea aquí el
+    // que está en vivo, y no uno programado o cerrado.
+    const nowISO = new Date().toISOString();
+    let exQuery = supabase
+      .from('exercises').select('*')
+      .lte('publish_at', nowISO)
+      .gt('unpublish_at', nowISO)
+      .order('publish_at', { ascending: false })
+      .limit(1);
+    if (profile && profile.level) exQuery = exQuery.eq('level', profile.level);
+    const { data: rows, error } = await exQuery;
+    if (error) console.error('[aula] exercises error:', error);
+    const ex = rows && rows[0];
+    console.log('[aula] perfil:', profile, '· ejercicio:', ex);
+    if (!ex) { showLocked(); return; }
+
+    // Título, semana, descripción
+    $('exTitle').textContent = EN ? ex.title_en : ex.title_es;
+    if ($('exMeta')) $('exMeta').textContent = ex.week_label || '';
+    const desc = (EN ? ex.desc_en : ex.desc_es) || '';
+    const descEl = $('exDesc');
+    if (descEl) {
+      descEl.innerHTML = '';
+      desc.split(/\n\s*\n|\n/).filter((p) => p.trim()).forEach((p) => {
+        const el = document.createElement('p'); el.textContent = p.trim(); descEl.appendChild(el);
+      });
+    }
+
+    // Video con selector ES/EN
+    function renderVideo(which) {
+      const url = which === 'en' ? ex.vimeo_url_en : ex.vimeo_url_es;
+      const embed = vimeoEmbed(url);
+      const player = $('player');
+      if (!player) return;
+      if (embed) {
+        player.innerHTML =
+          '<iframe src="' + embed + '" style="position:absolute;inset:0;width:100%;height:100%;border:0" ' +
+          'allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
+      }
+    }
+    renderVideo(pageLang);
+    document.querySelectorAll('.vtab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
+        renderVideo(tab.dataset.vlang);
+      });
+    });
+
+    // PDF (Supabase Storage; se oculta si no hay)
+    const pdfPath = EN ? ex.pdf_path_en : ex.pdf_path_es;
+    const pdfBtn = $('pdfBtn');
+    if (pdfBtn) {
+      if (pdfPath) {
+        const { data } = supabase.storage.from('pdfs').getPublicUrl(pdfPath);
+        pdfBtn.href = data.publicUrl; pdfBtn.target = '_blank'; pdfBtn.rel = 'noopener';
+      } else {
+        pdfBtn.style.display = 'none';
+      }
+    }
+
+    // Marcar completado (real)
+    const doneBtn = $('doneBtn');
+    let done = false;
+    const applyDone = () => {
+      doneBtn.classList.toggle('is-done', done);
+      doneBtn.textContent = done ? T.doneOk : T.doneTxt;
+    };
+    const { data: comp } = await supabase
+      .from('completions').select('exercise_id').eq('user_id', session.user.id).eq('exercise_id', ex.id).maybeSingle();
+    done = !!comp; applyDone();
+    if (doneBtn) doneBtn.addEventListener('click', async () => {
+      doneBtn.disabled = true;
+      if (!done) {
+        await supabase.from('completions').upsert({ user_id: session.user.id, exercise_id: ex.id });
+        done = true;
+      } else {
+        await supabase.from('completions').delete().eq('user_id', session.user.id).eq('exercise_id', ex.id);
+        done = false;
+      }
+      applyDone(); doneBtn.disabled = false;
+    });
+
+    // ----- FORO real (questions + answers de Emi) -----
+    const threadEl = $('thread');
+    const composeForm = $('composeForm');
+    const composeText = $('composeText');
+    const myName = displayName(profile);
+
+    function messageLi(text) {
+      const li = document.createElement('li');
+      li.className = 'q'; li.setAttribute('data-empty', '');
+      const p = document.createElement('p'); p.className = 'q__body'; p.style.color = 'var(--color-text-soft)';
+      p.textContent = text; li.appendChild(p);
+      return li;
+    }
+
+    function renderQuestion(q) {
+      const li = document.createElement('li'); li.className = 'q';
+      const top = document.createElement('div'); top.className = 'q__top';
+      const ava = document.createElement('span'); ava.className = 'ava'; ava.setAttribute('aria-hidden', 'true');
+      ava.textContent = avatarLetter(q.author_name);
+      const who = document.createElement('div');
+      const whoName = document.createElement('div'); whoName.className = 'q__who';
+      const mine = q.user_id === session.user.id;
+      whoName.textContent = (q.author_name || '') + (mine ? ` (${T.you})` : '');
+      const when = document.createElement('div'); when.className = 'q__when'; when.textContent = timeAgo(q.created_at);
+      who.appendChild(whoName); who.appendChild(when);
+      top.appendChild(ava); top.appendChild(who);
+      const body = document.createElement('p'); body.className = 'q__body'; body.textContent = q.body;
+      li.appendChild(top); li.appendChild(body);
+
+      const ans = q.answers && q.answers[0];
+      if (ans) {
+        const a = document.createElement('div'); a.className = 'answer';
+        const atop = document.createElement('div'); atop.className = 'q__top';
+        const aava = document.createElement('span'); aava.className = 'ava'; aava.setAttribute('aria-hidden', 'true'); aava.textContent = 'E';
+        const ad = document.createElement('div');
+        const an = document.createElement('div'); an.className = 'q__who'; an.textContent = 'Emilse Rios';
+        const ar = document.createElement('div'); ar.className = 'q__role'; ar.textContent = T.answerRole;
+        ad.appendChild(an); ad.appendChild(ar);
+        atop.appendChild(aava); atop.appendChild(ad);
+        const ab = document.createElement('p'); ab.className = 'q__body'; ab.textContent = ans.body;
+        a.appendChild(atop); a.appendChild(ab);
+        li.appendChild(a);
+      } else {
+        const p = document.createElement('div'); p.className = 'answer answer--pending';
+        const pa = document.createElement('span'); pa.className = 'ava'; pa.setAttribute('aria-hidden', 'true'); pa.textContent = 'E';
+        const ps = document.createElement('span'); ps.textContent = T.pending;
+        p.appendChild(pa); p.appendChild(ps);
+        li.appendChild(p);
+      }
+      return li;
+    }
+
+    async function loadForum() {
+      // La RLS filtra por nivel + ventana + suscripción; el idioma lo filtramos aquí.
+      const { data, error } = await supabase
+        .from('questions')
+        .select('id, user_id, body, author_name, created_at, answers(id, body, created_at)')
+        .eq('exercise_id', ex.id)
+        .eq('lang', pageLang)
+        .order('created_at', { ascending: false })
+        .order('created_at', { ascending: true, foreignTable: 'answers' });
+      if (error) { console.error('[aula] forum error:', error); threadEl.replaceChildren(messageLi(T.forumError)); return; }
+      if (!data || !data.length) { threadEl.replaceChildren(messageLi(T.emptyForum)); return; }
+      threadEl.replaceChildren(...data.map(renderQuestion));
+    }
+    await loadForum();
+
+    if (composeForm) composeForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const txt = (composeText.value || '').trim();
+      if (!txt) return;
+      const btn = composeForm.querySelector('button[type="submit"]');
+      const label = btn ? btn.textContent : '';
+      if (btn) { btn.disabled = true; btn.textContent = T.sending; }
+      const { data: inserted, error } = await supabase
+        .from('questions')
+        .insert({ exercise_id: ex.id, user_id: session.user.id, lang: pageLang, body: txt, author_name: myName })
+        .select('id, user_id, body, author_name, created_at, answers(id, body, created_at)')
+        .single();
+      if (btn) { btn.disabled = false; btn.textContent = label; }
+      if (error) { console.error('[aula] post error:', error); alert(T.postError); return; }
+      const empty = threadEl.querySelector('[data-empty]'); if (empty) empty.remove();
+      const node = renderQuestion(inserted);
+      threadEl.insertBefore(node, threadEl.firstChild);
+      composeText.value = '';
+      node.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  })();
+</script>
+</body>
+</html>

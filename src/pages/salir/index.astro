@@ -1,0 +1,28 @@
+---
+// Cierra la sesión de Supabase y vuelve al login.
+---
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Saliendo… — Estudiemos Juntos</title>
+<meta name="robots" content="noindex" />
+<link rel="stylesheet" href="/colors_and_type.css" />
+<style is:inline>
+  :root { --ink:#0c0c0c; --paper:#ffffff; --color-text-soft:#71706b; }
+  body { background: var(--paper); color: var(--ink); min-height: 100svh;
+         display: grid; place-items: center; font-family: var(--font-body); }
+  p { color: var(--color-text-soft); font-size: var(--text-md); }
+</style>
+</head>
+<body>
+  <p id="msg">Cerrando sesión…</p>
+<script>
+  import { supabase } from '../../lib/supabase';
+  try { await supabase.auth.signOut(); } catch (e) {}
+  try { localStorage.clear(); } catch (e) {}
+  window.location.replace('/entrar/');
+</script>
+</body>
+</html>
