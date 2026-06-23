@@ -1,11 +1,12 @@
 import { defineConfig } from 'astro/config';
-import vercel from '@astrojs/vercel/serverless';
+import vercel from '@astrojs/vercel';
 
 // Sitio dedicado de la membresía "Estudiemos Juntos" → membresias.emilserios.com
-// Modo híbrido: páginas estáticas + servidor disponible para los endpoints de
-// Stripe (checkout + webhook), que se marcarán con `export const prerender = false`.
+// Astro 5: el modo 'static' prerenderiza por defecto y permite endpoints bajo
+// demanda marcando `export const prerender = false` (lo usaremos para los
+// endpoints de Stripe: checkout + webhook).
 export default defineConfig({
   site: 'https://membresias.emilserios.com',
-  output: 'hybrid',
+  output: 'static',
   adapter: vercel(),
 });
