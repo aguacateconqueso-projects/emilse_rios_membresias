@@ -75,6 +75,11 @@ En producción vivirá en `membresias.emilserios.com`.
       URL de Vercel, y añadir las Redirect URLs (localhost, Vercel, previews, dominio).
       Pasos exactos en `docs/DEPLOY_VERCEL.md` §3. Síntoma mientras falte: el enlace
       mágico redirige a `http://localhost:4321/#access_token=…`.
+- [ ] **Traspaso de admin a Emi**: ejecutar `supabase/set_admin.sql` en el SQL Editor
+      (reemplazar `EMAIL-DE-EMI`). Deja a Emi como única admin y a Adrián como alumno
+      de prueba (nivel + suscripción activa 30 días). Requisito: que exista el perfil
+      de Emi — entra una vez por `/entrar/`, o (mientras Resend no entregue a su
+      correo) crear su usuario en Authentication → Users → Add user.
 - [ ] Dominio `membresias.emilserios.com` (CNAME en Hostinger) y, al activarlo,
       actualizar Site URL / Redirect URLs en Supabase.
 - [ ] **Storage de PDFs**: crear el bucket **público** `pdfs` en Supabase. El panel ya sube
@@ -98,6 +103,8 @@ En producción vivirá en `membresias.emilserios.com`.
    tenía 0001). Luego datos de prueba: correr `supabase/seed.sql` + dar **nivel** y
    **suscripción activa** a tu usuario (SQL al final de `seed.sql`).
 5. Para entrar al panel: `update public.profiles set role='admin' where email='TU-EMAIL';`
+   ⚠️ La BD es la MISMA de producción: si te asciendes para probar, al terminar
+   vuelve a dejar solo a Emi como admin re-ejecutando `supabase/set_admin.sql`.
 
 ## Decisiones abiertas (preguntar a Emi)
 - Foro: ¿los miembros se responden entre ellos o solo responde Emi?
