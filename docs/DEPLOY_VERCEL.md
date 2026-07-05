@@ -30,14 +30,26 @@ En **Production** y **Preview**. Son las del `.env` local (mismo Supabase que ya
 > `STRIPE_WEBHOOK_SECRET` — solo servidor, nunca `PUBLIC_`.
 
 ## 3. Permitir el login desde la nueva URL (¡importante!)
-El enlace mágico redirige a `window.location.origin + /entrar/`. En Supabase →
-**Authentication → URL Configuration**:
-- **Site URL**: la URL de producción (al inicio la de Vercel, luego el dominio).
-- **Redirect URLs**: añade
+> **Síntoma si falta este paso:** el correo llega, pero el enlace te lleva a
+> `http://localhost:4321/#access_token=…`. La app pide redirigir a
+> `window.location.origin + /entrar/`, pero Supabase solo lo respeta si esa URL
+> está en su lista blanca; si no, cae al **Site URL** como fallback (que estaba
+> en localhost).
+
+En Supabase → **Authentication → URL Configuration**:
+- **Site URL**: la URL de producción, p. ej. `https://TU-PROYECTO.vercel.app`
+  (cuando exista el dominio, cámbialo a `https://membresias.emilserios.com`).
+- **Redirect URLs**: añade **todas** estas (estar en Site URL no da permiso por sí solo):
+  - `http://localhost:4321/entrar/` — para que el login siga funcionando en local
+    cuando el Site URL ya no sea localhost
   - `https://TU-PROYECTO.vercel.app/entrar/`
+  - `https://*-aguacateconqueso-projects.vercel.app/entrar/` — cubre las URLs de
+    *Preview* de cada PR (Supabase acepta comodines `*`)
   - (luego) `https://membresias.emilserios.com/entrar/`
 
-Sin esto el enlace mágico falla en el sitio desplegado aunque en local funcione.
+Los cambios aplican al instante, sin redeploy. Ojo: los enlaces ya enviados
+siguen apuntando a la URL vieja (y además caducan / son de un solo uso) — tras
+guardar, pide un enlace nuevo desde la página de entrar.
 
 ## 4. Deploy
 **Deploy**. Cada push a `main` re-despliega; cada PR genera una *Preview* con URL
@@ -53,4 +65,5 @@ propia (ideal para que Emi pruebe antes de mergear).
 ## Pasos de BD (una vez)
 Usamos el **mismo** proyecto de Supabase que ya teníamos. Si aún no se aplicó:
 - `supabase/migrations/0002_forum.sql` en el SQL Editor (el foro).
-- (Para PDFs) crear el bucket público `pdfs` + política de subida para admins.
+- `supabase/migrations/0003_storage_pdfs.sql` en el SQL Editor (bucket público
+  `pdfs` + políticas de subida solo-admin, para los PDF de los ejercicios).

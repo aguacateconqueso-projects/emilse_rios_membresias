@@ -63,16 +63,30 @@ En producción vivirá en `membresias.emilserios.com`.
 
 - [x] **Preparado para Vercel**: adaptador `@astrojs/vercel` en modo híbrido
       (páginas estáticas + servidor listo para los endpoints de Stripe). Guía de despliegue
-      en `docs/DEPLOY_VERCEL.md`. Falta hacer el deploy en el dashboard (pasos en esa guía).
+      en `docs/DEPLOY_VERCEL.md`.
+- [x] **Deploy en Vercel funcionando**: repo importado + variables de entorno OK
+      (la app carga y el correo del enlace mágico se envía desde el sitio desplegado).
+- [x] Red de seguridad en la landing: si un enlace mágico cae en `/` con el token
+      en el hash (fallback de Supabase al Site URL), se reenvía a `/entrar/` para
+      completar el login en vez de perderse.
 
 ### Pendiente ⬜
-- [ ] **Deploy en Vercel** (importar repo + variables de entorno + redirect URLs de Supabase),
-      según `docs/DEPLOY_VERCEL.md`. Luego dominio `membresias.emilserios.com` (CNAME Hostinger).
-- [ ] **Storage de PDFs**: crear el bucket **público** `pdfs` en Supabase. El panel ya sube
-      ahí y el aula ya lee de ahí; solo falta crearlo (+ política de subida para admins).
+- [ ] **URLs de auth en Supabase** (Authentication → URL Configuration): Site URL →
+      URL de Vercel, y añadir las Redirect URLs (localhost, Vercel, previews, dominio).
+      Pasos exactos en `docs/DEPLOY_VERCEL.md` §3. Síntoma mientras falte: el enlace
+      mágico redirige a `http://localhost:4321/#access_token=…`.
+- [ ] **Traspaso de admin a Emi**: ejecutar `supabase/set_admin.sql` en el SQL Editor
+      (reemplazar `EMAIL-DE-EMI`). Deja a Emi como única admin y a Adrián como alumno
+      de prueba (nivel + suscripción activa 30 días). Requisito: que exista el perfil
+      de Emi — entra una vez por `/entrar/`, o (mientras Resend no entregue a su
+      correo) crear su usuario en Authentication → Users → Add user.
+- [ ] Dominio `membresias.emilserios.com` (CNAME en Hostinger) y, al activarlo,
+      actualizar Site URL / Redirect URLs en Supabase.
+- [ ] **Storage de PDFs**: ejecutar `supabase/migrations/0003_storage_pdfs.sql` en el
+      SQL Editor (crea el bucket público `pdfs` + políticas de subida solo-admin).
+      El panel ya sube ahí y el aula ya lee de ahí.
 - [ ] **Stripe**: checkout $57/$77 + webhook (función de Vercel) + portal de cliente
 - [ ] Atar el gating de suscripción a Stripe real (hoy se simula con una fila en `subscriptions`)
-- [ ] **Deploy a Vercel** + dominio `membresias.emilserios.com` (CNAME en Hostinger)
 - [ ] Verificar dominio en **Resend** (DNS Hostinger) para enviar a cualquier correo
 - [ ] Anti-reentrada fina por email (después)
 - [ ] Onboarding tipo Figma (después)
@@ -90,6 +104,8 @@ En producción vivirá en `membresias.emilserios.com`.
    tenía 0001). Luego datos de prueba: correr `supabase/seed.sql` + dar **nivel** y
    **suscripción activa** a tu usuario (SQL al final de `seed.sql`).
 5. Para entrar al panel: `update public.profiles set role='admin' where email='TU-EMAIL';`
+   ⚠️ La BD es la MISMA de producción: si te asciendes para probar, al terminar
+   vuelve a dejar solo a Emi como admin re-ejecutando `supabase/set_admin.sql`.
 
 ## Decisiones abiertas (preguntar a Emi)
 - Foro: ¿los miembros se responden entre ellos o solo responde Emi?
@@ -97,4 +113,4 @@ En producción vivirá en `membresias.emilserios.com`.
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-`claude/vibrant-mendel-d8dxtd`
+`claude/cool-newton-fzwqfo`

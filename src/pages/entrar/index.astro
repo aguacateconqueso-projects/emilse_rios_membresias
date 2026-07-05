@@ -90,6 +90,18 @@
     btn.disabled = true;
   }
 
+  // Si venimos de un enlace mágico fallido, Supabase devuelve el error en el
+  // hash (#error=access_denied&error_code=otp_expired…). Muéstralo claro y
+  // limpia la URL; el caso típico es un enlace caducado o ya usado.
+  const hashErr = new URLSearchParams(window.location.hash.slice(1));
+  if (hashErr.get('error_code') || hashErr.get('error')) {
+    msgErr.textContent = hashErr.get('error_code') === 'otp_expired'
+      ? 'Ese enlace ya caducó o ya se usó (es de un solo uso). Escribe tu correo y te enviamos uno nuevo.'
+      : 'No se pudo iniciar sesión: ' + (hashErr.get('error_description') || hashErr.get('error_code') || hashErr.get('error'));
+    msgErr.hidden = false;
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   async function routeByRole() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
