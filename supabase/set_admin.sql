@@ -8,15 +8,15 @@
 --      prueba (remitente onboarding@resend.dev) su correo NO le llega; en ese
 --      caso créale el usuario a mano en Dashboard → Authentication → Users →
 --      Add user (el trigger crea el perfil igual) y ya podrá ser promovida.
---   2) Reemplaza EMAIL-DE-EMI aquí abajo (una sola línea, en minúsculas).
--- 
+--   2) El correo de Emi ya está puesto abajo (emilserios.bass@gmail.com).
+--
 -- El script es atómico: si el correo de Emi no existe, NO cambia nada
 -- (nadie pierde el admin por un typo). Se puede re-ejecutar sin problema.
 -- =============================================================================
 
 do $$
 declare
-  emi_email    constant text := emilserios.bass@gmail.com;               -- ⚠️ EDITA ESTO
+  emi_email    constant text := 'emilserios.bass@gmail.com';   -- correo de Emi
   tester_email constant text := 'adrianmendozam@gmail.com';   -- queda como alumno
 begin
   -- 1) Emi pasa a admin. Si su perfil no existe, abortamos sin tocar nada.
