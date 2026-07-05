@@ -65,4 +65,5 @@ propia (ideal para que Emi pruebe antes de mergear).
 ## Pasos de BD (una vez)
 Usamos el **mismo** proyecto de Supabase que ya teníamos. Si aún no se aplicó:
 - `supabase/migrations/0002_forum.sql` en el SQL Editor (el foro).
-- (Para PDFs) crear el bucket público `pdfs` + política de subida para admins.
+- `supabase/migrations/0003_storage_pdfs.sql` en el SQL Editor (bucket público
+  `pdfs` + políticas de subida solo-admin, para los PDF de los ejercicios).

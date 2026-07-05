@@ -82,8 +82,9 @@ En producción vivirá en `membresias.emilserios.com`.
       correo) crear su usuario en Authentication → Users → Add user.
 - [ ] Dominio `membresias.emilserios.com` (CNAME en Hostinger) y, al activarlo,
       actualizar Site URL / Redirect URLs en Supabase.
-- [ ] **Storage de PDFs**: crear el bucket **público** `pdfs` en Supabase. El panel ya sube
-      ahí y el aula ya lee de ahí; solo falta crearlo (+ política de subida para admins).
+- [ ] **Storage de PDFs**: ejecutar `supabase/migrations/0003_storage_pdfs.sql` en el
+      SQL Editor (crea el bucket público `pdfs` + políticas de subida solo-admin).
+      El panel ya sube ahí y el aula ya lee de ahí.
 - [ ] **Stripe**: checkout $57/$77 + webhook (función de Vercel) + portal de cliente
 - [ ] Atar el gating de suscripción a Stripe real (hoy se simula con una fila en `subscriptions`)
 - [ ] Verificar dominio en **Resend** (DNS Hostinger) para enviar a cualquier correo
