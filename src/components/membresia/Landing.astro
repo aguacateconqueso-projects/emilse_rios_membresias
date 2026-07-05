@@ -137,6 +137,15 @@ const t = isEN ? {
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script is:inline>
+  // Red de seguridad del enlace mágico: si Supabase no tiene la URL de destino
+  // en su lista de Redirect URLs, redirige al Site URL (la raíz) con el token en
+  // el hash. La landing no carga Supabase, así que reenviamos a /entrar/, que sí
+  // sabe consumir el token (o mostrar el error) y enrutar según el rol.
+  if (location.hash.includes('access_token=') || location.hash.includes('error_code=')) {
+    location.replace('/entrar/' + location.hash);
+  }
+</script>
 <title>{t.metaTitle}</title>
 <meta name="description" content={t.metaDesc} />
 <link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
