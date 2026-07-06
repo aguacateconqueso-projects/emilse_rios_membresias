@@ -1,37 +1,45 @@
 -- =============================================================================
--- Traspaso de administrador: Emi = admin, todos los demás = miembros
--- Ejecutar en Supabase → SQL Editor.
+-- Roles del proyecto: define quién es admin y prepara el alumno de prueba.
+-- Ejecutar en Supabase → SQL Editor. Idempotente y re-ejecutable.
 --
--- ANTES de ejecutar:
---   1) El perfil de Emi debe existir. Se crea solo la primera vez que entra en
---      /entrar/ con su correo (enlace mágico). OJO: mientras Resend siga en modo
---      prueba (remitente onboarding@resend.dev) su correo NO le llega; en ese
---      caso créale el usuario a mano en Dashboard → Authentication → Users →
---      Add user (el trigger crea el perfil igual) y ya podrá ser promovida.
---   2) El correo de Emi ya está puesto abajo (emilserios.bass@gmail.com).
+--   ADMINS (ven /panel):  Emi + Adrián (Adrián, para apoyar a Emi).
+--   ALUMNO DE PRUEBA:     mdza.exp@gmail.com (nivel + suscripción activa).
 --
--- El script es atómico: si el correo de Emi no existe, NO cambia nada
--- (nadie pierde el admin por un typo). Se puede re-ejecutar sin problema.
+-- ANTES de ejecutar: el perfil de cada admin debe existir (se crea la primera
+-- vez que entra por /entrar/ con su correo). Si falta alguno, el script ABORTA
+-- sin tocar nada — así nadie pierde el admin por un typo o un login pendiente.
 -- =============================================================================
 
 do $$
 declare
-  emi_email    constant text := 'emilserios.bass@gmail.com';   -- correo de Emi
-  tester_email constant text := 'adrianmendozam@gmail.com';   -- queda como alumno
+  -- Correos con acceso de admin, en minúsculas. Para sumar/quitar admins,
+  -- edita SOLO esta lista y re-ejecuta.
+  admin_emails constant text[] := array[
+    'emilserios.bass@gmail.com',   -- Emi
+    'adrianmendozam@gmail.com'     -- Adrián (apoyo)
+  ];
+  tester_email constant text := 'mdza.exp@gmail.com';   -- alumno de prueba
+  missing text;
 begin
-  -- 1) Emi pasa a admin. Si su perfil no existe, abortamos sin tocar nada.
-  update public.profiles set role = 'admin' where lower(email) = lower(emi_email);
-  if not found then
-    raise exception 'No existe un perfil con el correo "%". Emi debe entrar una vez por /entrar/, o crea su usuario en Authentication → Users → Add user, y vuelve a ejecutar este script.', emi_email;
+  -- 0) Verificar que TODOS los admins tengan perfil; si falta alguno, abortar.
+  select string_agg(e, ', ') into missing
+  from unnest(admin_emails) e
+  where not exists (select 1 from public.profiles p where lower(p.email) = lower(e));
+  if missing is not null then
+    raise exception 'Sin perfil (deben entrar una vez por /entrar/ antes): %', missing;
   end if;
 
-  -- 2) Cualquier otro admin (Adrián incluido) baja a miembro: solo Emi entra
-  --    al panel. La RLS impide que un miembro vuelva a ascenderse solo.
-  update public.profiles set role = 'member'
-  where role = 'admin' and lower(email) is distinct from lower(emi_email);
+  -- 1) Los correos de la lista pasan a admin.
+  update public.profiles set role = 'admin'
+  where lower(email) = any (admin_emails);
 
-  -- 3) Adrián como alumno de prueba: nivel (si aún no tiene) y suscripción
-  --    activa de 30 días (si no tiene una vigente), para ver el aula completa.
+  -- 2) Cualquier OTRO admin baja a miembro: solo la lista de arriba entra al
+  --    panel. La RLS impide que un miembro se vuelva a ascender solo.
+  update public.profiles set role = 'member'
+  where role = 'admin' and lower(email) <> all (admin_emails);
+
+  -- 3) Alumno de prueba: nivel (si aún no tiene) y suscripción activa de 30 días
+  --    (si no tiene una vigente), para ver el aula completa.
   update public.profiles set level = 'avanzando'
   where lower(email) = lower(tester_email) and level is null;
 
@@ -47,7 +55,7 @@ begin
     );
 end $$;
 
--- Verificación: Emi debe salir como admin y el resto como member.
+-- Verificación: Emi y Adrián como admin; mdza.exp como member con nivel.
 select email, role, level, created_at
 from public.profiles
 order by (role = 'admin') desc, created_at;

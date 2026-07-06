@@ -142,6 +142,39 @@
   }
   showSessionNote();
 
+  // Extrae un texto legible de cualquier forma de error (Supabase/fetch).
+  // Los AuthError de supabase-js guardan el texto en .message, que NO es
+  // enumerable: por eso JSON.stringify(error) daba "{}" y no veíamos nada.
+  // GoTrue además manda a veces .code / .error_code / .msg / .status.
+  function describeError(err) {
+    if (!err) return 'error desconocido';
+    if (typeof err === 'string') return err;
+    const parts = [];
+    const msg = err.message || err.error_description || err.msg || err.error || err.hint;
+    if (msg) parts.push(msg);
+    const code = err.code || err.error_code;
+    if (code) parts.push('código ' + code);
+    if (err.status) parts.push('HTTP ' + err.status);
+    if (parts.length) return parts.join(' · ');
+    // Último recurso: volcar TODAS las propiedades, incluidas las no enumerables.
+    try {
+      const own = {};
+      for (const k of Object.getOwnPropertyNames(err)) own[k] = err[k];
+      const s = JSON.stringify(own);
+      if (s && s !== '{}') return s;
+    } catch (_) { /* ignore */ }
+    return err.name || String(err) || 'error desconocido';
+  }
+
+  function showError(err) {
+    // Log enriquecido para la consola (con las props no enumerables incluidas).
+    try { console.error('[login] error:', err, JSON.stringify(err, Object.getOwnPropertyNames(err || {}))); }
+    catch (_) { console.error('[login] error:', err); }
+    msgErr.textContent = 'No se pudo enviar el enlace: ' + describeError(err);
+    msgErr.hidden = false;
+    btn.disabled = false; btn.textContent = 'Enviar enlace';
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     msgOk.hidden = true; msgErr.hidden = true;
@@ -152,23 +185,14 @@
         options: { emailRedirectTo: window.location.origin + '/entrar/' },
       });
       if (error) {
-        console.error('[login] signInWithOtp error:', error);
-        const detail = error.message || error.name
-          || (error.status ? 'HTTP ' + error.status : '')
-          || JSON.stringify(error) || 'error desconocido';
-        msgErr.textContent = 'No se pudo enviar el enlace: ' + detail;
-        msgErr.hidden = false;
-        btn.disabled = false; btn.textContent = 'Enviar enlace';
+        showError(error);
       } else {
         msgOk.textContent = 'Listo. Revisa tu correo y abre el enlace para entrar.';
         msgOk.hidden = false;
         btn.textContent = 'Enlace enviado';
       }
     } catch (err) {
-      console.error('[login] excepción:', err);
-      msgErr.textContent = 'No se pudo enviar el enlace: ' + (err && err.message ? err.message : String(err));
-      msgErr.hidden = false;
-      btn.disabled = false; btn.textContent = 'Enviar enlace';
+      showError(err);
     }
   });
 </script>
