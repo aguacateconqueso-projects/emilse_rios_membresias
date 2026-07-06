@@ -97,46 +97,33 @@ control de DNS y no depender de él.
       sin niveles ya está en `main`. El panel ya NO envía `level` al crear/editar ejercicios
       ni al listar miembros. Código y BD realineados.
 
-### ⚠️ ACCIÓN INMEDIATA (retomar aquí)
-- [x] **Primer ejercicio subido** por Emi (tras el redeploy limpio). El guardado ya funciona.
-- [ ] **VIDEO NO REPRODUCE EN EL AULA (jul 6)**: al alumno le salía el botón de play pero no
-      pasaba nada. Causa de código: el botón de play es solo decorativo (CSS); el `<iframe>` de
-      Vimeo solo se pinta si `vimeoEmbed(url)` interpreta la URL, y el regex viejo fallaba con
-      formatos comunes (URL del panel `vimeo.com/manage/videos/ID`, hash en query `?h=`, ID
-      pelado, código `<iframe>` pegado). **Corregido** en `src/components/membresia/Aula.astro`:
-      parser robusto + mensaje visible si aún no se puede cargar (ya no queda un botón muerto).
-      Además el **campo de video del panel** era `type="url"` y rechazaba el código de inserción;
-      ahora es texto libre y **normaliza al guardar** (acepta URL, enlace del panel, ID pelado o
-      el `<iframe>` completo → guarda la URL limpia del player). Si el video es "solo por
-      inserción", el código `<iframe>` de Vimeo puede venir SIN hash: en ese modo Vimeo autoriza
-      por **dominio**, no por hash, así que basta con el dominio permitido correcto.
-      Corrección web (jul 6, la que faltaba): para videos restringidos por dominio, Vimeo valida
-      el **origen (referrer)** del que incrusta. Nuestro `<iframe>` no mandaba `referrerpolicy` ni
-      conservaba los parámetros del embed, así que Vimeo lo bloqueaba pese al dominio permitido.
-      Ahora el iframe del aula lleva `referrerpolicy="strict-origin-when-cross-origin"` + el `allow`
-      completo, y el parser **conserva la query** del código oficial de Vimeo (`app_id`, etc.).
-      Requiere redeploy para verse en producción.
-      ⚠️ Si el iframe SÍ aparece pero Vimeo dice que no se puede reproducir aquí, es la
-      **privacidad del video en Vimeo**: en el video → Privacy → "Where can this be embedded"
-      debe permitir el dominio (`emilseriosacademy.com`) o estar en "Anywhere"; y si el video
-      es "oculto/unlisted", el enlace debe incluir su hash. Eso NO se arregla por código.
-- [ ] **REDESPLEGAR PRODUCCIÓN + REFRESCAR (incidente "schema cache", jul 6)**: al subir un
-      ejercicio con Emi salía *"could not find the 'level' column of 'exercises' in the schema
-      cache"* (PGRST204). **No es bug de código:** `main` ya está limpio (no manda `level`) y la
-      BD ya no tiene la columna. El error lo lanza PostgREST cuando la petición trae `level`,
-      así que lo estaba mandando un **build VIEJO de Vercel** (anterior al PR #3) todavía vivo
-      en el navegador/edge de Emi. Para cerrarlo:
-      1. Forzar un **redeploy de `main`** en Vercel (cualquier push a `main` re-despliega; esta
-         rama al mergearse ya lo dispara). Confirmar en Vercel que el último deploy de producción
-         apunta al commit del PR #3 o posterior.
-      2. Emi hace **refresco fuerte** (Ctrl/Cmd+Shift+R) o prueba en incógnito para tirar la
-         página cacheada.
-      3. Red de seguridad: correr `supabase/migrations/0005_reload_schema_cache.sql`
-         (`notify pgrst, 'reload schema';`) en el SQL Editor por si la cache de esquema de
-         Supabase quedó desincronizada tras el DROP de 0004.
+- [x] **Guardar ejercicio arreglado** (incidente "schema cache", jul 6, PR #4): al subir un
+      ejercicio salía *"could not find the 'level' column of 'exercises' in the schema cache"*
+      (PGRST204). No era bug de código: `main` ya no manda `level` y la BD ya no tiene la columna;
+      el error lo lanzaba un **build VIEJO de Vercel** todavía vivo en el navegador/edge. Se cerró
+      con el redeploy de `main` + refresco fuerte. Red de seguridad disponible:
+      `supabase/migrations/0005_reload_schema_cache.sql` (`notify pgrst, 'reload schema';`).
+      **Primer ejercicio subido por Emi ✅.**
+- [x] **VIDEO REPRODUCE EN EL AULA ✅** (jul 6, PR #5). Tres capas de arreglo, todas en `main`:
+      1. El botón de play es decorativo (CSS); el `<iframe>` solo se pinta si `vimeoEmbed(url)`
+         interpreta la URL. El regex viejo fallaba con formatos comunes → parser robusto en
+         `src/components/membresia/Aula.astro` (acepta URL normal, `vimeo.com/manage/videos/ID`,
+         ID pelado, código `<iframe>` pegado, hash en ruta o `?h=`) + mensaje visible si no se
+         puede cargar (ya no queda botón muerto).
+      2. El **campo de video del panel** era `type="url"` y rechazaba el código de inserción;
+         ahora es texto libre y `normalizeVimeo()` guarda la URL limpia del player desde cualquier
+         formato, conservando la query de Vimeo (`app_id`, etc.) y decodificando `&amp;`.
+      3. **La que faltaba (causa real):** para un video restringido por dominio, Vimeo valida el
+         **origen (referrer)** de quien incrusta. El iframe no mandaba `referrerpolicy`, así que
+         Vimeo bloqueaba pese al dominio permitido. Ahora el iframe lleva
+         `referrerpolicy="strict-origin-when-cross-origin"` + el `allow` completo del embed oficial.
+      ⚠️ Aprendizaje (otra vez): el PR #4 se mergeó en un commit ANTERIOR a los arreglos 2 y 3, así
+      que producción no reproducía aún. El PR #5 llevó los commits faltantes. **Al mergear,
+      verificar SIEMPRE que el PR incluye el ÚLTIMO commit de la rama** (ya van dos incidentes por
+      esto: niveles y ahora Vimeo).
 
 ### Pendiente ⬜
-- [ ] **Recorrido completo end-to-end** (con el redeploy servido): Emi crea ejercicio (sin nivel)
+- [ ] **Recorrido completo end-to-end**: Emi crea ejercicio (sin nivel)
       → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta.
 - [ ] **Stripe**: checkout $57/$77 + webhook (función de Vercel) + portal de cliente.
 - [ ] Atar el gating de suscripción a Stripe real (hoy se simula con una fila en `subscriptions`).
@@ -177,4 +164,5 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-`claude/exercises-level-column-error-4eis82`
+`claude/vimeo-embed-playback-fix` (PR #5, mergeado). La anterior fue
+`claude/exercises-level-column-error-4eis82` (PR #4).
