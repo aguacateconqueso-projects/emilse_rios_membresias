@@ -77,10 +77,11 @@ control de DNS y no depender de él.
       con esquema `https://` (sin él, Supabase lo pega como ruta a su propio dominio y
       da `{"error":"requested path is invalid"}`) + **Redirect URLs** con el dominio propio.
 - [x] **Login de alumno probado en producción** (entra al aula).
-- [x] **Emi es admin**: `emilserios.bass@gmail.com` promovida a `role='admin'` y ve el
-      panel. ⚠️ Aprendizaje: `set_admin.sql` aborta si el perfil de Emi aún no existe, así
-      que debe correrse DESPUÉS de su primer login por `/entrar/` (por eso al inicio no la
-      ascendía). El rol se lee en vivo, no hace falta reloguear.
+- [x] **Admins configurados**: `emilserios.bass@gmail.com` (Emi) y
+      `adrianmendozam@gmail.com` (Adrián, para apoyar a Emi) con `role='admin'`; ambos ven
+      el panel. ⚠️ Aprendizaje: `set_admin.sql` aborta si el perfil de un admin aún no
+      existe, así que debe correrse DESPUÉS de su primer login por `/entrar/` (por eso al
+      inicio no ascendía a Emi). El rol se lee en vivo, no hace falta reloguear.
 - [x] Red de seguridad en la landing: si un enlace mágico cae en `/` con el token en el
       hash (fallback al Site URL), se reenvía a `/entrar/` para completar el login.
 - [x] **Mensajes de error del login legibles** (rama `claude/cool-newton-fzwqfo`, falta
@@ -91,9 +92,10 @@ control de DNS y no depender de él.
 ### Pendiente ⬜
 - [ ] **Mergear a `main`** los últimos arreglos del login (rama `claude/cool-newton-fzwqfo`:
       mensaje de error real + esta bitácora) — PR abierto. Con el PR #1 ya mergeado.
-- [ ] **Alumno de prueba con contenido**: dar **nivel + suscripción activa** a la cuenta de
-      pruebas (`mdza.exp@gmail.com` o `adrianmendozam@gmail.com`) para ver el aula con
-      ejercicios. Snippet en `supabase/set_admin.sql` (hoy apunta a `adrianmendozam@`).
+- [ ] **Alumno de prueba con contenido**: dar **nivel + suscripción activa** a
+      `mdza.exp@gmail.com` para ver el aula con ejercicios. Ya lo hace `supabase/set_admin.sql`
+      (sección "alumno de prueba"). El nivel del alumno debe coincidir con el del ejercicio
+      que publique Emi (o que publique en ambos niveles).
 - [ ] **Storage de PDFs**: confirmar/ejecutar `supabase/migrations/0003_storage_pdfs.sql`
       en el SQL Editor (bucket público `pdfs` + políticas de subida solo-admin). El panel
       ya sube ahí y el aula ya lee de ahí.
@@ -119,8 +121,8 @@ control de DNS y no depender de él.
    `0003_storage_pdfs.sql` (bucket de PDFs). Luego datos de prueba: `supabase/seed.sql`
    + dar **nivel** y **suscripción activa** a tu usuario (SQL al final de `seed.sql`).
 5. Para entrar al panel: `update public.profiles set role='admin' where email='TU-EMAIL';`
-   ⚠️ La BD es la MISMA de producción: si te asciendes para probar, al terminar vuelve a
-   dejar solo a Emi como admin re-ejecutando `supabase/set_admin.sql`.
+   ⚠️ La BD es la MISMA de producción. Los admins definidos (Emi + Adrián) y el alumno de
+   prueba se fijan re-ejecutando `supabase/set_admin.sql` (edita la lista de admins ahí).
 
 ## Decisiones abiertas (preguntar a Emi)
 - Foro: ¿los miembros se responden entre ellos o solo responde Emi?
