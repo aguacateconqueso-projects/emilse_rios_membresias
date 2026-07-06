@@ -284,7 +284,8 @@
               </div>
               <div class="field">
                 <label for="f-vimeo-es">Video de Vimeo · ES</label>
-                <input id="f-vimeo-es" type="url" placeholder="https://vimeo.com/…" />
+                <input id="f-vimeo-es" type="text" placeholder="URL o código &lt;iframe&gt; de Vimeo" />
+                <span class="hint">Pega el enlace (https://vimeo.com/…) o el código de inserción completo.</span>
               </div>
               <div class="field">
                 <label for="f-pdf-es">PDF de apoyo · ES (opcional)</label>
@@ -304,7 +305,8 @@
               </div>
               <div class="field">
                 <label for="f-vimeo-en">Vimeo video · EN</label>
-                <input id="f-vimeo-en" type="url" placeholder="https://vimeo.com/…" />
+                <input id="f-vimeo-en" type="text" placeholder="Vimeo URL or &lt;iframe&gt; embed code" />
+                <span class="hint">Paste the link (https://vimeo.com/…) or the full embed code.</span>
               </div>
               <div class="field">
                 <label for="f-pdf-en">Support PDF · EN (optional)</label>
@@ -575,6 +577,26 @@
     return path;
   }
 
+  // Normaliza lo que se pegue en el campo de video (URL normal, enlace del panel
+  // vimeo.com/manage/videos/ID, ID pelado, o el código <iframe> completo) a la
+  // URL limpia del player, conservando el hash de privacidad si lo trae. Si no
+  // reconoce un ID de Vimeo, guarda el texto tal cual para no perder nada.
+  function normalizeVimeo(input) {
+    const s = (input || '').trim();
+    if (!s) return null;
+    let u = s;
+    const src = s.match(/src=["']([^"']+)["']/i);
+    if (src) u = src[1];
+    u = u.replace(/&amp;/g, '&');
+    const id = u.match(/\d{6,}/);
+    if (!id) return s;
+    const base = 'https://player.vimeo.com/video/' + id[0];
+    const qi = u.indexOf('?');
+    if (qi !== -1) return base + u.slice(qi);
+    const ph = u.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
+    return base + (ph ? '?h=' + ph[1] : '');
+  }
+
   $('newBtn')?.addEventListener('click', () => {
     if (newForm.hidden) openCreate(); else { newForm.hidden = true; resetForm(); }
   });
@@ -599,7 +621,7 @@
         week_label: $('f-week').value.trim() || null,
         title_es, title_en,
         desc_es: $('f-desc-es').value.trim() || null, desc_en: $('f-desc-en').value.trim() || null,
-        vimeo_url_es: $('f-vimeo-es').value.trim() || null, vimeo_url_en: $('f-vimeo-en').value.trim() || null,
+        vimeo_url_es: normalizeVimeo($('f-vimeo-es').value), vimeo_url_en: normalizeVimeo($('f-vimeo-en').value),
         publish_at: new Date(upVal).toISOString(), unpublish_at: new Date(downVal).toISOString(),
       };
       if (pdfEs !== undefined) payload.pdf_path_es = pdfEs;
