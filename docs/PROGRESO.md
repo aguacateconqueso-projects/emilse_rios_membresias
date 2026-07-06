@@ -84,32 +84,27 @@ control de DNS y no depender de él.
       inicio no ascendía a Emi). El rol se lee en vivo, no hace falta reloguear.
 - [x] Red de seguridad en la landing: si un enlace mágico cae en `/` con el token en el
       hash (fallback al Site URL), se reenvía a `/entrar/` para completar el login.
-- [x] **Mensajes de error del login legibles** (rama `claude/cool-newton-fzwqfo`, falta
-      mergear): `/entrar/` muestra el error real de Supabase — antes salía `{}` porque el
-      texto vive en `.message`, propiedad no enumerable que `JSON.stringify` perdía — y
-      avisa claro cuando un enlace caducó o ya se usó (`otp_expired`).
-- [x] **Niveles eliminados (en código)**: se quitó la segmentación Iniciando/Avanzando.
-      Ahora hay UN solo ejercicio global; Emi guía inicial y avanzado dentro del mismo
-      video. Cambios en aula, panel, landing (copy ES/EN), seed y `set_admin.sql`. La BD
-      se limpia con `supabase/migrations/0004_remove_levels.sql` (pendiente de aplicar).
+- [x] **Login: error real** (en `main` desde PR #1/#2): `/entrar/` muestra el error real de
+      Supabase — antes salía `{}` porque el texto vive en `.message`, propiedad no enumerable
+      que `JSON.stringify` perdía — y avisa cuando un enlace caducó o ya se usó (`otp_expired`).
+- [x] **Storage de PDFs** (`0003`) aplicado y **suscripción de prueba** de `mdza.exp` creada.
+- [x] **Niveles eliminados — CÓDIGO** (rama `claude/cool-newton-fzwqfo`, PR #3): un solo
+      ejercicio global; Emi guía inicial y avanzado dentro del mismo video. Cambios en aula,
+      panel, landing (copy ES/EN), seed, `set_admin.sql` y migración `0004_remove_levels.sql`.
+- [x] **Niveles eliminados — BD**: se aplicó `0004_remove_levels.sql` en el SQL Editor
+      (columnas `level` y enum `user_level` borrados).
+
+### ⚠️ ACCIÓN INMEDIATA (retomar aquí)
+- [ ] **MERGEAR PR #3** (`claude/cool-newton-fzwqfo` → `main`). **Importante:** el PR #2 se
+      mergeó por error en un commit ANTERIOR a la eliminación de niveles, así que `main` (y
+      por tanto producción en Vercel) **todavía tiene el código con `level`**, pero la BD ya
+      NO tiene esa columna (0004 aplicada). Mientras no se mergee el PR #3, el panel falla al
+      **crear ejercicios** y al **listar miembros** (consultan la columna borrada). Mergear
+      el PR #3 realinea el código con la BD y lo deja sano. (Ver "Incidente" abajo.)
 
 ### Pendiente ⬜
-- [ ] **Mergear a `main`** los últimos arreglos del login (rama `claude/cool-newton-fzwqfo`:
-      mensaje de error real + eliminación de niveles + esta bitácora) — PR abierto.
-- [ ] **Aplicar `0004_remove_levels.sql`** en el SQL Editor. ⚠️ Coordinar con el deploy:
-      la columna `exercises.level` es NOT NULL, así que el código nuevo (que ya no envía
-      nivel) no puede crear ejercicios hasta aplicarla, y el código viejo se rompe si se
-      aplica antes de desplegar. Plan: mergear (Vercel despliega) y, en cuanto termine,
-      aplicar 0004. Ventana de 1–2 min sin poder crear/ver ejercicios; como solo estamos
-      nosotros, no afecta.
-- [ ] **Alumno de prueba con contenido**: dar **suscripción activa** a
-      `mdza.exp@gmail.com` para ver el aula con el ejercicio vigente. Ya lo hace
-      `supabase/set_admin.sql` (sección "alumno de prueba").
-- [ ] **Storage de PDFs**: confirmar/ejecutar `supabase/migrations/0003_storage_pdfs.sql`
-      en el SQL Editor (bucket público `pdfs` + políticas de subida solo-admin). El panel
-      ya sube ahí y el aula ya lee de ahí.
-- [ ] **Recorrido completo end-to-end**: Emi sube ejercicio → alumno lo ve, completa y
-      pregunta → Emi responde → alumno ve la respuesta.
+- [ ] **Recorrido completo end-to-end** (tras mergear PR #3): Emi crea ejercicio (sin nivel)
+      → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta.
 - [ ] **Stripe**: checkout $57/$77 + webhook (función de Vercel) + portal de cliente.
 - [ ] Atar el gating de suscripción a Stripe real (hoy se simula con una fila en `subscriptions`).
 - [ ] (Opcional, limpieza) Servir el **favicon** desde el dominio propio en vez del WordPress
@@ -117,6 +112,14 @@ control de DNS y no depender de él.
 - [ ] Anti-reentrada fina por email (después).
 - [ ] Onboarding tipo Figma (después).
 - [ ] Favoritos (después).
+
+## Incidente (merge desalineado de niveles) — para no repetirlo
+Al eliminar los niveles, el PR #2 ya se había mergeado a `main` en un commit **anterior**
+a los commits de niveles (`2ee6798`, `70ba9e4`). Resultado: la migración `0004` se aplicó a
+la BD, pero el **código de `main` seguía usando `level`** → panel roto para crear ejercicios
+y listar miembros. Se corrige mergeando el **PR #3** (que sí lleva el código sin niveles).
+Aprendizaje: al mergear, verificar que el PR incluye el ÚLTIMO commit de la rama antes de
+correr migraciones destructivas; y aplicar la migración **después** de confirmar el deploy.
 
 ## Cómo retomar (setup local)
 1. `git pull` && `npm install`
