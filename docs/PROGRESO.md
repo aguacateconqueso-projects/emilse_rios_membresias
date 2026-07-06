@@ -77,6 +77,10 @@ control de DNS y no depender de él.
       con esquema `https://` (sin él, Supabase lo pega como ruta a su propio dominio y
       da `{"error":"requested path is invalid"}`) + **Redirect URLs** con el dominio propio.
 - [x] **Login de alumno probado en producción** (entra al aula).
+- [x] **Emi es admin**: `emilserios.bass@gmail.com` promovida a `role='admin'` y ve el
+      panel. ⚠️ Aprendizaje: `set_admin.sql` aborta si el perfil de Emi aún no existe, así
+      que debe correrse DESPUÉS de su primer login por `/entrar/` (por eso al inicio no la
+      ascendía). El rol se lee en vivo, no hace falta reloguear.
 - [x] Red de seguridad en la landing: si un enlace mágico cae en `/` con el token en el
       hash (fallback al Site URL), se reenvía a `/entrar/` para completar el login.
 - [x] **Mensajes de error del login legibles** (rama `claude/cool-newton-fzwqfo`, falta
@@ -86,12 +90,7 @@ control de DNS y no depender de él.
 
 ### Pendiente ⬜
 - [ ] **Mergear a `main`** los últimos arreglos del login (rama `claude/cool-newton-fzwqfo`:
-      mensaje de error real + esta bitácora). Con el PR anterior (#1) ya mergeado.
-- [ ] **Admin de Emi**: dejar SOLO a `emilserios.bass@gmail.com` como admin. Su perfil ya
-      existe (entró por `/entrar/`), falta correr el `UPDATE` de rol o re-ejecutar
-      `supabase/set_admin.sql`. ⚠️ Aprendido hoy: el script **aborta si el perfil de Emi aún
-      no existe**, así que hay que correrlo DESPUÉS de su primer login (por eso al inicio no
-      la ascendía). Tras ascenderla, entra directo a `/panel/` (el rol se lee en vivo).
+      mensaje de error real + esta bitácora) — PR abierto. Con el PR #1 ya mergeado.
 - [ ] **Alumno de prueba con contenido**: dar **nivel + suscripción activa** a la cuenta de
       pruebas (`mdza.exp@gmail.com` o `adrianmendozam@gmail.com`) para ver el aula con
       ejercicios. Snippet en `supabase/set_admin.sql` (hoy apunta a `adrianmendozam@`).
