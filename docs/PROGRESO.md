@@ -110,6 +110,12 @@ control de DNS y no depender de él.
       el `<iframe>` completo → guarda la URL limpia del player). Si el video es "solo por
       inserción", el código `<iframe>` de Vimeo puede venir SIN hash: en ese modo Vimeo autoriza
       por **dominio**, no por hash, así que basta con el dominio permitido correcto.
+      Corrección web (jul 6, la que faltaba): para videos restringidos por dominio, Vimeo valida
+      el **origen (referrer)** del que incrusta. Nuestro `<iframe>` no mandaba `referrerpolicy` ni
+      conservaba los parámetros del embed, así que Vimeo lo bloqueaba pese al dominio permitido.
+      Ahora el iframe del aula lleva `referrerpolicy="strict-origin-when-cross-origin"` + el `allow`
+      completo, y el parser **conserva la query** del código oficial de Vimeo (`app_id`, etc.).
+      Requiere redeploy para verse en producción.
       ⚠️ Si el iframe SÍ aparece pero Vimeo dice que no se puede reproducir aquí, es la
       **privacidad del video en Vimeo**: en el video → Privacy → "Where can this be embedded"
       debe permitir el dominio (`emilseriosacademy.com`) o estar en "Anywhere"; y si el video

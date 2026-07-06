@@ -371,12 +371,19 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     // Si pegaron el código <iframe … src="…">, usa el src.
     const src = s.match(/src=["']([^"']+)["']/i);
     if (src) s = src[1];
+    // Si vino de HTML pegado, las & llegan como &amp;: decodifícalas.
+    s = s.replace(/&amp;/g, '&');
     // ID del video: primera secuencia larga de dígitos (los IDs de Vimeo son 6-11).
     const id = s.match(/\d{6,}/);
     if (!id) return null;
-    // Hash de privacidad: ?h=/&h= o segmento de ruta /ID/HASH.
-    const h = s.match(/[?&]h=([A-Za-z0-9]+)/) || s.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
-    return `https://player.vimeo.com/video/${id[0]}${h ? '?h=' + h[1] : ''}`;
+    const base = 'https://player.vimeo.com/video/' + id[0];
+    // Conserva la query tal cual la da Vimeo (?h=, app_id, etc.) para que el embed
+    // se comporte igual que su código oficial. Si no hay query pero el hash viene
+    // en la ruta (/ID/HASH, video oculto), pásalo como ?h=.
+    const qi = s.indexOf('?');
+    if (qi !== -1) return base + s.slice(qi);
+    const ph = s.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
+    return base + (ph ? '?h=' + ph[1] : '');
   }
 
   function showLocked() {
@@ -450,7 +457,10 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
         const iframe = document.createElement('iframe');
         iframe.src = embed;
         iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
-        iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+        iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share');
+        // Vimeo valida el dominio permitido por el origen (referrer). Sin esto, un
+        // video restringido por dominio se bloquea aunque el dominio esté en la lista.
+        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
         iframe.allowFullscreen = true;
         player.replaceChildren(iframe);
       } else if (url) {

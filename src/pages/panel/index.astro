@@ -587,10 +587,14 @@
     let u = s;
     const src = s.match(/src=["']([^"']+)["']/i);
     if (src) u = src[1];
+    u = u.replace(/&amp;/g, '&');
     const id = u.match(/\d{6,}/);
     if (!id) return s;
-    const h = u.match(/[?&]h=([A-Za-z0-9]+)/) || u.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
-    return 'https://player.vimeo.com/video/' + id[0] + (h ? '?h=' + h[1] : '');
+    const base = 'https://player.vimeo.com/video/' + id[0];
+    const qi = u.indexOf('?');
+    if (qi !== -1) return base + u.slice(qi);
+    const ph = u.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
+    return base + (ph ? '?h=' + ph[1] : '');
   }
 
   $('newBtn')?.addEventListener('click', () => {
