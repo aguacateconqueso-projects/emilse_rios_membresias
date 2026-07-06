@@ -38,11 +38,8 @@ begin
   update public.profiles set role = 'member'
   where role = 'admin' and lower(email) <> all (admin_emails);
 
-  -- 3) Alumno de prueba: nivel (si aún no tiene) y suscripción activa de 30 días
-  --    (si no tiene una vigente), para ver el aula completa.
-  update public.profiles set level = 'avanzando'
-  where lower(email) = lower(tester_email) and level is null;
-
+  -- 3) Alumno de prueba: suscripción activa de 30 días (si no tiene una vigente),
+  --    para ver el aula completa. (Ya no hay niveles.)
   insert into public.subscriptions (user_id, status, tier, current_period_end)
   select p.id, 'active', 'founder_57', now() + interval '30 days'
   from public.profiles p
@@ -55,7 +52,7 @@ begin
     );
 end $$;
 
--- Verificación: Emi y Adrián como admin; mdza.exp como member con nivel.
-select email, role, level, created_at
+-- Verificación: Emi y Adrián como admin; mdza.exp como member.
+select email, role, created_at
 from public.profiles
 order by (role = 'admin') desc, created_at;

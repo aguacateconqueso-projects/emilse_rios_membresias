@@ -13,7 +13,7 @@ const isEN = lang === 'en';
 const t = isEN ? {
   htmlLang: 'en',
   metaTitle: 'Classroom — Let’s Study Together · Emilse Rios',
-  brandSmall: 'Classroom', level: 'Advancing level', account: 'My account',
+  brandSmall: 'Classroom', account: 'My account',
   home: '/aula/en/',
   eyebrow: 'Hi, María · Your exercise this week',
   title: 'Controlled détaché: weight and contact point',
@@ -31,7 +31,7 @@ const t = isEN ? {
   forumEyebrow: 'This week’s forum', forumH2: 'Questions & answers',
   forumNote: 'I answer on Fridays. Everyone reads the questions and answers.',
   composePlaceholder: 'Write your question about this week’s exercise…',
-  composeHint: 'Visible to all members of your level.', composeBtn: 'Post question',
+  composeHint: 'Visible to all members.', composeBtn: 'Post question',
   youName: 'María (you)', now: 'now', pending: 'Emilse answers on Friday.',
   answerRole: 'Answer',
   thread: [
@@ -46,7 +46,7 @@ const t = isEN ? {
 } : {
   htmlLang: 'es',
   metaTitle: 'Aula — Estudiemos Juntos · Emilse Rios',
-  brandSmall: 'Aula', level: 'Nivel Avanzando', account: 'Mi cuenta',
+  brandSmall: 'Aula', account: 'Mi cuenta',
   home: '/aula/',
   eyebrow: 'Hola, María · Tu ejercicio de esta semana',
   title: 'Détaché controlado: peso y punto de contacto',
@@ -64,7 +64,7 @@ const t = isEN ? {
   forumEyebrow: 'Foro de la semana', forumH2: 'Preguntas y respuestas',
   forumNote: 'Respondo los viernes. Todos leen las preguntas y las respuestas.',
   composePlaceholder: 'Escribe tu pregunta sobre el ejercicio de esta semana…',
-  composeHint: 'Visible para todos los miembros de tu nivel.', composeBtn: 'Publicar pregunta',
+  composeHint: 'Visible para todos los miembros.', composeBtn: 'Publicar pregunta',
   youName: 'María (tú)', now: 'ahora', pending: 'Emilse responde el viernes.',
   answerRole: 'Respuesta',
   thread: [
@@ -239,7 +239,6 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
           <span aria-hidden="true">/</span>
           <a href="/aula/en/" aria-current={isEN.toString()}>EN</a>
         </div>
-        <span class="pill" id="levelPill"><span class="dot"></span> {t.level}</span>
         <!-- Solo Emi (admin) ve este enlace; el script lo revela tras leer el rol. -->
         <a class="acct" id="adminBack" href="/panel/" hidden>{isEN ? '← Back to panel' : '← Volver al panel'}</a>
         <a class="acct" href="/salir/">{isEN ? 'Log out' : 'Salir'}</a>
@@ -323,14 +322,12 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
   const EN = pageLang === 'en';
   const $ = (id) => document.getElementById(id);
-  const cap = (s) => s ? s[0].toUpperCase() + s.slice(1) : s;
 
   const T = {
     locked: EN
-      ? 'No exercise available. Your subscription may be inactive or your level isn’t set yet.'
-      : 'No hay ejercicio disponible. Puede que tu suscripción no esté activa o que aún no tengas nivel asignado.',
+      ? 'No exercise available. Your subscription may be inactive.'
+      : 'No hay ejercicio disponible. Puede que tu suscripción no esté activa.',
     greeting: (n) => EN ? `Hi, ${n} · Your exercise this week` : `Hola, ${n} · Tu ejercicio de esta semana`,
-    level: (l) => l ? (EN ? `${cap(l)} level` : `Nivel ${cap(l)}`) : (EN ? 'No level yet' : 'Sin nivel asignado'),
     doneTxt: EN ? 'Mark as completed' : 'Marcar como completado',
     doneOk: EN ? '✓ Completed' : '✓ Completado',
     answerRole: EN ? 'Answer' : 'Respuesta',
@@ -396,28 +393,24 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     if (!session) { window.location.replace('/entrar/'); return; }
 
     const { data: profile } = await supabase
-      .from('profiles').select('full_name, email, level, role').eq('id', session.user.id).single();
+      .from('profiles').select('full_name, email, role').eq('id', session.user.id).single();
     const name = (profile && (profile.full_name || (profile.email || '').split('@')[0])) || '';
     $('greeting').textContent = T.greeting(name);
-    if ($('levelPill')) $('levelPill').innerHTML = '<span class="dot"></span> ' + T.level(profile && profile.level);
 
     // Solo Emi (admin) ve el enlace de regreso al panel. Los miembros no tienen
     // panel ni "cuenta": entran directo al aula y solo pueden salir.
     if (profile && profile.role === 'admin' && $('adminBack')) $('adminBack').hidden = false;
 
-    // Ejercicio vigente. Para un miembro, la RLS ya solo deja ver el vigente de su
-    // nivel; aun así filtramos explícitamente por ventana de vigencia y nivel para
-    // que el admin (que ve TODOS los ejercicios por su política) también vea aquí el
-    // que está en vivo, y no uno programado o cerrado.
+    // Ejercicio vigente (uno solo, global). La RLS de miembro ya solo deja ver el
+    // que está en ventana; aun así filtramos por vigencia para que el admin (que ve
+    // TODOS por su política) también vea aquí el que está en vivo, no uno programado.
     const nowISO = new Date().toISOString();
-    let exQuery = supabase
+    const { data: rows, error } = await supabase
       .from('exercises').select('*')
       .lte('publish_at', nowISO)
       .gt('unpublish_at', nowISO)
       .order('publish_at', { ascending: false })
       .limit(1);
-    if (profile && profile.level) exQuery = exQuery.eq('level', profile.level);
-    const { data: rows, error } = await exQuery;
     if (error) console.error('[aula] exercises error:', error);
     const ex = rows && rows[0];
     console.log('[aula] perfil:', profile, '· ejercicio:', ex);
@@ -542,7 +535,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     }
 
     async function loadForum() {
-      // La RLS filtra por nivel + ventana + suscripción; el idioma lo filtramos aquí.
+      // La RLS filtra por ventana + suscripción; el idioma lo filtramos aquí.
       const { data, error } = await supabase
         .from('questions')
         .select('id, user_id, body, author_name, created_at, answers(id, body, created_at)')

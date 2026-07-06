@@ -1,7 +1,7 @@
 ---
 // Panel de control de Emi (admin) — datos reales desde Supabase.
-// Crea/edita/programa ejercicios bilingües, asigna el nivel de los miembros y
-// responde el foro. Protegido: solo entra quien tiene role = 'admin' (RLS).
+// Crea/edita/programa ejercicios bilingües, ve los miembros y responde el foro.
+// Protegido: solo entra quien tiene role = 'admin' (RLS).
 ---
 <!DOCTYPE html>
 <html lang="es">
@@ -113,12 +113,6 @@
   .ex-title { font-family: var(--font-display); font-weight: var(--weight-medium); letter-spacing: -0.015em;
               font-size: var(--text-md); }
 
-  /* level select */
-  .lvl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-         padding: 7px 12px; border-radius: var(--radius-full); border: 1px solid var(--color-border);
-         background: var(--paper); cursor: pointer; }
-  .lvl:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
-
   /* ---------- NEW EXERCISE FORM ---------- */
   .form { border: 1px solid var(--ink); border-radius: var(--radius-lg); padding: clamp(20px, 3vw, 32px);
           margin-bottom: var(--space-6); background: var(--paper); }
@@ -134,12 +128,6 @@
     padding: 12px 14px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
   .field input:focus, .field textarea:focus { outline: none; border-color: var(--ink); background: var(--paper); }
   .field textarea { min-height: 90px; resize: vertical; }
-  .seg { display: inline-flex; gap: 4px; padding: 4px; border: 1px solid var(--color-border);
-         border-radius: var(--radius-full); background: var(--surface); width: fit-content; }
-  .seg button { appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--color-text-soft);
-                font-family: var(--font-body); font-weight: var(--weight-semibold); font-size: var(--text-sm);
-                padding: 8px 18px; border-radius: var(--radius-full); transition: all 220ms var(--ease); }
-  .seg button[aria-pressed="true"] { background: var(--ink); color: #fff; }
   .form__actions { display: flex; gap: 12px; margin-top: var(--space-4); flex-wrap: wrap; }
   .form-error { color: #8a2e2e; font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-top: var(--space-3); }
   .form-error[hidden] { display: none; }
@@ -275,14 +263,6 @@
           <input type="hidden" id="f-id" />
           <div class="grid2">
             <div class="field">
-              <label>Nivel</label>
-              <div class="seg" id="f-level" role="group" aria-label="Nivel">
-                <button type="button" data-level="iniciando" aria-pressed="true">Iniciando</button>
-                <button type="button" data-level="avanzando" aria-pressed="false">Avanzando</button>
-              </div>
-              <span class="help">Cada semana se publica una versión por nivel.</span>
-            </div>
-            <div class="field">
               <label for="f-week">Etiqueta de semana</label>
               <input id="f-week" type="text" placeholder="Ej. Semana 24" />
               <span class="help">Texto corto que el miembro ve junto al título.</span>
@@ -355,10 +335,10 @@
         <!-- tabla de ejercicios -->
         <table class="tbl">
           <thead>
-            <tr><th>Ejercicio</th><th>Nivel</th><th>Estado</th><th>Ventana</th><th></th></tr>
+            <tr><th>Ejercicio</th><th>Estado</th><th>Ventana</th><th></th></tr>
           </thead>
           <tbody id="exRows">
-            <tr class="empty-row"><td colspan="5">Cargando…</td></tr>
+            <tr class="empty-row"><td colspan="4">Cargando…</td></tr>
           </tbody>
         </table>
       </section>
@@ -369,13 +349,13 @@
           <h2>Miembros</h2>
           <span class="pill"><span class="dot"></span> <span id="miCount">…</span></span>
         </div>
-        <p class="hint">Asigna o cambia el nivel de cada miembro. El cambio se refleja al instante en lo que ve en el aula.</p>
+        <p class="hint">Lista de miembros y su estado de suscripción.</p>
         <table class="tbl">
           <thead>
-            <tr><th>Miembro</th><th>Nivel</th><th>Suscripción</th><th>Alta</th></tr>
+            <tr><th>Miembro</th><th>Suscripción</th><th>Alta</th></tr>
           </thead>
           <tbody id="miRows">
-            <tr class="empty-row"><td colspan="4">Cargando…</td></tr>
+            <tr class="empty-row"><td colspan="3">Cargando…</td></tr>
           </tbody>
         </table>
       </section>
@@ -397,7 +377,7 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<!-- UI pura (no necesita datos): pestañas y selector de nivel del formulario -->
+<!-- UI pura (no necesita datos): pestañas del panel -->
 <script is:inline>
   (function () {
     /* ---- tabs ---- */
@@ -409,15 +389,6 @@
           t.setAttribute('aria-selected', sel ? 'true' : 'false');
           document.getElementById(t.getAttribute('aria-controls')).hidden = !sel;
         });
-      });
-    });
-
-    /* ---- level segmented control (click manual) ---- */
-    var seg = document.getElementById('f-level');
-    if (seg) seg.querySelectorAll('button').forEach(function (b) {
-      b.addEventListener('click', function () {
-        seg.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
-        b.setAttribute('aria-pressed', 'true');
       });
     });
   })();
@@ -439,7 +410,6 @@
   }
 
   // ---------- helpers ----------
-  function levelLabel(l) { return l === 'avanzando' ? 'Avanzando' : l === 'iniciando' ? 'Iniciando' : '—'; }
   const pad = (n) => String(n).padStart(2, '0');
   const toLocalInput = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
   const isoToLocalInput = (iso) => toLocalInput(new Date(iso));
@@ -538,8 +508,8 @@
       const m = document.createElement('div'); m.className = 'wk__meta'; m.textContent = meta;
       d.append(l, t, m); return d;
     };
-    live.forEach((e) => strip.appendChild(card('En vivo · ' + levelLabel(e.level), e.title_es, 'Se cierra ' + fmtDateTime(e.unpublish_at) + ' (local)', true)));
-    if (next) strip.appendChild(card('Próximo · ' + levelLabel(next.level), next.title_es, 'Se publica ' + fmtDateTime(next.publish_at) + ' (local)', false));
+    live.forEach((e) => strip.appendChild(card('En vivo', e.title_es, 'Se cierra ' + fmtDateTime(e.unpublish_at) + ' (local)', true)));
+    if (next) strip.appendChild(card('Próximo', next.title_es, 'Se publica ' + fmtDateTime(next.publish_at) + ' (local)', false));
   }
 
   function renderExRow(e) {
@@ -547,40 +517,33 @@
     const td1 = document.createElement('td');
     const title = document.createElement('span'); title.className = 'ex-title'; title.textContent = e.title_es || '(sin título)';
     td1.appendChild(title);
-    const td2 = document.createElement('td'); td2.textContent = levelLabel(e.level);
     const td3 = document.createElement('td');
     const st = exStatus(e); const pill = document.createElement('span'); pill.className = 'pill ' + st.cls; pill.textContent = st.label; td3.appendChild(pill);
     const td4 = document.createElement('td'); td4.className = 'sub'; td4.textContent = fmtRange(e.publish_at, e.unpublish_at);
     const td5 = document.createElement('td');
     const btn = document.createElement('button'); btn.className = 'btn btn--ghost btn--sm'; btn.type = 'button'; btn.textContent = 'Editar';
     btn.addEventListener('click', () => openEdit(e)); td5.appendChild(btn);
-    tr.append(td1, td2, td3, td4, td5); return tr;
+    tr.append(td1, td3, td4, td5); return tr;
   }
 
   async function loadExercises() {
     const tb = $('exRows');
     const { data, error } = await supabase.from('exercises').select('*').order('publish_at', { ascending: false });
-    if (error) { tb.innerHTML = ''; tb.appendChild(emptyRow(5, 'No se pudo cargar: ' + error.message)); return; }
+    if (error) { tb.innerHTML = ''; tb.appendChild(emptyRow(4, 'No se pudo cargar: ' + error.message)); return; }
     exList = data || []; exMap = {}; exList.forEach((e) => { exMap[e.id] = e; });
     renderWeekStrip(exList);
     tb.innerHTML = '';
-    if (!exList.length) { tb.appendChild(emptyRow(5, 'Aún no hay ejercicios. Crea el primero con “+ Nuevo ejercicio”.')); return; }
+    if (!exList.length) { tb.appendChild(emptyRow(4, 'Aún no hay ejercicios. Crea el primero con “+ Nuevo ejercicio”.')); return; }
     exList.forEach((e) => tb.appendChild(renderExRow(e)));
   }
 
   // --- formulario ---
   const newForm = $('newForm');
-  function setFormLevel(l) {
-    document.querySelectorAll('#f-level button').forEach((b) => b.setAttribute('aria-pressed', b.dataset.level === l ? 'true' : 'false'));
-  }
-  function getFormLevel() {
-    const b = document.querySelector('#f-level button[aria-pressed="true"]'); return b ? b.dataset.level : 'iniciando';
-  }
   function resetForm() {
     $('f-id').value = '';
     ['f-week', 'f-title-es', 'f-title-en', 'f-desc-es', 'f-desc-en', 'f-vimeo-es', 'f-vimeo-en', 'f-up', 'f-down', 'f-pdf-es', 'f-pdf-en']
       .forEach((id) => { const el = $(id); if (el) el.value = ''; });
-    setFormLevel('iniciando'); $('formErr').hidden = true; $('formTitle').textContent = 'Nuevo ejercicio';
+    $('formErr').hidden = true; $('formTitle').textContent = 'Nuevo ejercicio';
   }
   function openCreate() {
     resetForm();
@@ -591,7 +554,7 @@
   }
   function openEdit(e) {
     resetForm();
-    $('f-id').value = e.id; setFormLevel(e.level);
+    $('f-id').value = e.id;
     $('f-week').value = e.week_label || '';
     $('f-title-es').value = e.title_es || ''; $('f-title-en').value = e.title_en || '';
     $('f-desc-es').value = e.desc_es || ''; $('f-desc-en').value = e.desc_en || '';
@@ -603,10 +566,10 @@
 
   // Sube un PDF al bucket "pdfs" si hay archivo. Devuelve la ruta, o undefined si
   // no se eligió archivo (para no tocar el valor existente). Lanza si falla.
-  async function uploadPdf(fileInput, level) {
+  async function uploadPdf(fileInput) {
     const f = fileInput.files && fileInput.files[0];
     if (!f) return undefined;
-    const path = `${level}/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
+    const path = `exercises/${Date.now()}_${Math.random().toString(36).slice(2, 8)}.pdf`;
     const { error } = await supabase.storage.from('pdfs').upload(path, f, { contentType: 'application/pdf', upsert: false });
     if (error) throw new Error('PDF (¿existe el bucket "pdfs"?): ' + error.message);
     return path;
@@ -620,7 +583,6 @@
   newForm?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const errEl = $('formErr'); errEl.hidden = true;
-    const level = getFormLevel();
     const title_es = $('f-title-es').value.trim(), title_en = $('f-title-en').value.trim();
     const upVal = $('f-up').value, downVal = $('f-down').value;
     if (!title_es || !title_en) { errEl.textContent = 'Faltan los títulos (ES y EN).'; errEl.hidden = false; return; }
@@ -631,10 +593,10 @@
     saveBtn.disabled = true; saveBtn.textContent = 'Guardando…';
     try {
       const editId = $('f-id').value || null;
-      const pdfEs = await uploadPdf($('f-pdf-es'), level);
-      const pdfEn = await uploadPdf($('f-pdf-en'), level);
+      const pdfEs = await uploadPdf($('f-pdf-es'));
+      const pdfEn = await uploadPdf($('f-pdf-en'));
       const payload = {
-        level, week_label: $('f-week').value.trim() || null,
+        week_label: $('f-week').value.trim() || null,
         title_es, title_en,
         desc_es: $('f-desc-es').value.trim() || null, desc_en: $('f-desc-en').value.trim() || null,
         vimeo_url_es: $('f-vimeo-es').value.trim() || null, vimeo_url_en: $('f-vimeo-en').value.trim() || null,
@@ -663,20 +625,6 @@
     const mail = document.createElement('div'); mail.className = 'sub'; mail.textContent = p.email || '';
     td1.append(name, mail);
 
-    const td2 = document.createElement('td');
-    const sel = document.createElement('select'); sel.className = 'lvl'; sel.setAttribute('aria-label', 'Nivel de ' + (p.full_name || p.email || ''));
-    [['', '— Sin asignar —'], ['iniciando', 'Iniciando'], ['avanzando', 'Avanzando']].forEach(([v, label]) => {
-      const o = document.createElement('option'); o.value = v; o.textContent = label; if ((p.level || '') === v) o.selected = true; sel.appendChild(o);
-    });
-    sel.addEventListener('change', async () => {
-      sel.disabled = true;
-      const { error } = await supabase.from('profiles').update({ level: sel.value || null }).eq('id', p.id);
-      sel.disabled = false;
-      if (error) { toast('No se pudo cambiar el nivel: ' + error.message); return; }
-      p.level = sel.value || null; toast('Nivel actualizado');
-    });
-    td2.appendChild(sel);
-
     const td3 = document.createElement('td');
     const pill = document.createElement('span');
     if (active) { pill.className = 'pill pill--live'; pill.textContent = 'Activa'; }
@@ -685,16 +633,16 @@
     if (p.role === 'admin') { const a = document.createElement('span'); a.className = 'pill'; a.style.marginLeft = '8px'; a.textContent = 'Admin'; td3.appendChild(a); }
 
     const td4 = document.createElement('td'); td4.className = 'sub'; td4.textContent = fmtDate(p.created_at);
-    tr.append(td1, td2, td3, td4); return tr;
+    tr.append(td1, td3, td4); return tr;
   }
 
   async function loadMembers() {
     const tb = $('miRows');
     const [{ data: profiles, error: pe }, { data: subs }] = await Promise.all([
-      supabase.from('profiles').select('id, full_name, email, level, role, created_at').order('created_at', { ascending: false }),
+      supabase.from('profiles').select('id, full_name, email, role, created_at').order('created_at', { ascending: false }),
       supabase.from('subscriptions').select('user_id, status, current_period_end'),
     ]);
-    if (pe) { tb.innerHTML = ''; tb.appendChild(emptyRow(4, 'No se pudo cargar: ' + pe.message)); $('miCount').textContent = '—'; return; }
+    if (pe) { tb.innerHTML = ''; tb.appendChild(emptyRow(3, 'No se pudo cargar: ' + pe.message)); $('miCount').textContent = '—'; return; }
     const activeMap = {};
     (subs || []).forEach((s) => {
       const active = s.status === 'active' && (!s.current_period_end || new Date(s.current_period_end) > new Date());
@@ -703,7 +651,7 @@
     const members = profiles || [];
     $('miCount').textContent = members.filter((p) => activeMap[p.id]).length + ' con suscripción activa';
     tb.innerHTML = '';
-    if (!members.length) { tb.appendChild(emptyRow(4, 'Aún no hay miembros registrados.')); return; }
+    if (!members.length) { tb.appendChild(emptyRow(3, 'Aún no hay miembros registrados.')); return; }
     members.forEach((p) => tb.appendChild(renderMemberRow(p, !!activeMap[p.id])));
   }
 
@@ -717,7 +665,7 @@
     const who = document.createElement('div'); who.className = 'qcard__who';
     who.textContent = q.author_name || '(miembro)';
     const when = document.createElement('span'); when.className = 'qcard__when';
-    when.textContent = ' · ' + levelLabel(ex.level) + ' · ' + timeAgo(q.created_at);
+    when.textContent = ' · ' + timeAgo(q.created_at);
     who.appendChild(when); whoWrap.appendChild(who);
     const lang = document.createElement('span'); lang.className = 'qlang'; lang.textContent = (q.lang || '').toUpperCase();
     const exPill = document.createElement('span'); exPill.className = 'pill pill--sched';
@@ -755,7 +703,7 @@
     const cont = $('foRows');
     const { data, error } = await supabase
       .from('questions')
-      .select('id, body, author_name, lang, created_at, exercise_id, answers(id), exercises(title_es, title_en, level, publish_at, unpublish_at)')
+      .select('id, body, author_name, lang, created_at, exercise_id, answers(id), exercises(title_es, title_en, publish_at, unpublish_at)')
       .order('created_at', { ascending: true });
     if (error) { cont.innerHTML = ''; cont.appendChild(emptyMsg('No se pudo cargar el foro: ' + error.message)); $('foCount').textContent = '—'; return; }
     // Pendientes (sin respuesta) de ejercicios que están en vivo ahora.

@@ -36,8 +36,8 @@
 
 **Contenido** y **cobro** son sistemas separados:
 
-- **Contenido = calendario GLOBAL semanal.** Hay **un solo ejercicio vigente a la vez**
-  (por nivel), igual para todos. Rota cada semana. Al rotar, el anterior desaparece —
+- **Contenido = calendario GLOBAL semanal.** Hay **un solo ejercicio vigente a la vez**,
+  igual para todos. Rota cada semana. Al rotar, el anterior desaparece —
   esto es lo que hace la membresía "exclusiva" y mantiene a los miembros activos.
   - Jueves 00:00 (Europe/Madrid): se oculta el ejercicio vigente **y su panel de Q&A**.
   - Jueves 00:01: aparece el ejercicio nuevo.
@@ -47,14 +47,14 @@
 - **Cobro = por miembro, mensual desde su alta.** No afecta qué contenido se ve.
 
 El acceso al contenido solo evalúa: *(1) suscripción activa* + *(2) ejercicio vigente
-ahora, de tu nivel*. La visibilidad se calcula **en vivo** comparando la hora actual
+ahora*. La visibilidad se calcula **en vivo** comparando la hora actual
 contra las fechas de subida/bajada de cada ejercicio (sin cron frágil).
 
-## 4. Niveles
-- Dos niveles: **Iniciando** y **Avanzando**.
-- Cada ejercicio semanal tiene **una versión por nivel**; el miembro solo ve la suya.
-- Al inscribirse, el miembro indica su nivel (formulario); Emi puede **asignar y cambiar**
-  el nivel de cualquier miembro desde el panel admin.
+## 4. Un ejercicio para todos los niveles
+- **No hay niveles separados.** Un único ejercicio semanal, igual para todos.
+- Emi guía inicial y avanzado **dentro del mismo video** ("si estás empezando, hasta
+  aquí; si vas más adelantada, continúa…"). No hay versión por nivel ni asignación de
+  nivel a los miembros.
 
 ## 4b. Idiomas (EN / ES) — sin traducción automática
 - Dos públicos: español e inglés. **Landing y aula son bilingües**; el toggle EN/ES
@@ -77,9 +77,9 @@ contra las fechas de subida/bajada de cada ejercicio (sin cron frágil).
 
 ## 6. Panel de administración (para Emi, sin tocar código)
 Pantalla protegida donde Emi puede:
-- Crear/editar ejercicios: título, nivel, link de Vimeo, PDF, **fecha-hora de subida y
+- Crear/editar ejercicios: título, link de Vimeo, PDF, **fecha-hora de subida y
   de bajada** (con miércoles 00:00/00:01 Madrid como valores por defecto).
-- Ver miembros y **asignar/cambiar su nivel**.
+- Ver miembros y su estado de suscripción.
 - Leer y **responder preguntas** del foro.
 
 ## 7. Esquema de base de datos
@@ -91,7 +91,6 @@ profiles            (extiende auth.users de Supabase)
   id                uuid  PK -> auth.users
   email             text
   full_name         text
-  level             enum('iniciando','avanzando')  NULL hasta asignar
   role              enum('member','admin')         default 'member'
   created_at        timestamptz
 
@@ -109,7 +108,6 @@ subscriptions       (espejo del estado de Stripe)
 
 exercises
   id                uuid PK
-  level             enum('iniciando','avanzando')
   title_es          text
   title_en          text
   desc_es           text
@@ -122,7 +120,7 @@ exercises
   unpublish_at      timestamptz   -- cuándo se oculta (jue 00:00 Madrid)
   week_label        text   (ej. "Semana 2 - Julio")
   created_at        timestamptz
-  -- visible si: now() en [publish_at, unpublish_at) y nivel coincide y sub activa
+  -- visible si: now() en [publish_at, unpublish_at) y sub activa
 
 questions           (foro, por ejercicio e idioma)
   id                uuid PK
@@ -149,9 +147,9 @@ favorites           (user_id, exercise_id)
 churned_emails      (email, churned_at)   -- anti-reentrada fina
 ```
 
-Reglas de acceso (RLS en Supabase): un miembro solo lee ejercicios de su nivel,
-vigentes ahora, y solo si su suscripción está activa. El admin (Emi) lee/escribe todo.
-Funciones auxiliares: `is_admin()`, `has_active_sub()`, `my_level()`, `my_lang()`.
+Reglas de acceso (RLS en Supabase): un miembro solo lee el ejercicio vigente
+ahora, y solo si su suscripción está activa. El admin (Emi) lee/escribe todo.
+Funciones auxiliares: `is_admin()`, `has_active_sub()`, `my_lang()`.
 Un trigger crea el `profile` automáticamente al registrarse un usuario.
 
 ### Cómo crear el proyecto (lo hace Adrián, una vez)
@@ -184,13 +182,13 @@ Un trigger crea el `profile` automáticamente al registrarse un usuario.
 - **/checkout** → Stripe Checkout.
 - **/app** (área de miembros): ejercicio de la semana + PDF + marcar completado + foro.
 - **/cuenta** → portal de cliente de Stripe.
-- **/admin** (solo Emi): ejercicios, miembros/niveles, responder foro.
+- **/admin** (solo Emi): ejercicios, miembros, responder foro.
 - **/login**, **/registro**.
 
 ## 10. Imprescindible para julio (del brief)
 1. Pago recurrente Stripe + cancelación a fin de período.
 2. Solo se ve el contenido vigente (sección 3).
-3. Dos niveles segmentados.
+3. Un ejercicio guiado para todos los niveles (dentro del mismo video).
 4. Foro visible para todos.
 5. Checkout simple + login/home de miembros.
 

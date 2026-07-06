@@ -10,7 +10,7 @@ export async function getProfile() {
   if (!user) return null;
   const { data } = await supabase
     .from('profiles')
-    .select('id, email, full_name, level, preferred_lang, role')
+    .select('id, email, full_name, preferred_lang, role')
     .eq('id', user.id)
     .single();
   return data;
