@@ -2,7 +2,7 @@
 -- Storage: bucket público "pdfs" para los PDF de los ejercicios
 -- Ejecutar en Supabase → SQL Editor (una sola vez).
 --
--- El panel sube a pdfs/<nivel>/<timestamp>_<azar>.pdf (solo admins) y el aula
+-- El panel sube a pdfs/exercises/<timestamp>_<azar>.pdf (solo admins) y el aula
 -- lee por URL pública (bucket público ⇒ la lectura no necesita política).
 -- =============================================================================
 

@@ -27,7 +27,8 @@ control de DNS y no depender de él.
   (00:00 baja / 00:01 sube, hora Madrid). Sin biblioteca histórica. El cobro es mensual
   por miembro, en un reloj aparte.
 - **Precio:** fundador **$57/mes** (1–10 jul) · estándar **$77/mes** (desde 11 jul).
-- **Niveles:** Iniciando / Avanzando. **Foro separado por idioma** (sin traducción automática).
+- **Sin niveles:** un solo ejercicio para todos; Emi guía inicial y avanzado dentro del
+  mismo video. **Foro separado por idioma** (sin traducción automática).
 
 ## Rutas
 - `/` y `/en` — landing de ventas (bilingüe)
@@ -47,7 +48,7 @@ control de DNS y no depender de él.
 - [x] Panel protegido con auth real (solo `role = admin`)
 - [x] Logout real
 - [x] **Aula con datos reales**: lee el ejercicio vigente (título, semana, descripción,
-      video Vimeo con selector ES/EN, PDF, nivel) y "marcar completado" persiste en BD
+      video Vimeo con selector ES/EN, PDF) y "marcar completado" persiste en BD
 - [x] **Foro real en el aula** (`supabase/migrations/0002_forum.sql`): los miembros leen
       y publican preguntas del ejercicio vigente; las respuestas de Emi se muestran bajo
       cada pregunta. Privacidad resuelta con columna desnormalizada `author_name`
@@ -60,8 +61,7 @@ control de DNS y no depender de él.
       - **Ejercicios**: tabla real con estado (En vivo/Programado/Cerrado calculado en vivo);
         crear/editar/programar escribe en `exercises`; campos bilingües + etiqueta de semana
         + fechas (por defecto próximo jueves 00:01 / jueves siguiente 00:00, hora local).
-      - **Miembros**: lista real con estado de suscripción y selector para asignar/cambiar
-        nivel (escribe en `profiles`, se refleja al instante en el aula).
+      - **Miembros**: lista real con estado de suscripción.
       - **Foro**: muestra preguntas sin responder de los ejercicios en vivo y permite
         responder (escribe en `answers`).
       - El formulario sube el PDF al bucket `pdfs`.
@@ -88,14 +88,23 @@ control de DNS y no depender de él.
       mergear): `/entrar/` muestra el error real de Supabase — antes salía `{}` porque el
       texto vive en `.message`, propiedad no enumerable que `JSON.stringify` perdía — y
       avisa claro cuando un enlace caducó o ya se usó (`otp_expired`).
+- [x] **Niveles eliminados (en código)**: se quitó la segmentación Iniciando/Avanzando.
+      Ahora hay UN solo ejercicio global; Emi guía inicial y avanzado dentro del mismo
+      video. Cambios en aula, panel, landing (copy ES/EN), seed y `set_admin.sql`. La BD
+      se limpia con `supabase/migrations/0004_remove_levels.sql` (pendiente de aplicar).
 
 ### Pendiente ⬜
 - [ ] **Mergear a `main`** los últimos arreglos del login (rama `claude/cool-newton-fzwqfo`:
-      mensaje de error real + esta bitácora) — PR abierto. Con el PR #1 ya mergeado.
-- [ ] **Alumno de prueba con contenido**: dar **nivel + suscripción activa** a
-      `mdza.exp@gmail.com` para ver el aula con ejercicios. Ya lo hace `supabase/set_admin.sql`
-      (sección "alumno de prueba"). El nivel del alumno debe coincidir con el del ejercicio
-      que publique Emi (o que publique en ambos niveles).
+      mensaje de error real + eliminación de niveles + esta bitácora) — PR abierto.
+- [ ] **Aplicar `0004_remove_levels.sql`** en el SQL Editor. ⚠️ Coordinar con el deploy:
+      la columna `exercises.level` es NOT NULL, así que el código nuevo (que ya no envía
+      nivel) no puede crear ejercicios hasta aplicarla, y el código viejo se rompe si se
+      aplica antes de desplegar. Plan: mergear (Vercel despliega) y, en cuanto termine,
+      aplicar 0004. Ventana de 1–2 min sin poder crear/ver ejercicios; como solo estamos
+      nosotros, no afecta.
+- [ ] **Alumno de prueba con contenido**: dar **suscripción activa** a
+      `mdza.exp@gmail.com` para ver el aula con el ejercicio vigente. Ya lo hace
+      `supabase/set_admin.sql` (sección "alumno de prueba").
 - [ ] **Storage de PDFs**: confirmar/ejecutar `supabase/migrations/0003_storage_pdfs.sql`
       en el SQL Editor (bucket público `pdfs` + políticas de subida solo-admin). El panel
       ya sube ahí y el aula ya lee de ahí.
@@ -117,9 +126,10 @@ control de DNS y no depender de él.
    PUBLIC_SUPABASE_ANON_KEY=<anon key del dashboard de Supabase>
    ```
 3. `npm run dev` → http://localhost:4321/
-4. Migraciones en el SQL Editor (el proyecto ya tenía 0001): `0002_forum.sql` (foro) y
-   `0003_storage_pdfs.sql` (bucket de PDFs). Luego datos de prueba: `supabase/seed.sql`
-   + dar **nivel** y **suscripción activa** a tu usuario (SQL al final de `seed.sql`).
+4. Migraciones en el SQL Editor (el proyecto ya tenía 0001): `0002_forum.sql` (foro),
+   `0003_storage_pdfs.sql` (bucket de PDFs) y `0004_remove_levels.sql` (quita niveles).
+   Luego datos de prueba: `supabase/seed.sql` + dar **suscripción activa** a tu usuario
+   (SQL al final de `seed.sql`).
 5. Para entrar al panel: `update public.profiles set role='admin' where email='TU-EMAIL';`
    ⚠️ La BD es la MISMA de producción. Los admins definidos (Emi + Adrián) y el alumno de
    prueba se fijan re-ejecutando `supabase/set_admin.sql` (edita la lista de admins ahí).
