@@ -41,6 +41,17 @@ control de DNS y no depender de él.
 ### Hecho ✅
 - [x] Documento de arquitectura (`docs/ARQUITECTURA.md`)
 - [x] Landing bilingüe ES/EN (diseño implementado)
+- [x] **Copy de ventas real "Estudiemos Juntos"** (rama `claude/sales-page-study-story-wbgbb6`):
+      se reemplazó el copy mockup de la landing por la página de ventas definitiva de Emi.
+      Nuevas secciones sobre el mismo sistema de diseño editorial: **Historia** (`#historia`:
+      Mahler 2012 → emigración 2016 → la azotea en Buenos Aires → los 2 descubrimientos →
+      el consejo de la meta), **Cómo funciona** (concepto/mes · ejercicio/semana · jueves
+      desaparece), **Qué incluye** (reescrito), **Focus oscuro** ("yo borro el contenido · por
+      qué"), **Para quién es / no es** (dos listas), **Comunidad + 24/7**, **Plan** (precio de
+      fundador **$57** 1–10 jul, congelado, luego **$77**), **P.D.** firmada, y **FAQ de 8
+      preguntas**. Todo bilingüe ES/EN (EN traducido de la voz de Emi). El precio del mockup
+      (19 €) quedó reemplazado por $57. El botón "Acá te unes / Join here" sigue siendo
+      placeholder hasta conectar Stripe.
 - [x] Aula — prototipo visual
 - [x] Panel de Emi — prototipo visual
 - [x] Esquema de BD + RLS (`supabase/migrations/0001_init.sql`)

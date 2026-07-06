@@ -1,8 +1,8 @@
 ---
 // Landing de la membresía — componente bilingüe (prop lang: 'es' | 'en').
 // Rutas: / (es) y /en/ (en). El toggle EN/ES enlaza una con otra.
-// NOTA: precio (19 €) y botón de pago son placeholders del mockup; se ajustan a
-// $57/$77 USD y se conectan a Stripe en la fase de backend.
+// Copy: página de ventas "Estudiemos Juntos" (historia de Emi + oferta de fundador).
+// NOTA: el botón de pago es placeholder; se conecta a Stripe en la fase de backend.
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
@@ -11,122 +11,238 @@ const other = isEN ? '/' : '/en/';
 const t = isEN ? {
   htmlLang: 'en',
   metaTitle: "Let's Study Together — Emilse Rios Membership",
-  metaDesc: "A new technical exercise every week, guided for every level. You practice, ask and progress — together. Monthly membership for double bassists.",
+  metaDesc: "Half an hour a day, the days you can. A new exercise every Thursday and a community doing it with you. No overwhelming library — just the present. Monthly membership for double bassists.",
   role: 'Double bassist', menu: 'Menu', close: 'Close',
   nav: [
-    { num: '01', word: 'How it works', es: 'Every week', href: '#how' },
-    { num: '02', word: "What's included", es: 'All inside', href: '#incluye' },
-    { num: '03', word: 'The plan', es: 'Start today', href: '#plan' },
+    { num: '01', word: 'The story', es: 'Where it comes from', href: '#historia' },
+    { num: '02', word: 'How it works', es: 'Every week', href: '#how' },
+    { num: '03', word: 'The plan', es: 'Founder price', href: '#plan' },
   ],
   more: 'More', online: 'Online', courses: 'Courses', videos: 'Videos', classroom: 'Classroom',
   heroEyebrow: 'Membership · For double bassists',
   heroTitle: "Let's study together", heroTitleEm: 'Estudiemos juntos',
-  heroGloss: 'A new technical exercise every week, guided for every level. You practice, ask and progress — together, as a community.',
+  heroGloss: 'Half an hour a day, the days you can. A new exercise every Thursday and a community doing it with you — no library to overwhelm you, only the present.',
   heroCta: 'I want the membership',
-  heroNote1: 'Monthly fee', heroNote2: 'cancel anytime · starts in July',
-  heroTagB: 'New every Thursday', heroTagS: 'Video · PDF · Forum',
-  marquee: 'One exercise a week <i>—</i> Every level <i>—</i> Q&A forum <i>—</i> Twenty years on the instrument <i>—</i>',
+  heroNote1: 'Founder price', heroNote2: '$57/mo · only July 1–10',
+  heroTagB: 'New every Thursday', heroTagS: 'Exercise · Concept · Community',
+  marquee: 'A new exercise every Thursday <i>—</i> One concept a month <i>—</i> No library <i>—</i> A global community <i>—</i>',
+
+  storyEyebrow: 'Where this comes from',
+  storyLead: 'In 2012 my only job was to play, as well as I possibly could, the symphonies of the composer I love most in the world. But it wasn’t always like that — and in this story there’s something that might help you manage your practice time, especially if you feel you don’t have any.',
+  storyBody1: [
+    'That year we played all of Mahler’s symphonies. At the Walt Disney Concert Hall, with the Simón Bolívar Symphony Orchestra and the Los Angeles Philharmonic together on stage, conducted by Gustavo Dudamel.',
+    'A full month in California. A five-star hotel, treated so well that one of the gifts they gave us was taking the whole orchestra to Disneyland — easily the most fun day off of that tour. It felt like we were all ten years old again. For about four more years, my life looked more or less like that.',
+    'And in 2016 I emigrated. I had to leave my country. I arrived in Argentina. While I waited for my papers, I couldn’t audition, or play, or teach anywhere. I ended up working twelve hours a day in an ice cream shop.',
+    'I shared a flat with friends, so the only moment I had to practice was before seven in the morning. And the only place where I wouldn’t bother anyone was the rooftop of the building.',
+    'So there I was, carrying a double bass up the stairs to a rooftop in Buenos Aires. Some days I made it. Half an hour, an hour if I got up earlier. Other days exhaustion won.',
+  ],
+  discLabel: 'I discovered two things',
+  disc: [
+    { k: '01', t: 'Excuses will always be there', p: 'The complications, the lack of time — they exist, that’s life, and there’s nothing we can do about it. What we can do is train our discipline, be consistent. If you turn off Instagram or TikTok notifications, for example, you could give the bass 30 minutes a day. I know because every time I open the app and a little puppy pops up reminding me of my beloved Bach, it takes me about that long to unhook. You only need 30 minutes — some days maybe more.' },
+    { k: '02', t: 'The real question is what to do with them', p: 'Once you have those 30 minutes, that’s the real thing. You stand at the music stand, you tune, and… now what? What are you going to play? The same as always — you end up stuck, feeling like you’re not moving forward.' },
+  ],
+  storyBody2: [
+    'There are plenty of exercises floating around the internet, but finding and organizing them takes longer than actually practicing them. The way I see it, YouTube often steals more practice time than it gives back.',
+    'Having a goal makes us move — it makes us carve out space in the calendar, it trains our consistency. That’s my advice to you: write it down. It can be a piece you always wanted to play, or getting to know the high register of the instrument. Whatever it is, write it down. Build a plan to reach it.',
+  ],
+  storyBridge: 'Need help getting there? That’s exactly why Estudiemos Juntos exists.',
+
   howEyebrow: 'The rhythm of each week', howH2: 'A simple routine, sustained over time.',
   steps: [
-    { day: 'Thursday', num: '01', h: 'The exercise drops', p: 'Every Thursday I post a new exercise: a video and, when it helps, a supporting PDF. Concrete, to work on this week.' },
-    { day: 'All week', num: '02', h: 'You practice at your pace', p: 'You work the exercise and mark what you complete. No rush, no pile-up: only this month’s.' },
-    { day: 'Friday', num: '03', h: 'I answer your questions', p: 'You leave your question in the forum and I answer on Fridays. Everyone reads the questions and answers — you learn from the group.' },
+    { day: 'Every month', num: '01', h: 'One concept', p: 'Each month I explain one basic technical concept — where the movements come from, the coordination, the sound. Just one, so you understand the foundation.' },
+    { day: 'Every week', num: '02', h: 'A new exercise', p: 'A different exercise to work that concept from several angles. Concrete, specific — a grain of sand in your progress. Solid technique makes you advance faster.' },
+    { day: 'Every Thursday', num: '03', h: 'The old one goes', p: 'When the new exercise drops, the previous one disappears. No library, no pile-up, no “I’ll get to it someday.”' },
   ],
+
   inclH2: "What's included", inclEyebrow: 'All inside the virtual classroom',
   incl: [
-    { t: 'A new exercise every Thursday', d: 'Video and supporting PDF. Concrete technique to work on during the week, not loose theory.' },
-    { t: 'One exercise, every level', d: 'The same video guides beginner and advanced: I tell you where to pause if you’re starting and how to keep going if you’re advanced. No one gets left out.' },
-    { t: 'Q&A forum', d: 'You write your question, everyone reads it and everyone reads my answer. A thread where you also learn from what others ask.' },
-    { t: 'Track your progress', d: 'Complete each exercise and feel the progress. A routine that holds because you watch it grow.' },
-    { t: 'Only the current month', d: 'No infinite library gathering dust. You focus on this week and this month — the present, nothing more.' },
+    { t: 'A new exercise every Thursday', d: 'Concrete and specific — a grain of sand in your progress. Building solid technique is what makes you move faster.' },
+    { t: 'A technical concept every month', d: 'A video that explains where the movements, the coordination and the sound come from. The foundation behind each exercise.' },
+    { t: 'No library piling up', d: 'Every Thursday the previous exercise disappears. No fifty exercises archived “for later” that you never open.' },
+    { t: 'A chat with my direct answers', d: 'You ask in the classroom chat and I answer. You also read everyone else’s questions — that’s where you learn too.' },
+    { t: 'A global community', d: 'Double bassists in different parts of the world working the same exercise, the same week. You’re not alone in this.' },
+    { t: '24/7 access', d: 'The platform is available to you at any hour, the days you can make it.' },
   ],
-  focusEyebrow: 'Why only the current month', focusH2: 'What matters is what you practice today.',
-  focusP1: 'Most platforms give you an enormous library, and that library ends up overwhelming you. You pile up videos you never open and the guilt of “what’s pending” weighs more than the progress.',
-  focusPull: '“Here we work the present.”',
-  focusP2: 'Each month you see only its four exercises. When a new one starts, the previous closes. No historical archive, no impossible catch-up marathon.',
-  focusP3: 'It sounds demanding, but it’s the opposite: <strong>it lifts the weight of the accumulated</strong> and returns your attention to one thing, this week’s. That’s how real technique is built — with consistency, not with a library.',
-  planH2: 'Starts in July.', planSub: 'A fixed monthly fee. No commitment, no fine print. Cancel at month’s end whenever you want.',
+
+  focusEyebrow: 'Why I delete the previous content', focusH2: 'Yes, you read that right. I delete the previous content.',
+  focusP1: 'Why would I do that? Because libraries overwhelm.',
+  focusPull: '“Fifty exercises archived ‘for later’ ends in doing none of them.”',
+  focusP2: 'And not only that — you carry the guilt of not doing anything on top of it.',
+  focusP3: 'This is a membership to do just enough. To sustain your consistency week after week, to improve without stockpiling exercises you’ll never watch or practice. <strong>(For that, YouTube already exists.)</strong>',
+
+  fitEyebrow: 'Who it’s for', fitH2: 'Let’s be honest about the fit.',
+  fitYesH: 'This membership is for you if…',
+  fitYes: [
+    'You have little time to practice each week but want a clear guide to keep advancing on the double bass.',
+    'You study on your own, without a teacher, and often don’t know “where to begin.”',
+    'You’ve spent years stuck on the same repertoire, the same book or method of exercises.',
+    'You struggle to be consistent with your practice.',
+    'You already play in orchestras and ensembles but have technical gaps that hold you back on basic bow strokes: spiccato, staccato, legato.',
+    'You feel your technique limits your musicianship (better vibrato, connection between notes, and so on).',
+    'You want to belong to a community of double bassists with a weekly challenge.',
+  ],
+  fitNoH: 'It’s not for you if…',
+  fitNo: [
+    'You’re after an endless library of exercises to save and watch “someday.” There’s no library here, no archive, no “I’ll see it later.” There’s one exercise this week — if you don’t do it, it’s gone and another arrives. No guilt.',
+    'You’re looking for help toward a specific goal: getting into a conservatory or an orchestra. That would call for private lessons. This membership keeps you fit and technically active; we won’t solve specific repertoire (though these exercises build the foundations to solve it later).',
+    'You don’t have a couple of hours a week. You need a minimum of time — not every day (ideal, yes), but at least a couple of days each week.',
+  ],
+
+  commEyebrow: 'You’re not alone in this',
+  commBig: 'Courses end. This membership is always with you.',
+  commP: 'A community that’s always there for you. Every week, double bassists around the world are doing the same exercise you are, the same week. Ask your questions in the chat — I’ll gladly answer — and read and comment on everyone else’s too. Together it’s all easier.',
+  commTag: 'Platform access 24/7',
+
+  planH2: 'Founder price.', planSub: '$57 a month, only from July 1 to 10. That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
   cardName: "Let's study together", cardNameEs: 'Estudiemos juntos', per: '/ month',
-  cardSub: 'Secure recurring payment with Stripe. It renews automatically each month; you manage your card and cancellation from the portal.',
+  cardBadge: 'Founder price · July 1–10',
+  cardAfter: 'After July 10, the door stays open at $77.',
+  cardSub: 'Your founder price stays frozen while you’re a member. You pay each month on the date you joined — join on the 20th and your month runs the 20th to the 20th, you never lose days.',
   checks: [
-    'A new exercise every Thursday (video + PDF)',
-    'One exercise guided for beginner and advanced',
-    'Q&A forum with answers on Fridays',
-    'Mark exercises as completed',
-    'Cancel at end of period, no partial refunds',
+    'A new exercise every Thursday',
+    'A new technical concept every month',
+    'A chat with my direct answers',
+    'A global community · 24/7 access',
+    'Cancel whenever you want, no explanations',
   ],
-  payMain: 'Pay for the membership', cardFine: 'Simple checkout · secure payment with Stripe',
+  payMain: 'Join here', cardFine: 'Monthly payment · cancel anytime',
+
+  pdLabel: 'P.S.',
+  pdText: 'I made this membership for the Emilse of 2016 — the one carrying her double bass up the stairs of that rooftop, full of determination not to give up the instrument, but who over time was left not knowing what to study. I owed it to her.',
+  pdSign: '— Emilse',
+
   faqEyebrow: 'Before you join', faqH2: 'Frequently asked questions.',
   faq: [
-    { q: 'When does the membership start?', a: 'We start in July. By signing up you secure your spot and receive the first exercise as soon as the month begins.' },
-    { q: 'Can I cancel anytime?', a: 'Yes. Cancellation is at end of period: you keep access until the month you already paid for ends. No commitment, no partial refunds.' },
-    { q: 'Do I need a certain level?', a: 'No. Each exercise is guided for both beginner and advanced in the same video: I tell you where to pause if you’re just starting and how to continue if you’re more advanced.' },
-    { q: 'What about exercises from previous months?', a: 'There’s no historical library: we work the present. Each month you see only its exercises, and when a new one starts the previous closes. That’s what keeps you focused.' },
-    { q: 'How does payment work?', a: 'By card, via Stripe. You pay the first fee and from then it’s charged automatically each month. You manage everything from the Stripe customer portal.' },
+    { q: 'Do I need to be advanced to join?', a: 'No, but you should at least know the first positions of the instrument. I’ll leave each exercise adapted to a beginner, intermediate or advanced level. These are basic concepts we all study throughout our careers, whatever our level — and the sooner you start, the better.' },
+    { q: 'If I join mid-month, can I see the previous content?', a: 'You’ll have access to whatever exercise is live that week until it’s replaced — a new one arrives every Thursday and replaces the previous one. The monthly concept, though, stays for the whole month: it’s a video that helps you understand the foundation of each exercise.' },
+    { q: 'How does payment work?', a: 'It’s a monthly subscription, just like your others (Netflix, Disney, etc.) — an automatic monthly charge. You pay the day you join and that becomes your billing day each month. The price you join with freezes for you as long as you’re a member.' },
+    { q: 'Can I cancel anytime?', a: 'Yes, from your account, with no explanation. You keep access until the end of the period you already paid for. If you later want to come back, you join at the price in force at that moment, not your previous one — you’d lose the founder price.' },
+    { q: 'How do I ask my questions?', a: 'In the classroom chat. I answer them, and everyone can read each other’s questions and answers — that’s another place you learn.' },
+    { q: 'What language is it in?', a: 'This version is in English and Spanish; you can register in the language you prefer.' },
+    { q: 'How much time do I need?', a: 'Half an hour a day, the days you can. That’s enough. Simple as that.' },
+    { q: 'What hours can I access the platform?', a: 'It’s available to you 24/7.' },
   ],
   footBig: "Let's study", footBigEm: 'together.',
-  footAbout: 'Double bassist and teacher. Twenty years on the instrument — and a membership to study, week by week, as a community.',
+  footAbout: 'Double bassist and teacher. A membership to study, week by week, as a community — half an hour a day, the days you can.',
   footMembership: 'The membership', footMore: 'More from Emi',
   footHow: 'How it works', footIncl: "What's included", footPlan: 'The plan',
   footBase1: '© 2026 Emilse Rios · Madrid', footBase2: "<em>Let's study together</em> — a new exercise every Thursday.",
 } : {
   htmlLang: 'es',
   metaTitle: 'Estudiemos Juntos — Membresía de Emilse Rios',
-  metaDesc: 'Un ejercicio técnico nuevo cada semana, guiado para todos los niveles. Practicas, preguntas y avanzas — en comunidad. Membresía mensual para contrabajistas.',
+  metaDesc: 'Media hora al día, los días que puedas. Un ejercicio nuevo cada jueves y una comunidad haciéndolo contigo. Sin biblioteca que abrume — solo el presente. Membresía mensual para contrabajistas.',
   role: 'Contrabajista', menu: 'Menú', close: 'Cerrar',
   nav: [
-    { num: '01', word: 'Cómo funciona', es: 'Cada semana', href: '#how' },
-    { num: '02', word: 'Qué incluye', es: 'Todo dentro', href: '#incluye' },
-    { num: '03', word: 'El plan', es: 'Empieza hoy', href: '#plan' },
+    { num: '01', word: 'La historia', es: 'De dónde viene', href: '#historia' },
+    { num: '02', word: 'Cómo funciona', es: 'Cada semana', href: '#how' },
+    { num: '03', word: 'El plan', es: 'Precio de fundador', href: '#plan' },
   ],
   more: 'Más', online: 'En la red', courses: 'Cursos', videos: 'Videos', classroom: 'Aula Virtual',
   heroEyebrow: 'Membresía · Para contrabajistas',
   heroTitle: 'Estudiemos juntos', heroTitleEm: "Let's study together",
-  heroGloss: 'Un ejercicio técnico nuevo cada semana, guiado para todos los niveles. Practicas, preguntas y avanzas — acompañada, en comunidad.',
+  heroGloss: 'Media hora al día, los días que puedas. Un ejercicio nuevo cada jueves y una comunidad haciéndolo contigo — sin biblioteca que abrume, solo el presente.',
   heroCta: 'Quiero la membresía',
-  heroNote1: 'Cuota mensual', heroNote2: 'cancela cuando quieras · arranca en julio',
-  heroTagB: 'Nuevo cada jueves', heroTagS: 'Video · PDF · Foro',
-  marquee: 'Un ejercicio por semana <i>—</i> Todos los niveles <i>—</i> Foro de preguntas <i>—</i> Veinte años en el instrumento <i>—</i>',
+  heroNote1: 'Precio de fundador', heroNote2: '$57/mes · solo del 1 al 10 de julio',
+  heroTagB: 'Nuevo cada jueves', heroTagS: 'Ejercicio · Concepto · Comunidad',
+  marquee: 'Un ejercicio nuevo cada jueves <i>—</i> Un concepto cada mes <i>—</i> Sin biblioteca <i>—</i> Una comunidad global <i>—</i>',
+
+  storyEyebrow: 'De dónde viene esto',
+  storyLead: 'En 2012 mi único trabajo era tocar lo mejor posible las sinfonías del compositor que más amo en la vida. Pero no siempre fue así — y en esta historia te cuento algo que te va a ayudar a gestionar mejor tu tiempo de estudio, sobre todo si sientes que no tienes tiempo.',
+  storyBody1: [
+    'Ese año tocamos todas las sinfonías de Mahler. En el Walt Disney Concert Hall, con la Orquesta Sinfónica Simón Bolívar y la Filarmónica de Los Ángeles juntas en el escenario, dirigidas por Gustavo Dudamel.',
+    'Un mes completo en California. Hotel cinco estrellas, con un trato tan especial que uno de los regalos que nos dieron fue llevar a toda la orquesta a Disney — el día libre más divertido de ese tour, sin duda. Sentí que todos volvimos a tener diez años. Durante unos cuatro años más, mi vida fue más o menos así.',
+    'Y en 2016 emigré. Tuve que dejar mi país. Llegué a Argentina. Y mientras esperaba el trámite para tener documentos, no podía audicionar, ni tocar ni dar clases en ningún lado. Me tocó trabajar doce horas al día en una heladería.',
+    'Vivía en un departamento compartido con amigos, así que el único momento que tenía para estudiar era antes de las siete de la mañana. Y el único lugar donde no molestaba a nadie era la azotea del edificio.',
+    'Ahí estaba yo, subiendo un contrabajo por las escaleras de una azotea en Buenos Aires. Algunos días lo lograba. Media hora, una hora si me levantaba más temprano. Otros días el cansancio me ganaba.',
+  ],
+  discLabel: 'Descubrí dos cosas',
+  disc: [
+    { k: '01', t: 'Las excusas siempre van a estar', p: 'Las complicaciones, la falta de tiempo, están — así es la vida y no podemos hacer nada al respecto. Lo que sí podemos es entrenar la disciplina, ser constantes. Si apagas las notificaciones de Instagram o TikTok, por ejemplo, podrías dedicarle 30 min al día al contrabajo. Lo sé porque cada vez que entro y me sale un perrito que me recuerda a mi amado Bach, me toma más o menos ese tiempo desengancharme. Necesitas solo 30 min — tal vez algunos días un poco más.' },
+    { k: '02', t: 'El verdadero rollo es qué hacer con ellos', p: 'Una vez tienes esos 30 min, ese es el verdadero rollo. Te paras frente al atril, afinas, ¿y? ¿Qué vas a tocar? Lo mismo de siempre — terminas estancándote, sintiendo que no avanzas.' },
+  ],
+  storyBody2: [
+    'Si bien hay muchos ejercicios dando vueltas en internet, te toma más tiempo encontrarlos y organizarlos que estudiarlos. Como lo veo, YouTube muchas veces, más que aportar, se convierte en un ladrón del tiempo de estudio.',
+    'Tener una meta nos hace movernos, nos hace abrir espacio en la agenda, nos entrena la constancia. Es mi consejo para ti: anótala. Puede ser una obra que siempre quisiste tocar, o conocer la región aguda del instrumento. Lo que sea, anótala. Ármate un plan para llegar a ella.',
+  ],
+  storyBridge: '¿Necesitas ayuda para llegar? Para eso existe Estudiemos Juntos.',
+
   howEyebrow: 'El ritmo de cada semana', howH2: 'Una rutina simple, sostenida en el tiempo.',
   steps: [
-    { day: 'Jueves', num: '01', h: 'Sale el ejercicio', p: 'Cada jueves publico un ejercicio nuevo: un video y, cuando ayuda, un PDF de apoyo. Concreto, para trabajar esta semana.' },
-    { day: 'Toda la semana', num: '02', h: 'Practicas a tu ritmo', p: 'Trabajas el ejercicio y marcas lo que completas. Sin prisa, sin acumular: solo lo de este mes.' },
-    { day: 'Viernes', num: '03', h: 'Respondo tus dudas', p: 'Dejas tu pregunta en el foro y los viernes respondo. Todos leen las preguntas y las respuestas — se aprende del grupo.' },
+    { day: 'Cada mes', num: '01', h: 'Un concepto', p: 'Cada mes te explico un concepto técnico básico — de dónde vienen los movimientos, la coordinación, el sonido. Solo uno, para que entiendas las bases.' },
+    { day: 'Cada semana', num: '02', h: 'Un ejercicio nuevo', p: 'Un ejercicio diferente para abordar ese concepto desde varios enfoques. Concreto, específico — un granito de arena en tu progreso. Una técnica sólida te hace avanzar más rápido.' },
+    { day: 'Cada jueves', num: '03', h: 'El anterior desaparece', p: 'Cuando entra el ejercicio nuevo, el de la semana pasada se va. Sin biblioteca, sin acumular, sin “lo veo después”.' },
   ],
+
   inclH2: 'Qué incluye', inclEyebrow: 'Todo dentro del aula virtual',
   incl: [
-    { t: 'Un ejercicio nuevo cada jueves', d: 'Video y PDF de apoyo. Técnica concreta para trabajar durante la semana, no teoría suelta.' },
-    { t: 'Un ejercicio, todos los niveles', d: 'El mismo video guía a inicial y avanzado: te digo hasta dónde llegar si estás empezando y cómo continuar si vas más adelantada. Nadie se queda afuera.' },
-    { t: 'Foro de preguntas', d: 'Escribes tu duda, todos la leen y todos leen mi respuesta. Un hilo donde se aprende también de lo que pregunta el resto.' },
-    { t: 'Marca tu avance', d: 'Completa cada ejercicio y siente el progreso. Una rutina que se sostiene porque la ves crecer.' },
-    { t: 'Solo el mes en curso', d: 'Sin biblioteca infinita que acumula polvo. Te enfocas en lo de esta semana y en lo de este mes — el presente, nada más.' },
+    { t: 'Un ejercicio nuevo cada jueves', d: 'Concreto y específico — un granito de arena en tu progreso. Construir una técnica sólida es lo que te hace avanzar más rápido.' },
+    { t: 'Un concepto técnico cada mes', d: 'Un video que te explica de dónde vienen los movimientos, la coordinación y el sonido. Las bases detrás de cada ejercicio.' },
+    { t: 'Sin biblioteca que se acumule', d: 'Cada jueves el ejercicio anterior desaparece. Nada de cincuenta ejercicios archivados “para después” que nunca abres.' },
+    { t: 'Un chat con respuesta directa mía', d: 'Preguntas en el chat del aula y yo respondo. Lees también las preguntas del resto — ahí también se aprende.' },
+    { t: 'Una comunidad global', d: 'Contrabajistas de distintas partes del mundo trabajando el mismo ejercicio, la misma semana. No estás sola en esto.' },
+    { t: 'Acceso 24/7', d: 'La plataforma está disponible para ti a cualquier hora, los días que puedas.' },
   ],
-  focusEyebrow: 'Por qué solo el mes en curso', focusH2: 'Lo que importa es lo que practicas hoy.',
-  focusP1: 'La mayoría de las plataformas te dan una biblioteca enorme, y esa biblioteca termina abrumando. Acumulas videos que nunca abres y la culpa de “lo pendiente” pesa más que el avance.',
-  focusPull: '“Aquí trabajamos el presente.”',
-  focusP2: 'Cada mes ves solo sus cuatro ejercicios. Cuando empieza uno nuevo, lo anterior se cierra. No hay archivo histórico, no hay maratón imposible de ponerte al día.',
-  focusP3: 'Suena exigente, pero es justo lo contrario: <strong>te quita el peso de lo acumulado</strong> y te devuelve la atención a una sola cosa, la de esta semana. Así se construye técnica de verdad — con constancia, no con biblioteca.',
-  planH2: 'Empieza en julio.', planSub: 'Una cuota mensual fija. Sin permanencia, sin letra pequeña. Cancela a fin de mes cuando quieras.',
+
+  focusEyebrow: 'Por qué borro el contenido anterior', focusH2: 'Sí, leíste bien. Yo borro el contenido anterior.',
+  focusP1: '¿Por qué haría eso? Porque las bibliotecas abruman.',
+  focusPull: '“Tener cincuenta ejercicios archivados ‘para después’ termina en no hacer ninguno.”',
+  focusP2: 'Y no solo eso — sino con la culpa encima de que no estás haciendo nada.',
+  focusP3: 'Esta es una membresía para hacer lo justo. Para sostener tu constancia semana a semana, para mejorar sin acumular ejercicios que nunca vas a ver ni practicar. <strong>(Para eso ya está YouTube.)</strong>',
+
+  fitEyebrow: 'Para quién es', fitH2: 'Seamos honestos sobre si encaja.',
+  fitYesH: 'Esta membresía es para ti si…',
+  fitYes: [
+    'Tienes poco tiempo para estudiar a la semana pero quieres una guía clara para seguir avanzando con el contrabajo.',
+    'Estudias por tu cuenta, sin profesor, y muchas veces no sabes “por dónde comenzar”.',
+    'Llevas años estancado en el mismo repertorio, el mismo libro o método de ejercicios.',
+    'Te cuesta ser constante con el estudio del contrabajo.',
+    'Ya tocas en orquestas y ensambles pero tienes vacíos técnicos que te detienen en golpes de arco básicos: spiccato, staccato, legato.',
+    'Sientes que tu técnica te limita para avanzar en la interpretación (mejor vibrato, conexión entre las notas, etc.).',
+    'Quieres pertenecer a una comunidad de contrabajistas con un reto semanal.',
+  ],
+  fitNoH: 'No es para ti si…',
+  fitNo: [
+    'Buscas una biblioteca infinita de ejercicios para guardar y ver “algún día”. Acá no hay biblioteca, no hay archivo, no hay “lo veo después”. Hay un ejercicio esta semana — si no lo haces, se va y viene otro. Sin culpas.',
+    'Buscas ayuda para una meta específica: entrar a un conservatorio o a una orquesta. Para eso necesitarías clases particulares. Esta membresía te mantiene en forma y activa técnicamente; no resolvemos repertorio específico (aunque estos ejercicios te crean las bases para resolverlo después).',
+    'No tienes un par de horas a la semana. Necesitas un mínimo de tiempo — no tiene que ser todos los días (aunque sería lo ideal), pero sí al menos un par de días cada semana.',
+  ],
+
+  commEyebrow: 'No vas a estar sola en esto',
+  commBig: 'Los cursos se terminan. Esta membresía siempre está contigo.',
+  commP: 'Una comunidad que siempre está para ti. Cada semana, contrabajistas de distintas partes del mundo estamos haciendo el mismo ejercicio que tú, la misma semana. Haces tus preguntas en el chat — con gusto las respondo — y puedes ver y comentar las preguntas de la comunidad también. Juntos todo es más fácil.',
+  commTag: 'Acceso a la plataforma 24/7',
+
+  planH2: 'Precio de fundador.', planSub: '$57 al mes, solo del 1 al 10 de julio. Ese precio se congela para ti: aunque suba (y va a subir), sigues pagando lo mismo durante todo el tiempo que estés dentro.',
   cardName: 'Estudiemos juntos', cardNameEs: "Let's study together", per: '/ mes',
-  cardSub: 'Pago recurrente seguro con Stripe. Se renueva cada mes automáticamente; tú gestionas tu tarjeta y tu baja desde el portal.',
+  cardBadge: 'Precio de fundador · 1–10 de julio',
+  cardAfter: 'Después del 10 de julio, la puerta sigue abierta a $77.',
+  cardSub: 'Tu precio de fundador queda congelado mientras seas miembro. Pagas cada mes el día que entraste — si entras un 20, tu mes va del 20 al 20, nunca pierdes días.',
   checks: [
-    'Un ejercicio nuevo cada jueves (video + PDF)',
-    'Un ejercicio guiado para inicial y avanzado',
-    'Foro de preguntas con respuesta los viernes',
-    'Marca ejercicios completados',
-    'Cancela a fin de período, sin reembolsos parciales',
+    'Un ejercicio nuevo cada jueves',
+    'Un concepto técnico nuevo cada mes',
+    'Un chat con respuesta directa mía',
+    'Una comunidad global · acceso 24/7',
+    'Cancela cuando quieras, sin explicaciones',
   ],
-  payMain: 'Pagar la membresía', cardFine: 'Checkout simple · pago seguro con Stripe',
+  payMain: 'Acá te unes', cardFine: 'Pago mensual · cancela cuando quieras',
+
+  pdLabel: 'P.D.',
+  pdText: 'Esta membresía la hice para la Emilse de 2016 — la que subía el contrabajo por las escaleras de esa azotea con todas las ganas de no abandonar el instrumento, pero que con el paso del tiempo se fue quedando sin saber qué estudiar. Se la debía.',
+  pdSign: '— Emilse',
+
   faqEyebrow: 'Antes de entrar', faqH2: 'Preguntas frecuentes.',
   faq: [
-    { q: '¿Cuándo empieza la membresía?', a: 'Arrancamos en julio. Al inscribirte aseguras tu lugar y recibes el primer ejercicio en cuanto comience el mes.' },
-    { q: '¿Puedo cancelar cuando quiera?', a: 'Sí. La baja es a fin de período: mantienes el acceso hasta que termine el mes que ya pagaste. No hay permanencia ni reembolsos parciales.' },
-    { q: '¿Necesito un nivel específico?', a: 'No. Cada ejercicio está guiado para inicial y avanzado en el mismo video: te digo hasta dónde llegar si estás empezando y cómo seguir si vas más adelantada.' },
-    { q: '¿Y los ejercicios de meses anteriores?', a: 'No hay biblioteca histórica: trabajamos el presente. Cada mes ves solo sus ejercicios, y cuando empieza uno nuevo se cierra el anterior. Es lo que te mantiene enfocada.' },
-    { q: '¿Cómo funciona el pago?', a: 'Con tarjeta, vía Stripe. Pagas la primera cuota y a partir de ahí se cobra automáticamente cada mes. Gestionas todo desde el portal de cliente de Stripe.' },
+    { q: '¿Debo tener un nivel avanzado para entrar?', a: 'No, pero sí debes conocer al menos las primeras posiciones del instrumento. Dejaré cada ejercicio adaptado a un nivel inicial, intermedio o avanzado. Son conceptos básicos que todos estudiamos a lo largo de nuestra carrera, sin importar el nivel — y entre más rápido comiences, mejor.' },
+    { q: 'Si entro a mitad del mes, ¿puedo ver el contenido anterior?', a: 'Tendrás acceso al ejercicio que esté esa semana hasta que lo reemplace el próximo — cada jueves entra uno nuevo que reemplaza al anterior. El concepto del mes sí queda durante todo el mes: es un video que te hace entender las bases de cada ejercicio.' },
+    { q: '¿Cómo funciona el pago?', a: 'Es una suscripción mensual, así como tus otras (Netflix, Disney, etc.) — un pago automático cada mes. Pagas el día que entras y ese será tu día de cobro cada mes. El precio con el que entras se congela para ti mientras seas miembro.' },
+    { q: '¿Puedo cancelar cuando quiera?', a: 'Sí, desde tu cuenta, sin explicar nada. Mantienes el acceso hasta el final del período que ya pagaste. Si luego quieres volver, entras con el precio vigente en ese momento, no con el tuyo anterior — perderías el precio de fundador.' },
+    { q: '¿Cómo hago mis preguntas?', a: 'En el chat del aula. Yo las respondo, y todos pueden leer las preguntas y respuestas de los demás — ahí también se aprende.' },
+    { q: '¿En qué idioma es?', a: 'Esta versión está en inglés y español; puedes registrarte en el idioma de tu preferencia.' },
+    { q: '¿Cuánto tiempo necesito?', a: 'Media hora al día, los días que puedas. Con eso es suficiente. Así de simple.' },
+    { q: '¿En qué horarios puedo ingresar a la plataforma?', a: 'Está disponible para ti 24/7.' },
   ],
   footBig: 'Estudiemos', footBigEm: 'juntos.',
-  footAbout: 'Contrabajista y docente. Veinte años en el instrumento — y una membresía para estudiar, semana a semana, en comunidad.',
+  footAbout: 'Contrabajista y docente. Una membresía para estudiar, semana a semana, en comunidad — media hora al día, los días que puedas.',
   footMembership: 'La membresía', footMore: 'Más de Emi',
   footHow: 'Cómo funciona', footIncl: 'Qué incluye', footPlan: 'El plan',
   footBase1: '© 2026 Emilse Rios · Madrid', footBase2: '<em>Estudiemos juntos</em> — un ejercicio nuevo cada jueves.',
@@ -305,7 +421,28 @@ const t = isEN ? {
   .marquee__track span i { font-style: normal; color: var(--color-text-soft); }
   @keyframes scroll-x { to { transform: translateX(-50%); } }
 
-  .how { padding: clamp(72px, 12vh, 150px) var(--edge); }
+  /* Historia */
+  .story { padding: clamp(72px, 12vh, 150px) var(--edge); }
+  .story__inner { max-width: 760px; margin: 0 auto; }
+  .story__lead { font-family: var(--font-display); font-weight: var(--weight-medium);
+                 font-size: clamp(1.5rem, 3.4vw, 2.5rem); letter-spacing: -0.03em; line-height: 1.12;
+                 margin-top: var(--space-3); text-wrap: balance; }
+  .story__body { margin-top: clamp(28px, 4vh, 46px); }
+  .story__body p { color: #3a3a38; font-size: var(--text-md); line-height: 1.62; margin-bottom: 1.15em; }
+  .story__disc { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(22px, 3vw, 40px);
+                 margin: clamp(32px, 5vh, 56px) 0; }
+  .disc { border-top: 2px solid var(--ink); padding-top: var(--space-3); }
+  .disc__k { font-family: var(--font-display); font-weight: var(--weight-medium);
+             font-size: clamp(2rem, 4vw, 2.8rem); letter-spacing: -0.04em; line-height: 1; }
+  .disc__t { font-family: var(--font-display); font-weight: var(--weight-medium);
+             font-size: var(--text-lg); letter-spacing: -0.02em; margin: 10px 0 8px; line-height: 1.12; }
+  .disc p { color: #3a3a38; font-size: var(--text-base); line-height: 1.55; }
+  .story__advice { font-family: var(--font-display); font-weight: var(--weight-medium);
+                   font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -0.03em; line-height: 1.14;
+                   margin-top: clamp(24px, 4vh, 40px); max-width: 30ch; }
+  .story__advice em { font-style: italic; font-weight: var(--weight-regular); color: var(--color-text-soft); }
+
+  .how { padding: clamp(72px, 12vh, 150px) var(--edge); background: #faf9f7; }
   .how__inner { max-width: 1180px; margin: 0 auto; }
   .how__head { max-width: 30ch; margin-bottom: clamp(40px, 6vh, 72px); }
   .how__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
@@ -323,7 +460,7 @@ const t = isEN ? {
              font-size: var(--text-xl); letter-spacing: -0.025em; margin-bottom: 8px; }
   .step p { color: #3a3a38; font-size: var(--text-base); line-height: 1.55; max-width: 34ch; }
 
-  .incl { padding: 0 var(--edge) clamp(72px, 12vh, 150px); }
+  .incl { padding: clamp(72px, 12vh, 150px) var(--edge); }
   .incl__inner { max-width: 1180px; margin: 0 auto; }
   .incl__head { display: flex; align-items: flex-end; justify-content: space-between;
                 gap: var(--space-4); margin-bottom: var(--space-6); flex-wrap: wrap; }
@@ -356,16 +493,55 @@ const t = isEN ? {
                  font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -0.03em; line-height: 1.08;
                  margin: 1em 0; max-width: 24ch; }
 
-  .plan { padding: clamp(80px, 14vh, 170px) var(--edge); }
+  /* Para quién es / no es */
+  .fit { padding: clamp(72px, 12vh, 150px) var(--edge); background: #faf9f7; }
+  .fit__inner { max-width: 1180px; margin: 0 auto; }
+  .fit__head { max-width: 30ch; margin-bottom: clamp(36px, 5vh, 60px); }
+  .fit__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
+                  font-size: clamp(1.9rem, 3.6vw, 3rem); letter-spacing: -0.035em; line-height: 1.02;
+                  margin-top: var(--space-3); }
+  .fit__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 4vw, 64px); }
+  .fit__col h3 { font-family: var(--font-display); font-weight: var(--weight-medium);
+                 font-size: clamp(1.3rem, 2.4vw, 1.75rem); letter-spacing: -0.025em;
+                 padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
+  .fit__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px; }
+  .fit__list li { display: grid; grid-template-columns: 20px 1fr; gap: 12px; align-items: start;
+                  font-size: var(--text-base); line-height: 1.5; color: #3a3a38; }
+  .fit__list .mk { font-family: var(--font-display); line-height: 1.3; font-size: var(--text-md); }
+  .fit__col--yes .mk { color: var(--ink); }
+  .fit__col--no .mk { color: var(--color-text-soft); }
+  .fit__col--no .fit__list li { color: var(--color-text-soft); }
+
+  /* Comunidad */
+  .comm { padding: clamp(80px, 14vh, 168px) var(--edge); text-align: center; }
+  .comm__inner { max-width: 820px; margin: 0 auto; }
+  .comm__big { font-family: var(--font-display); font-weight: var(--weight-medium);
+               font-size: clamp(1.9rem, 4.4vw, 3.4rem); letter-spacing: -0.035em; line-height: 1.02;
+               margin-top: var(--space-3); text-wrap: balance; }
+  .comm__p { color: #3a3a38; font-size: var(--text-md); line-height: 1.6; max-width: 60ch;
+             margin: var(--space-4) auto 0; }
+  .comm__tag { display: inline-flex; align-items: center; gap: 10px; margin-top: var(--space-5);
+               font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+               letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-soft);
+               border: 1px solid var(--color-border); border-radius: var(--radius-full);
+               padding: 10px 18px; }
+  .comm__tag .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink);
+                    animation: pulse 2.6s var(--ease) infinite; }
+
+  .plan { padding: clamp(80px, 14vh, 170px) var(--edge); background: #faf9f7; }
   .plan__inner { max-width: 980px; margin: 0 auto; }
   .plan__head { text-align: center; margin-bottom: clamp(36px, 5vh, 56px); }
   .plan__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
                    font-size: clamp(2.2rem, 5vw, 4.4rem); letter-spacing: -0.035em; line-height: 0.98; }
   .plan__head p { color: var(--color-text-soft); font-size: var(--text-md); margin: var(--space-4) auto 0;
-                  max-width: 44ch; line-height: 1.5; }
+                  max-width: 52ch; line-height: 1.5; }
   .card { border: 1px solid var(--ink); border-radius: var(--radius-lg); overflow: hidden;
-          display: grid; grid-template-columns: 1.05fr 0.95fr; }
+          display: grid; grid-template-columns: 1.05fr 0.95fr; background: var(--paper); }
   .card__left { padding: clamp(32px, 4vw, 52px); border-right: 1px solid var(--color-border); }
+  .card__badge { display: inline-block; font-family: var(--font-body); font-size: 11px;
+                 font-weight: var(--weight-semibold); letter-spacing: 0.14em; text-transform: uppercase;
+                 color: var(--paper); background: var(--ink); border-radius: var(--radius-full);
+                 padding: 6px 12px; margin-bottom: var(--space-4); }
   .card__name { font-family: var(--font-display); font-weight: var(--weight-medium);
                 font-size: var(--text-xl); letter-spacing: -0.02em; }
   .card__name span { font-style: italic; font-weight: var(--weight-regular); color: var(--color-text-soft);
@@ -374,7 +550,10 @@ const t = isEN ? {
   .card__amount { font-family: var(--font-display); font-weight: var(--weight-medium);
                   font-size: clamp(3.4rem, 8vw, 5.2rem); letter-spacing: -0.04em; line-height: 0.9; }
   .card__per { color: var(--color-text-soft); font-size: var(--text-md); }
-  .card__sub { color: var(--color-text-soft); font-size: var(--text-sm); margin-top: var(--space-3); }
+  .card__after { color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+                 margin-top: 6px; }
+  .card__sub { color: var(--color-text-soft); font-size: var(--text-sm); margin-top: var(--space-3);
+               line-height: 1.5; }
   .card__right { padding: clamp(32px, 4vw, 52px); display: flex; flex-direction: column;
                  justify-content: space-between; gap: var(--space-5); background: #faf9f7; }
   .checks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
@@ -384,6 +563,17 @@ const t = isEN ? {
   .card__action { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
   .card__action .pay { justify-content: center; }
   .card__fine { font-size: var(--text-sm); color: var(--color-text-soft); text-align: center; }
+
+  /* Postdata */
+  .pd { padding: clamp(72px, 12vh, 150px) var(--edge); }
+  .pd__inner { max-width: 680px; margin: 0 auto; border-left: 2px solid var(--ink);
+               padding-left: clamp(20px, 4vw, 40px); }
+  .pd__label { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+               letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-text-soft); }
+  .pd__text { font-family: var(--font-display); font-weight: var(--weight-regular); font-style: italic;
+              font-size: clamp(1.3rem, 2.8vw, 1.9rem); letter-spacing: -0.02em; line-height: 1.25;
+              margin: var(--space-3) 0 var(--space-4); text-wrap: balance; }
+  .pd__sign { font-family: var(--font-body); font-size: var(--text-md); color: var(--color-text-soft); }
 
   .faq { padding: 0 var(--edge) clamp(72px, 12vh, 150px); }
   .faq__inner { max-width: 1180px; margin: 0 auto;
@@ -434,10 +624,12 @@ const t = isEN ? {
     .hero__media { height: 72vh; order: 2; }
     .hero:hover .hero__media img, .hero__media img { filter: grayscale(0) contrast(1); transform: scale(1); }
     .hero__tag { top: auto; bottom: 48px; }
+    .story__disc { grid-template-columns: 1fr; }
     .how__grid { grid-template-columns: 1fr; gap: 0; }
     .step { border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-5); }
     .step:last-child { border-bottom: 0; }
     .focus__inner { grid-template-columns: 1fr; gap: var(--space-5); }
+    .fit__grid { grid-template-columns: 1fr; gap: var(--space-6); }
     .card { grid-template-columns: 1fr; }
     .card__left { border-right: 0; border-bottom: 1px solid var(--color-border); }
     .faq__inner { grid-template-columns: 1fr; gap: var(--space-5); }
@@ -536,6 +728,34 @@ const t = isEN ? {
       </div>
     </div>
 
+    <section class="story" id="historia">
+      <div class="story__inner">
+        <div class="reveal">
+          <span class="ovl">{t.storyEyebrow}</span>
+          <p class="story__lead">{t.storyLead}</p>
+        </div>
+        <div class="story__body reveal">
+          {t.storyBody1.map((p) => (<p>{p}</p>))}
+        </div>
+        <div class="reveal">
+          <span class="ovl">{t.discLabel}</span>
+          <div class="story__disc">
+            {t.disc.map((d) => (
+              <div class="disc">
+                <div class="disc__k">{d.k}</div>
+                <div class="disc__t">{d.t}</div>
+                <p>{d.p}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div class="story__body reveal">
+          {t.storyBody2.map((p) => (<p>{p}</p>))}
+        </div>
+        <p class="story__advice reveal" set:html={t.storyBridge} />
+      </div>
+    </section>
+
     <section class="how" id="how">
       <div class="how__inner">
         <div class="how__head reveal">
@@ -590,6 +810,42 @@ const t = isEN ? {
       </div>
     </section>
 
+    <section class="fit">
+      <div class="fit__inner">
+        <div class="fit__head reveal">
+          <span class="ovl">{t.fitEyebrow}</span>
+          <h2>{t.fitH2}</h2>
+        </div>
+        <div class="fit__grid reveal">
+          <div class="fit__col fit__col--yes">
+            <h3>{t.fitYesH}</h3>
+            <ul class="fit__list">
+              {t.fitYes.map((li) => (
+                <li><span class="mk" aria-hidden="true">✓</span> <span>{li}</span></li>
+              ))}
+            </ul>
+          </div>
+          <div class="fit__col fit__col--no">
+            <h3>{t.fitNoH}</h3>
+            <ul class="fit__list">
+              {t.fitNo.map((li) => (
+                <li><span class="mk" aria-hidden="true">—</span> <span>{li}</span></li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="comm">
+      <div class="comm__inner reveal">
+        <span class="ovl">{t.commEyebrow}</span>
+        <h2 class="comm__big">{t.commBig}</h2>
+        <p class="comm__p">{t.commP}</p>
+        <span class="comm__tag"><span class="dot" aria-hidden="true"></span> {t.commTag}</span>
+      </div>
+    </section>
+
     <section class="plan" id="plan">
       <div class="plan__inner">
         <div class="plan__head reveal">
@@ -598,11 +854,13 @@ const t = isEN ? {
         </div>
         <div class="card reveal">
           <div class="card__left">
+            <span class="card__badge">{t.cardBadge}</span>
             <div class="card__name">{t.cardName} <span>{t.cardNameEs}</span></div>
             <div class="card__price">
-              <span class="card__amount">19&nbsp;€</span>
+              <span class="card__amount">$57</span>
               <span class="card__per">{t.per}</span>
             </div>
+            <p class="card__after">{t.cardAfter}</p>
             <p class="card__sub">{t.cardSub}</p>
           </div>
           <div class="card__right">
@@ -620,6 +878,14 @@ const t = isEN ? {
             </div>
           </div>
         </div>
+      </div>
+    </section>
+
+    <section class="pd">
+      <div class="pd__inner reveal">
+        <span class="pd__label">{t.pdLabel}</span>
+        <p class="pd__text">{t.pdText}</p>
+        <span class="pd__sign">{t.pdSign}</span>
       </div>
     </section>
 
