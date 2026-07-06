@@ -10,8 +10,11 @@
 -- ⚠️ Destructivo para esos datos: borra la columna `level` de `exercises` y
 -- `profiles` y el enum `user_level`. El nivel dejó de usarse, así que es seguro.
 -- Orden: primero las políticas/función que dependen del nivel, luego columnas y
--- por último el tipo enum.
+-- por último el tipo enum. Todo en UNA transacción: si algo falla, no se aplica
+-- nada a medias.
 -- =============================================================================
+
+begin;
 
 -- 1) RLS que dependía del nivel: recrear sin ese filtro.
 --    exercises: basta suscripción activa + estar dentro de la ventana de vigencia.
@@ -47,3 +50,5 @@ create index if not exists exercises_window_idx on public.exercises (publish_at,
 
 -- 5) Quitar el enum, ya sin usos.
 drop type if exists public.user_level;
+
+commit;
