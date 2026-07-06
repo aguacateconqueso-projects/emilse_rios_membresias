@@ -105,6 +105,11 @@ control de DNS y no depender de él.
       formatos comunes (URL del panel `vimeo.com/manage/videos/ID`, hash en query `?h=`, ID
       pelado, código `<iframe>` pegado). **Corregido** en `src/components/membresia/Aula.astro`:
       parser robusto + mensaje visible si aún no se puede cargar (ya no queda un botón muerto).
+      Además el **campo de video del panel** era `type="url"` y rechazaba el código de inserción;
+      ahora es texto libre y **normaliza al guardar** (acepta URL, enlace del panel, ID pelado o
+      el `<iframe>` completo → guarda la URL limpia del player). Si el video es "solo por
+      inserción", el código `<iframe>` de Vimeo puede venir SIN hash: en ese modo Vimeo autoriza
+      por **dominio**, no por hash, así que basta con el dominio permitido correcto.
       ⚠️ Si el iframe SÍ aparece pero Vimeo dice que no se puede reproducir aquí, es la
       **privacidad del video en Vimeo**: en el video → Privacy → "Where can this be embedded"
       debe permitir el dominio (`emilseriosacademy.com`) o estar en "Anywhere"; y si el video
