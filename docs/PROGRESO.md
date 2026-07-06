@@ -98,6 +98,17 @@ control de DNS y no depender de él.
       ni al listar miembros. Código y BD realineados.
 
 ### ⚠️ ACCIÓN INMEDIATA (retomar aquí)
+- [x] **Primer ejercicio subido** por Emi (tras el redeploy limpio). El guardado ya funciona.
+- [ ] **VIDEO NO REPRODUCE EN EL AULA (jul 6)**: al alumno le salía el botón de play pero no
+      pasaba nada. Causa de código: el botón de play es solo decorativo (CSS); el `<iframe>` de
+      Vimeo solo se pinta si `vimeoEmbed(url)` interpreta la URL, y el regex viejo fallaba con
+      formatos comunes (URL del panel `vimeo.com/manage/videos/ID`, hash en query `?h=`, ID
+      pelado, código `<iframe>` pegado). **Corregido** en `src/components/membresia/Aula.astro`:
+      parser robusto + mensaje visible si aún no se puede cargar (ya no queda un botón muerto).
+      ⚠️ Si el iframe SÍ aparece pero Vimeo dice que no se puede reproducir aquí, es la
+      **privacidad del video en Vimeo**: en el video → Privacy → "Where can this be embedded"
+      debe permitir el dominio (`emilseriosacademy.com`) o estar en "Anywhere"; y si el video
+      es "oculto/unlisted", el enlace debe incluir su hash. Eso NO se arregla por código.
 - [ ] **REDESPLEGAR PRODUCCIÓN + REFRESCAR (incidente "schema cache", jul 6)**: al subir un
       ejercicio con Emi salía *"could not find the 'level' column of 'exercises' in the schema
       cache"* (PGRST204). **No es bug de código:** `main` ya está limpio (no manda `level`) y la

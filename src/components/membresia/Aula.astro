@@ -360,11 +360,23 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   }
   const avatarLetter = (name) => ((name || '?').trim()[0] || '?').toUpperCase();
 
+  // Convierte cualquier forma de enlace de Vimeo en la URL de embed del player.
+  // Tolera lo que Emi pueda pegar: enlace normal, enlace del panel
+  // (vimeo.com/manage/videos/ID), player.vimeo.com/video/ID, ID pelado, código
+  // <iframe> completo, y el hash de video oculto tanto en la ruta (/ID/HASH)
+  // como en query (?h=HASH). Devuelve null si no encuentra un ID válido.
   function vimeoEmbed(url) {
     if (!url) return null;
-    const m = String(url).match(/vimeo\.com\/(?:video\/)?(\d+)(?:\/(\w+))?/);
-    if (!m) return null;
-    return `https://player.vimeo.com/video/${m[1]}${m[2] ? '?h=' + m[2] : ''}`;
+    let s = String(url).trim();
+    // Si pegaron el código <iframe … src="…">, usa el src.
+    const src = s.match(/src=["']([^"']+)["']/i);
+    if (src) s = src[1];
+    // ID del video: primera secuencia larga de dígitos (los IDs de Vimeo son 6-11).
+    const id = s.match(/\d{6,}/);
+    if (!id) return null;
+    // Hash de privacidad: ?h=/&h= o segmento de ruta /ID/HASH.
+    const h = s.match(/[?&]h=([A-Za-z0-9]+)/) || s.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
+    return `https://player.vimeo.com/video/${id[0]}${h ? '?h=' + h[1] : ''}`;
   }
 
   function showLocked() {
@@ -435,10 +447,22 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       const player = $('player');
       if (!player) return;
       if (embed) {
-        player.innerHTML =
-          '<iframe src="' + embed + '" style="position:absolute;inset:0;width:100%;height:100%;border:0" ' +
-          'allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>';
+        const iframe = document.createElement('iframe');
+        iframe.src = embed;
+        iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
+        iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+        iframe.allowFullscreen = true;
+        player.replaceChildren(iframe);
+      } else if (url) {
+        // Hay URL pero no se pudo interpretar: no dejar un botón de play muerto.
+        const msg = document.createElement('div');
+        msg.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-size:13px;line-height:1.5';
+        msg.textContent = EN
+          ? 'This video could not be loaded. Check the Vimeo link in the panel.'
+          : 'No se pudo cargar el video. Revisa el enlace de Vimeo en el panel.';
+        player.replaceChildren(msg);
       }
+      // Si no hay URL para ese idioma, se deja el placeholder tal cual.
     }
     renderVideo(pageLang);
     document.querySelectorAll('.vtab').forEach((tab) => {
