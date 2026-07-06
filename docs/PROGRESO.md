@@ -93,17 +93,28 @@ control de DNS y no depender de él.
       panel, landing (copy ES/EN), seed, `set_admin.sql` y migración `0004_remove_levels.sql`.
 - [x] **Niveles eliminados — BD**: se aplicó `0004_remove_levels.sql` en el SQL Editor
       (columnas `level` y enum `user_level` borrados).
+- [x] **PR #3 MERGEADO** (`claude/cool-newton-fzwqfo` → `main`, commit `26c60af`): el código
+      sin niveles ya está en `main`. El panel ya NO envía `level` al crear/editar ejercicios
+      ni al listar miembros. Código y BD realineados.
 
 ### ⚠️ ACCIÓN INMEDIATA (retomar aquí)
-- [ ] **MERGEAR PR #3** (`claude/cool-newton-fzwqfo` → `main`). **Importante:** el PR #2 se
-      mergeó por error en un commit ANTERIOR a la eliminación de niveles, así que `main` (y
-      por tanto producción en Vercel) **todavía tiene el código con `level`**, pero la BD ya
-      NO tiene esa columna (0004 aplicada). Mientras no se mergee el PR #3, el panel falla al
-      **crear ejercicios** y al **listar miembros** (consultan la columna borrada). Mergear
-      el PR #3 realinea el código con la BD y lo deja sano. (Ver "Incidente" abajo.)
+- [ ] **REDESPLEGAR PRODUCCIÓN + REFRESCAR (incidente "schema cache", jul 6)**: al subir un
+      ejercicio con Emi salía *"could not find the 'level' column of 'exercises' in the schema
+      cache"* (PGRST204). **No es bug de código:** `main` ya está limpio (no manda `level`) y la
+      BD ya no tiene la columna. El error lo lanza PostgREST cuando la petición trae `level`,
+      así que lo estaba mandando un **build VIEJO de Vercel** (anterior al PR #3) todavía vivo
+      en el navegador/edge de Emi. Para cerrarlo:
+      1. Forzar un **redeploy de `main`** en Vercel (cualquier push a `main` re-despliega; esta
+         rama al mergearse ya lo dispara). Confirmar en Vercel que el último deploy de producción
+         apunta al commit del PR #3 o posterior.
+      2. Emi hace **refresco fuerte** (Ctrl/Cmd+Shift+R) o prueba en incógnito para tirar la
+         página cacheada.
+      3. Red de seguridad: correr `supabase/migrations/0005_reload_schema_cache.sql`
+         (`notify pgrst, 'reload schema';`) en el SQL Editor por si la cache de esquema de
+         Supabase quedó desincronizada tras el DROP de 0004.
 
 ### Pendiente ⬜
-- [ ] **Recorrido completo end-to-end** (tras mergear PR #3): Emi crea ejercicio (sin nivel)
+- [ ] **Recorrido completo end-to-end** (con el redeploy servido): Emi crea ejercicio (sin nivel)
       → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta.
 - [ ] **Stripe**: checkout $57/$77 + webhook (función de Vercel) + portal de cliente.
 - [ ] Atar el gating de suscripción a Stripe real (hoy se simula con una fila en `subscriptions`).
@@ -130,7 +141,8 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
    ```
 3. `npm run dev` → http://localhost:4321/
 4. Migraciones en el SQL Editor (el proyecto ya tenía 0001): `0002_forum.sql` (foro),
-   `0003_storage_pdfs.sql` (bucket de PDFs) y `0004_remove_levels.sql` (quita niveles).
+   `0003_storage_pdfs.sql` (bucket de PDFs), `0004_remove_levels.sql` (quita niveles) y
+   `0005_reload_schema_cache.sql` (recarga la cache de esquema de PostgREST).
    Luego datos de prueba: `supabase/seed.sql` + dar **suscripción activa** a tu usuario
    (SQL al final de `seed.sql`).
 5. Para entrar al panel: `update public.profiles set role='admin' where email='TU-EMAIL';`
@@ -143,4 +155,4 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-`claude/cool-newton-fzwqfo`
+`claude/exercises-level-column-error-4eis82`
