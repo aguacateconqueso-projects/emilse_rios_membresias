@@ -52,6 +52,27 @@ control de DNS y no depender de él.
       preguntas**. Todo bilingüe ES/EN (EN traducido de la voz de Emi). El precio del mockup
       (19 €) quedó reemplazado por $57. El botón "Acá te unes / Join here" sigue siendo
       placeholder hasta conectar Stripe.
+- [x] **Barra flotante tipo "pill"** (PR #8, `claude/floating-nav-pill`): la barra superior
+      pasó de `mix-blend` transparente a una **píldora esmerilada** (fondo translúcido con
+      `backdrop-filter: blur`), siempre visible al hacer scroll. Layout en 3 zonas: **EN/ES**
+      izquierda · **Emilse Rios** centro · **Menú** derecha. Se quitó el tag "Nuevo cada jueves"
+      del hero (se perdía sobre la foto).
+- [x] **Menú desplegable minimalista tipo Analogue** (PR #9, `claude/nav-menu-expand`): la
+      píldora es **angosta** (`min(94vw, 460px)`, centrada) y **se despliega en su mismo lugar**
+      al pulsar "Menú" (morph de `border-radius` + alto animado con `grid-template-rows`), en vez
+      del overlay oscuro a pantalla completa. Panel: grilla 2 columnas de enlaces (La historia ·
+      Cómo funciona · Qué incluye · El plan · Cursos · Videos) + bloques **Contacto / En la red /
+      Dónde**. El botón alterna Menú↔Cerrar (☰→✕); cierra al elegir enlace, clic fuera o Escape.
+      En móvil se oculta la palabra "Menú" dejando el ícono.
+- [x] **Cambio de idioma EN/ES sin volver al inicio** (PR #10, `claude/lang-switch-in-place`):
+      el toggle ya no recarga saltando arriba. Guarda la **sección + offset** donde está el
+      visitante, hace **fade-out**, navega al otro idioma y **restaura la misma posición** con
+      **fade-in** (las secciones re-animan con el `reveal` existente). Ancla por sección (no por
+      píxel absoluto) para aguantar que el texto mida distinto entre idiomas. Usa
+      `history.scrollRestoration='manual'` + pre-oculta el contenido hasta reposicionar (evita el
+      parpadeo); red de seguridad revela igual a los 1.5s. Respeta `prefers-reduced-motion`. Se
+      mantiene la arquitectura de **dos páginas SSR** (`/` y `/en/`): URLs por idioma, SEO y meta
+      intactos. Verificado headless en ambos sentidos (queda al pixel en la misma sección).
 - [x] Aula — prototipo visual
 - [x] Panel de Emi — prototipo visual
 - [x] Esquema de BD + RLS (`supabase/migrations/0001_init.sql`)
@@ -140,6 +161,9 @@ control de DNS y no depender de él.
 - [ ] Atar el gating de suscripción a Stripe real (hoy se simula con una fila en `subscriptions`).
 - [ ] (Opcional, limpieza) Servir el **favicon** desde el dominio propio en vez del WordPress
       viejo (`emilserios.com`) — quita un aviso de CORS y otra dependencia del tercero.
+      ⚠️ Reapareció al probar el cambio de idioma: el `<link rel="icon">` apunta a
+      `https://emilserios.com/...`; en entornos con proxy lento puede colgar la carga. En
+      producción carga bien, pero conviene autoalojarlo. (Adrián lo dejó para un PR aparte.)
 - [ ] Anti-reentrada fina por email (después).
 - [ ] Onboarding tipo Figma (después).
 - [ ] Favoritos (después).
@@ -175,5 +199,15 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-`claude/vimeo-embed-playback-fix` (PR #5, mergeado). La anterior fue
-`claude/exercises-level-column-error-4eis82` (PR #4).
+Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora, **#9** menú desplegable,
+**#10** cambio de idioma. Este doc se actualiza en `claude/progreso-update-nav-lang`.
+
+## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
+Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo
+**despliega a producción al mergear el PR a `main`**; una vez mergeado, el PR queda cerrado y
+los commits que se empujen después a esa misma rama **no llegan a ningún lado** ("no funciona").
+Regla práctica:
+1. Antes de cada cambio: `git fetch origin main` y crear rama desde `origin/main`.
+2. Un solo cambio por rama → PR nuevo (crear con la herramienta de GitHub).
+3. Cuando Adrián mergea, avisa; el siguiente cambio arranca del `main` ya actualizado.
+No apilar cambios nuevos sobre una rama cuyo PR ya se mergeó (reiniciar desde `main`).
