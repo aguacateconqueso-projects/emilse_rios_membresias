@@ -7,7 +7,9 @@
 // el logo en el hero, la foto, la frase de apertura grande en cursiva, los dos
 // descubrimientos con protagonismo, el precio en un cuadro que se invierte al
 // pasar el cursor con el botón dentro, FAQ desplegable, y fundidos al hacer
-// scroll. Acento único: terracota (botones) + marrón instrumento en los hovers.
+// scroll. Paleta monocromática (tinta/crema); botones cuadrados que se invierten al
+// hover, sin color ni brillos. Único toque de color: el marrón del instrumento en los
+// hovers de texto (apertura, cierre).
 // NOTA: los botones de pago son placeholder hasta conectar Stripe; el newsletter
 // ya apunta al alta real (Klaviyo/kmail).
 interface Props { lang?: 'es' | 'en'; }
@@ -266,7 +268,7 @@ const t = isEN ? {
 
   /* 2 · Foto */
   .photo { margin: 0 auto clamp(24px, 5vw, 34px); width: clamp(190px, 48vw, 250px); }
-  .photo img { width: 100%; height: auto; border-radius: 6px; box-shadow: 0 18px 44px rgba(23, 20, 15, 0.14); }
+  .photo img { width: 100%; height: auto; border-radius: 0; box-shadow: 0 14px 36px rgba(23, 20, 15, 0.12); }
 
   /* 3 · Titular + apertura */
   .title { font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1.08; letter-spacing: -0.02em;
@@ -275,8 +277,8 @@ const t = isEN ? {
               text-align: center; margin: 0.35em 0 0; letter-spacing: -0.01em; }
   .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center; text-wrap: balance;
           font-style: italic; font-weight: 700; font-size: clamp(1.3rem, 4vw, 1.85rem); line-height: 1.36;
-          letter-spacing: -0.01em; transition: color 0.45s ease, transform 0.45s ease; }
-  .lede:hover { color: var(--wood); transform: scale(1.015); }
+          letter-spacing: -0.01em; transition: color 0.45s ease; }
+  .lede:hover { color: var(--wood); }
 
   /* Cuerpo corrido */
   p { margin: 0 0 1.15em; }
@@ -305,48 +307,44 @@ const t = isEN ? {
   /* 6 · Cuadro comparativo — para ti / no es para ti */
   .compare { margin-top: clamp(36px, 7vw, 56px); display: grid; grid-template-columns: 1fr 1fr;
              gap: clamp(14px, 3vw, 22px); align-items: start; }
-  .compare__col { border: 1px solid rgba(23, 20, 15, 0.14); border-radius: 14px; padding: clamp(18px, 3vw, 26px);
+  .compare__col { border: 1px solid rgba(23, 20, 15, 0.16); border-radius: 0; padding: clamp(18px, 3vw, 26px);
                   background: rgba(255, 255, 255, 0.5); }
   .compare__col--no { background: rgba(23, 20, 15, 0.035); }
   .compare__h { font-weight: 700; margin: 0 0 0.9em; font-size: 1.02em; line-height: 1.25; text-wrap: balance; }
   .compare__col ul { list-style: none; padding: 0; margin: 0; }
   .compare__col li { position: relative; padding-left: 1.5em; margin-bottom: 0.8em; font-size: 0.96em; line-height: 1.5; }
   .compare__col li:last-child { margin-bottom: 0; }
-  .compare__col--yes li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+  .compare__col--yes li::before { content: "✓"; position: absolute; left: 0; color: var(--ink); font-weight: 700; }
   .compare__col--no li::before { content: "–"; position: absolute; left: 0; color: var(--soft); font-weight: 700; }
   @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
 
   /* 7 · Cuadro de precio — se invierte al pasar el cursor; botón dentro */
   .plan { margin-top: clamp(40px, 8vw, 60px); }
-  .pricebox { max-width: 420px; margin: 0 auto; border: 2px solid var(--ink); border-radius: 18px;
-              background: #fff; color: #17140f; padding: clamp(26px, 5vw, 40px) clamp(22px, 5vw, 34px);
-              text-align: center; transition: background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease; }
-  .pricebox:hover { background: var(--ink); color: #fff; box-shadow: 0 24px 60px rgba(23, 20, 15, 0.28); transform: translateY(-3px); }
+  .pricebox { max-width: 420px; margin: 0 auto; border: 1.5px solid var(--ink); border-radius: 0;
+              background: #fff; color: #17140f; padding: clamp(28px, 5vw, 44px) clamp(22px, 5vw, 36px);
+              text-align: center; transition: background 0.4s ease, color 0.4s ease; }
+  .pricebox:hover { background: var(--ink); color: var(--paper); }
   .pricebox__label { text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.76rem; font-weight: 700;
                      margin: 0 0 0.5em; opacity: 0.85; }
   .pricebox__amount { margin: 0 0 0.45em; line-height: 1; }
   .pricebox__amount .num { font-size: clamp(3.3rem, 13vw, 4.6rem); font-weight: 800; letter-spacing: -0.03em; }
   .pricebox__amount .per { font-size: 1.15rem; font-weight: 600; opacity: 0.65; margin-left: 0.15em; }
   .pricebox__note { font-size: 0.92em; margin: 0 0 1.5em; opacity: 0.9; line-height: 1.5; }
+  /* El botón dentro del cuadro se invierte junto con la caja */
+  .pricebox .btn { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .pricebox:hover .btn { background: var(--paper); color: var(--ink); border-color: var(--paper); }
   .plan__below { margin: clamp(20px, 4vw, 30px) auto 0; max-width: 560px; text-align: center;
                  font-size: 0.94em; color: var(--soft); text-wrap: pretty; }
 
-  /* Botones de acento — con barrido de brillo y efecto magnético (JS) */
+  /* Botones — editoriales, monocromáticos, cuadrados. Sin color, sin brillos. */
   .cta { text-align: center; margin: clamp(32px, 6vw, 48px) 0; }
   .cta--inbox { margin: 0; }
-  .btn { position: relative; display: inline-block; overflow: hidden; background: var(--accent); color: #fff;
-         text-decoration: none; font-family: var(--font-body), system-ui, sans-serif; font-weight: 700;
-         font-size: 1.12rem; letter-spacing: 0.01em; padding: 18px 46px; border-radius: 11px;
-         box-shadow: 0 8px 22px rgba(169, 79, 43, 0.3);
-         transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s ease, background 0.25s ease;
-         will-change: transform; }
-  .btn:hover { background: var(--accent-strong); box-shadow: 0 16px 38px rgba(169, 79, 43, 0.42); }
-  .btn .txt { position: relative; z-index: 1; }
-  .btn::before { content: ""; position: absolute; top: 0; left: -120%; width: 55%; height: 100%;
-                 background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-                 transform: skewX(-18deg); pointer-events: none; }
-  .btn:hover::before { animation: sheen 0.85s ease; }
-  @keyframes sheen { to { left: 140%; } }
+  .btn { display: inline-block; background: var(--ink); color: var(--paper);
+         text-decoration: none; font-family: var(--font-body), system-ui, sans-serif; font-weight: 600;
+         font-size: 0.92rem; letter-spacing: 0.16em; text-transform: uppercase;
+         padding: 20px 52px; border: 1.5px solid var(--ink); border-radius: 0;
+         transition: background 0.35s ease, color 0.35s ease; }
+  .btn:hover { background: transparent; color: var(--ink); text-decoration: none; }
 
   /* 8 · Posdata — cursiva, más pequeña, fuera del cuadro */
   .pd { margin-top: clamp(34px, 7vw, 50px); font-style: italic; font-size: 0.94em; color: var(--soft); }
@@ -365,7 +363,7 @@ const t = isEN ? {
   .qa summary::-webkit-details-marker { display: none; }
   .qa summary .n { color: var(--soft); margin-right: 0.5em; }
   .qa summary::after { content: "+"; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-                       font-size: 1.4em; line-height: 1; color: var(--accent); transition: transform 0.25s ease; }
+                       font-size: 1.4em; line-height: 1; color: var(--ink); transition: transform 0.25s ease; }
   .qa[open] summary::after { content: "–"; }
   .qa summary:hover { color: var(--wood); }
   .qa__a { margin: 0; padding: 0 0 clamp(15px, 3vw, 19px); color: var(--ink); animation: faqin 0.32s ease; }
@@ -383,8 +381,7 @@ const t = isEN ? {
   /* 12 · Newsletter — centrado, botón que lleva al alta real */
   .news { margin-top: clamp(34px, 7vw, 50px); text-align: center; }
   .news__pre { margin: 0 0 1em; color: var(--soft); }
-  .btn--news { background: var(--ink); box-shadow: 0 8px 22px rgba(23, 20, 15, 0.2); font-size: 1rem; padding: 15px 36px; }
-  .btn--news:hover { background: #000; box-shadow: 0 16px 34px rgba(23, 20, 15, 0.3); }
+  .btn--news { font-size: 0.8rem; padding: 15px 40px; }
 
   /* Footer mínimo */
   .foot { margin-top: clamp(48px, 9vw, 80px); font-size: 0.8rem; color: var(--soft);
@@ -401,8 +398,6 @@ const t = isEN ? {
   }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
-    .lede:hover, .pricebox:hover { transform: none; }
-    .btn:hover::before { animation: none; }
   }
 </style>
 </head>
@@ -467,7 +462,7 @@ const t = isEN ? {
         <p class="pricebox__amount"><span class="num">{t.priceAmount}</span><span class="per">{t.pricePer}</span></p>
         <p class="pricebox__note">{t.priceInBox}</p>
         <div class="cta cta--inbox">
-          <a class="btn btn--magnetic" href={t.payHref}><span class="txt">{t.pay}</span></a>
+          <a class="btn" href={t.payHref}>{t.pay}</a>
         </div>
       </div>
       <p class="plan__below">{t.priceBelow}</p>
@@ -490,7 +485,7 @@ const t = isEN ? {
     </section>
 
     <div class="cta reveal">
-      <a class="btn btn--magnetic" href={t.payHref}><span class="txt">{t.pay}</span></a>
+      <a class="btn" href={t.payHref}>{t.pay}</a>
     </div>
 
     <p class="finalmsg reveal">{t.finalMsg}</p>
@@ -499,7 +494,7 @@ const t = isEN ? {
 
     <div class="news reveal">
       <p class="news__pre">{t.newsPre}</p>
-      <a class="btn btn--news" href={newsHref} target="_blank" rel="noopener"><span class="txt">{t.newsLink}</span></a>
+      <a class="btn btn--news" href={newsHref} target="_blank" rel="noopener">{t.newsLink}</a>
     </div>
 
     <footer class="foot">
@@ -532,20 +527,6 @@ const t = isEN ? {
         });
       }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
       revs.forEach(function (el) { io.observe(el); });
-    }
-
-    // Botón magnético: sigue sutilmente al cursor (solo puntero fino)
-    if (!reduce && window.matchMedia('(pointer: fine)').matches) {
-      document.querySelectorAll('.btn--magnetic').forEach(function (btn) {
-        var strength = 0.28;
-        btn.addEventListener('pointermove', function (e) {
-          var r = btn.getBoundingClientRect();
-          var mx = e.clientX - (r.left + r.width / 2);
-          var my = e.clientY - (r.top + r.height / 2);
-          btn.style.transform = 'translate(' + (mx * strength).toFixed(1) + 'px,' + (my * strength).toFixed(1) + 'px)';
-        });
-        btn.addEventListener('pointerleave', function () { btn.style.transform = ''; });
-      });
     }
   })();
 </script>
