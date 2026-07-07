@@ -75,9 +75,11 @@ control de DNS y no depender de él.
       parpadeo); red de seguridad revela igual a los 1.5s. Respeta `prefers-reduced-motion`. Se
       mantiene la arquitectura de **dos páginas SSR** (`/` y `/en/`): URLs por idioma, SEO y meta
       intactos. Verificado headless en ambos sentidos (queda al pixel en la misma sección).
-      ⚠️ **La coreografía se retiró en el rediseño "carta editorial"**: se conservan las dos
-      páginas SSR y el toggle, pero ahora son **dos enlaces simples ES/EN en el footer**, sin
-      fade ni restauración de scroll.
+      ⚠️ **En el rediseño "carta editorial" se rehízo esta coreografía** sobre la nueva
+      estructura (ver más abajo, sección "Ajustes de fluidez"): la píldora EN/ES fija arriba a
+      la derecha (y el toggle del footer) guardan el bloque + offset, hacen fade-out, navegan y
+      restauran la posición con fade-in. El anclaje ahora es por **hijo directo de `.page`**
+      (antes eran las `<section>` del `<main>`).
 - [x] **Rediseño "carta editorial" de la página de ventas** (rama `claude/sales-page-redesign-67469k`,
       brief de Emi jul 2026): giro de 180° en el CONTENEDOR VISUAL (el copy no cambia de fondo).
       Principio rector: *nada puede distraer de la lectura*; se lee como una carta, no como una
@@ -96,6 +98,17 @@ control de DNS y no depender de él.
       en la voz de Emi (apertura, referidos, cierre "¡Estudiemos juntos!") porque no estaban en el
       copy previo. Botones y newsletter siguen en **placeholder** (`href="#"`) hasta conectar Stripe
       y el alta al newsletter "Contrabajo en la Ciudad".
+- [~] **Ajustes de fluidez sobre la carta** (rama `claude/sales-page-redesign-67469k`, PR #12, EN CURSO):
+      Emi pide que "respire" y se sienta fluida/seductora. **Paso 1 hecho — píldora EN/ES**: se
+      añadió una **píldora fija en la esquina superior derecha** (vidrio esmerilado, `backdrop-filter`,
+      solo EN/ES) que **cambia de idioma sin volver al inicio**: guarda el bloque + offset donde está
+      el scroll, hace **fade-out** del `.page`, navega a la otra página SSR y **restaura la misma
+      posición** con **fade-in**. Anclaje por hijo directo de `.page` con `getBoundingClientRect`;
+      `history.scrollRestoration='manual'` + pre-oculta el contenido (`html.lang-enter`) hasta
+      reposicionar; respeta `prefers-reduced-motion`. Verificado headless: al togglear a media página
+      el scroll se conserva (delta ~60px por el largo distinto del texto) y queda en la misma sección.
+      El toggle del footer comparte el mismo comportamiento (`[data-lang-switch]`). **Pendiente**:
+      seguir con respiros/espaciado y ritmo de lectura del resto de la carta.
 - [x] Aula — prototipo visual
 - [x] Panel de Emi — prototipo visual
 - [x] Esquema de BD + RLS (`supabase/migrations/0001_init.sql`)

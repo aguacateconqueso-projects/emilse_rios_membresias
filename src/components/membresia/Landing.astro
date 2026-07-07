@@ -182,6 +182,16 @@ const t = isEN ? {
   if (location.hash.includes('access_token=') || location.hash.includes('error_code=')) {
     location.replace('/entrar/' + location.hash);
   }
+  // Cambio de idioma sin saltar al inicio: si venimos de un toggle EN/ES,
+  // pre-ocultamos el contenido antes de pintar para reposicionar sin parpadeo.
+  // Red de seguridad: se revela igual a los 1.5s por si algo falla.
+  try {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    if (sessionStorage.getItem('langSwitch')) {
+      document.documentElement.classList.add('lang-enter');
+      setTimeout(function () { document.documentElement.classList.remove('lang-enter'); }, 1500);
+    }
+  } catch (e) {}
 </script>
 <title>{t.metaTitle}</title>
 <meta name="description" content={t.metaDesc} />
@@ -216,7 +226,25 @@ const t = isEN ? {
   ::selection { background: var(--ink); color: var(--paper); }
   img { display: block; max-width: 100%; }
 
-  .page { max-width: var(--measure); margin: 0 auto; padding: clamp(28px, 7vw, 56px) var(--edge) clamp(48px, 9vw, 88px); }
+  .page { max-width: var(--measure); margin: 0 auto; padding: clamp(28px, 7vw, 56px) var(--edge) clamp(48px, 9vw, 88px);
+          transition: opacity 300ms ease; }
+
+  /* Píldora de idioma — fija, esquina superior derecha. Solo EN/ES. */
+  .langpill { position: fixed; top: clamp(14px, 2.6vw, 22px); right: clamp(14px, 2.6vw, 22px); z-index: 50;
+              display: inline-flex; align-items: center; gap: 2px;
+              background: rgba(250, 247, 241, 0.72);
+              -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
+              border: 1px solid rgba(23, 20, 15, 0.10); border-radius: 999px; padding: 4px 5px;
+              box-shadow: 0 6px 22px rgba(23, 20, 15, 0.09); }
+  .langpill a { text-decoration: none; color: var(--soft); font-size: 0.82rem; font-weight: 600;
+                letter-spacing: 0.04em; line-height: 1; padding: 6px 12px; border-radius: 999px;
+                transition: color 200ms ease, background 200ms ease; }
+  .langpill a:hover { color: var(--ink); }
+  .langpill a[aria-current="true"] { color: var(--ink); background: rgba(23, 20, 15, 0.06); }
+
+  /* Fundido del texto al cambiar de idioma */
+  .page.is-leaving { opacity: 0; }
+  html.lang-enter .page { opacity: 0; }
 
   /* 1 · Firma superior (no es enlace, no es navegación) */
   .logo { text-align: center; font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase;
@@ -295,6 +323,12 @@ const t = isEN ? {
 </style>
 </head>
 <body>
+
+  <nav class="langpill" aria-label="Idioma / Language">
+    <a href="/" aria-current={(!isEN).toString()} data-lang-switch>ES</a>
+    <a href="/en/" aria-current={isEN.toString()} data-lang-switch>EN</a>
+  </nav>
+
   <main class="page">
 
     <p class="logo">{t.logo}</p>
@@ -364,11 +398,61 @@ const t = isEN ? {
       <span class="sep" aria-hidden="true">·</span>
       <span>{t.footLegal}</span>
       <span class="lang" aria-label="Idioma / Language">
-        <a href="/" aria-current={(!isEN).toString()}>ES</a>
-        <a href="/en/" aria-current={isEN.toString()}>EN</a>
+        <a href="/" aria-current={(!isEN).toString()} data-lang-switch>ES</a>
+        <a href="/en/" aria-current={isEN.toString()} data-lang-switch>EN</a>
       </span>
     </footer>
 
   </main>
+
+<script is:inline>
+  (function () {
+    // Cambio de idioma EN/ES sin volver al inicio. Las dos páginas son SSR
+    // independientes (/ y /en/): al togglear guardamos DÓNDE está el scroll
+    // (anclado a un bloque + offset, porque el texto mide distinto entre
+    // idiomas), hacemos fade-out, navegamos, y en la otra página restauramos
+    // la posición y hacemos fade-in.
+    var page = document.querySelector('.page');
+    var html = document.documentElement;
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    function blocks() { return page ? Array.prototype.slice.call(page.children) : []; }
+    function absTop(el) { return el.getBoundingClientRect().top + (window.scrollY || window.pageYOffset || 0); }
+
+    // AL ENTRAR: si venimos de un toggle, restaurar posición y revelar.
+    try {
+      var saved = sessionStorage.getItem('langSwitch');
+      if (saved) {
+        sessionStorage.removeItem('langSwitch');
+        var d = JSON.parse(saved);
+        var bs = blocks();
+        var anchor = bs[d.i];
+        var y = anchor ? absTop(anchor) + d.d : d.y;
+        var prev = html.style.scrollBehavior; html.style.scrollBehavior = 'auto';
+        window.scrollTo(0, Math.max(0, y));
+        html.style.scrollBehavior = prev;
+        requestAnimationFrame(function () { html.classList.remove('lang-enter'); });
+      } else {
+        html.classList.remove('lang-enter');
+      }
+    } catch (e) { html.classList.remove('lang-enter'); }
+
+    // AL SALIR: guardar sección/offset, fade-out y navegar.
+    document.querySelectorAll('[data-lang-switch]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        if (a.getAttribute('aria-current') === 'true') return; // ya estamos en ese idioma
+        var href = a.getAttribute('href');
+        var bs = blocks();
+        var sy = window.scrollY || window.pageYOffset || 0;
+        var idx = 0;
+        for (var k = 0; k < bs.length; k++) { if (absTop(bs[k]) <= sy + 2) idx = k; else break; }
+        var delta = bs[idx] ? sy - absTop(bs[idx]) : 0;
+        try { sessionStorage.setItem('langSwitch', JSON.stringify({ i: idx, d: delta, y: sy })); } catch (err) {}
+        if (page && !reduce) page.classList.add('is-leaving');
+        setTimeout(function () { window.location.href = href; }, reduce ? 0 : 300);
+      });
+    });
+  })();
+</script>
 </body>
 </html>
