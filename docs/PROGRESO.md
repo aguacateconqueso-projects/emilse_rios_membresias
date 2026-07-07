@@ -56,14 +56,16 @@ control de DNS y no depender de él.
       pasó de `mix-blend` transparente a una **píldora esmerilada** (fondo translúcido con
       `backdrop-filter: blur`), siempre visible al hacer scroll. Layout en 3 zonas: **EN/ES**
       izquierda · **Emilse Rios** centro · **Menú** derecha. Se quitó el tag "Nuevo cada jueves"
-      del hero (se perdía sobre la foto).
+      del hero (se perdía sobre la foto). ⚠️ **Reemplazado por el rediseño "carta editorial"**
+      (ver más abajo): la carta no lleva menú ni barra.
 - [x] **Menú desplegable minimalista tipo Analogue** (PR #9, `claude/nav-menu-expand`): la
       píldora es **angosta** (`min(94vw, 460px)`, centrada) y **se despliega en su mismo lugar**
       al pulsar "Menú" (morph de `border-radius` + alto animado con `grid-template-rows`), en vez
       del overlay oscuro a pantalla completa. Panel: grilla 2 columnas de enlaces (La historia ·
       Cómo funciona · Qué incluye · El plan · Cursos · Videos) + bloques **Contacto / En la red /
       Dónde**. El botón alterna Menú↔Cerrar (☰→✕); cierra al elegir enlace, clic fuera o Escape.
-      En móvil se oculta la palabra "Menú" dejando el ícono.
+      En móvil se oculta la palabra "Menú" dejando el ícono. ⚠️ **Reemplazado por el rediseño
+      "carta editorial"** (ver más abajo): sin menú.
 - [x] **Cambio de idioma EN/ES sin volver al inicio** (PR #10, `claude/lang-switch-in-place`):
       el toggle ya no recarga saltando arriba. Guarda la **sección + offset** donde está el
       visitante, hace **fade-out**, navega al otro idioma y **restaura la misma posición** con
@@ -73,6 +75,27 @@ control de DNS y no depender de él.
       parpadeo); red de seguridad revela igual a los 1.5s. Respeta `prefers-reduced-motion`. Se
       mantiene la arquitectura de **dos páginas SSR** (`/` y `/en/`): URLs por idioma, SEO y meta
       intactos. Verificado headless en ambos sentidos (queda al pixel en la misma sección).
+      ⚠️ **La coreografía se retiró en el rediseño "carta editorial"**: se conservan las dos
+      páginas SSR y el toggle, pero ahora son **dos enlaces simples ES/EN en el footer**, sin
+      fade ni restauración de scroll.
+- [x] **Rediseño "carta editorial" de la página de ventas** (rama `claude/sales-page-redesign-67469k`,
+      brief de Emi jul 2026): giro de 180° en el CONTENEDOR VISUAL (el copy no cambia de fondo).
+      Principio rector: *nada puede distraer de la lectura*; se lee como una carta, no como una
+      landing. Se **eliminó** todo el andamiaje de marketing de `Landing.astro`: menú flotante,
+      marquesina, tarjeta de pricing, sección oscura "focus", grids de "cómo funciona/qué incluye",
+      bloque comunidad, acordeón FAQ, animaciones (reveal/marquee/magnético), iconos y checkmarks.
+      Queda una **sola columna** (~680px) sobre **un solo lienzo crema** (`#faf7f1`), tipografía
+      uniforme (Hanken Grotesk, 17–19px, interlineado 1.66, sin negritas/cursivas en el cuerpo),
+      y el orden fijo del brief: firma "Emilse Rios" (no clicable) · foto pequeña (~230px) · titular
+      "Estudiemos juntos / La membresía" + apertura ("El problema no es que te falte tiempo…") ·
+      historia corrida · listas es/no es (viñetas de guion) · precio como prosa · **botón 1** ·
+      P.D. · **8 FAQ visibles sin acordeón** (numeradas) · **botón 2** · línea de referidos ·
+      único enlace externo (newsletter, gris, subrayado) · footer legal mínimo con toggle ES/EN.
+      Los **dos botones idénticos "Acá te unes"** son el único elemento con acento (terracota
+      `#a94f2b`) → destacan solo la foto y los dos botones al hacer scroll. Líneas nuevas creadas
+      en la voz de Emi (apertura, referidos, cierre "¡Estudiemos juntos!") porque no estaban en el
+      copy previo. Botones y newsletter siguen en **placeholder** (`href="#"`) hasta conectar Stripe
+      y el alta al newsletter "Contrabajo en la Ciudad".
 - [x] Aula — prototipo visual
 - [x] Panel de Emi — prototipo visual
 - [x] Esquema de BD + RLS (`supabase/migrations/0001_init.sql`)
@@ -199,8 +222,10 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
+Rama actual: **`claude/sales-page-redesign-67469k`** (rediseño "carta editorial", PR #12),
+rebasada sobre `main` tras mergearse el **#11** (bitácora nav/lang).
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora, **#9** menú desplegable,
-**#10** cambio de idioma. Este doc se actualiza en `claude/progreso-update-nav-lang`.
+**#10** cambio de idioma, **#11** actualización de bitácora.
 
 ## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
 Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo

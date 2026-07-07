@@ -1,8 +1,14 @@
 ---
-// Landing de la membresía — componente bilingüe (prop lang: 'es' | 'en').
-// Rutas: / (es) y /en/ (en). El toggle EN/ES enlaza una con otra.
-// Copy: página de ventas "Estudiemos Juntos" (historia de Emi + oferta de fundador).
-// NOTA: el botón de pago es placeholder; se conecta a Stripe en la fase de backend.
+// Página de ventas de la membresía «Estudiemos Juntos» — componente bilingüe
+// (prop lang: 'es' | 'en'). Rutas: / (es) y /en/ (en).
+//
+// PRINCIPIO RECTOR (brief jul 2026): esto se lee como una carta, no como una
+// landing. Nada puede distraer de la lectura. Una columna, una foto pequeña, dos
+// botones. Sin menú, sin marquesina, sin tarjetas, sin sección oscura, sin
+// acordeón, sin animaciones, sin iconos. El peso visual lo llevan solo la foto y
+// los dos botones. El copy está cerrado.
+// NOTA: los botones son placeholder hasta conectar el checkout de Stripe; el
+// enlace al newsletter también es placeholder.
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
@@ -12,31 +18,12 @@ const t = isEN ? {
   htmlLang: 'en',
   metaTitle: "Let's Study Together — Emilse Rios Membership",
   metaDesc: "Half an hour a day, the days you can. A new exercise every Thursday and a community doing it with you. No overwhelming library — just the present. Monthly membership for double bassists.",
-  role: 'Double bassist', menu: 'Menu', close: 'Close',
-  nav: [
-    { num: '01', word: 'The story', es: 'Where it comes from', href: '#historia' },
-    { num: '02', word: 'How it works', es: 'Every week', href: '#how' },
-    { num: '03', word: 'The plan', es: 'Founder price', href: '#plan' },
-  ],
-  more: 'More', online: 'Online', courses: 'Courses', videos: 'Videos', classroom: 'Classroom',
-  menuLinks: [
-    { label: 'The story', href: '#historia' },
-    { label: 'How it works', href: '#how' },
-    { label: "What's included", href: '#incluye' },
-    { label: 'The plan', href: '#plan' },
-    { label: 'Courses', href: 'https://emilserios.com/cursos-contrabajo/' },
-    { label: 'Videos', href: 'https://emilserios.com/videos/' },
-  ],
-  menuContactLbl: 'Contact', menuFollowLbl: 'Online', menuPlaceLbl: 'Where',
-  menuPlace: 'Madrid · Online 24/7',
-  heroEyebrow: 'Membership · For double bassists',
-  heroTitle: "Let's study together", heroTitleEm: 'Estudiemos juntos',
-  heroGloss: 'Half an hour a day, the days you can. A new exercise every Thursday and a community doing it with you — no library to overwhelm you, only the present.',
-  heroCta: 'I want the membership',
-  heroNote1: 'Founder price', heroNote2: '$57/mo · only July 1–10',
-  marquee: 'A new exercise every Thursday <i>—</i> One concept a month <i>—</i> No library <i>—</i> A global community <i>—</i>',
+  logo: 'Emilse Rios',
+  title: "Let's study together",
+  subtitle: 'The membership',
+  photoAlt: 'Emilse Rios',
+  lede: "The problem isn't that you're short on time. The problem is not knowing what to do with the little time you have.",
 
-  storyEyebrow: 'Where this comes from',
   storyLead: 'In 2012 my only job was to play, as well as I possibly could, the symphonies of the composer I love most in the world. But it wasn’t always like that — and in this story there’s something that might help you manage your practice time, especially if you feel you don’t have any.',
   storyBody1: [
     'That year we played all of Mahler’s symphonies. At the Walt Disney Concert Hall, with the Simón Bolívar Symphony Orchestra and the Los Angeles Philharmonic together on stage, conducted by Gustavo Dudamel.',
@@ -45,41 +32,17 @@ const t = isEN ? {
     'I shared a flat with friends, so the only moment I had to practice was before seven in the morning. And the only place where I wouldn’t bother anyone was the rooftop of the building.',
     'So there I was, carrying a double bass up the stairs to a rooftop in Buenos Aires. Some days I made it. Half an hour, an hour if I got up earlier. Other days exhaustion won.',
   ],
-  discLabel: 'I discovered two things',
+  discLead: 'I discovered two things.',
   disc: [
-    { k: '01', t: 'Excuses will always be there', p: 'The complications, the lack of time — they exist, that’s life, and there’s nothing we can do about it. What we can do is train our discipline, be consistent. If you turn off Instagram or TikTok notifications, for example, you could give the bass 30 minutes a day. I know because every time I open the app and a little puppy pops up reminding me of my beloved Bach, it takes me about that long to unhook. You only need 30 minutes — some days maybe more.' },
-    { k: '02', t: 'The real question is what to do with them', p: 'Once you have those 30 minutes, that’s the real thing. You stand at the music stand, you tune, and… now what? What are you going to play? The same as always — you end up stuck, feeling like you’re not moving forward.' },
+    { t: 'The first: the excuses will always be there.', p: 'The complications, the lack of time — they exist, that’s life, and there’s nothing we can do about it. What we can do is train our discipline, be consistent. If you turn off Instagram or TikTok notifications, for example, you could give the bass 30 minutes a day. I know because every time I open the app and a little puppy pops up reminding me of my beloved Bach, it takes me about that long to unhook. You only need 30 minutes — some days maybe more.' },
+    { t: 'The second: the real question is what to do with them.', p: 'Once you have those 30 minutes, that’s the real thing. You stand at the music stand, you tune, and… now what? What are you going to play? The same as always — you end up stuck, feeling like you’re not moving forward.' },
   ],
   storyBody2: [
     'There are plenty of exercises floating around the internet, but finding and organizing them takes longer than actually practicing them. The way I see it, YouTube often steals more practice time than it gives back.',
     'Having a goal makes us move — it makes us carve out space in the calendar, it trains our consistency. That’s my advice to you: write it down. It can be a piece you always wanted to play, or getting to know the high register of the instrument. Whatever it is, write it down. Build a plan to reach it.',
-  ],
-  storyBridge: 'Need help getting there? That’s exactly why Estudiemos Juntos exists.',
-
-  howEyebrow: 'The rhythm of each week', howH2: 'A simple routine, sustained over time.',
-  steps: [
-    { day: 'Every month', num: '01', h: 'One concept', p: 'Each month I explain one basic technical concept — where the movements come from, the coordination, the sound. Just one, so you understand the foundation.' },
-    { day: 'Every week', num: '02', h: 'A new exercise', p: 'A different exercise to work that concept from several angles. Concrete, specific — a grain of sand in your progress. Solid technique makes you advance faster.' },
-    { day: 'Every Thursday', num: '03', h: 'The old one goes', p: 'When the new exercise drops, the previous one disappears. No library, no pile-up, no “I’ll get to it someday.”' },
+    'Need help getting there? That’s exactly why Estudiemos Juntos exists.',
   ],
 
-  inclH2: "What's included", inclEyebrow: 'All inside the virtual classroom',
-  incl: [
-    { t: 'A new exercise every Thursday', d: 'Concrete and specific — a grain of sand in your progress. Building solid technique is what makes you move faster.' },
-    { t: 'A technical concept every month', d: 'A video that explains where the movements, the coordination and the sound come from. The foundation behind each exercise.' },
-    { t: 'No library piling up', d: 'Every Thursday the previous exercise disappears. No fifty exercises archived “for later” that you never open.' },
-    { t: 'A chat with my direct answers', d: 'You ask in the classroom chat and I answer. You also read everyone else’s questions — that’s where you learn too.' },
-    { t: 'A global community', d: 'Double bassists in different parts of the world working the same exercise, the same week. You’re not alone in this.' },
-    { t: '24/7 access', d: 'The platform is available to you at any hour, the days you can make it.' },
-  ],
-
-  focusEyebrow: 'Why I delete the previous content', focusH2: 'Yes, you read that right. I delete the previous content.',
-  focusP1: 'Why would I do that? Because libraries overwhelm.',
-  focusPull: '“Fifty exercises archived ‘for later’ ends in doing none of them.”',
-  focusP2: 'And not only that — you carry the guilt of not doing anything on top of it.',
-  focusP3: 'This is a membership to do just enough. To sustain your consistency week after week, to improve without stockpiling exercises you’ll never watch or practice. <strong>(For that, YouTube already exists.)</strong>',
-
-  fitEyebrow: 'Who it’s for', fitH2: 'Let’s be honest about the fit.',
   fitYesH: 'This membership is for you if…',
   fitYes: [
     'You have little time to practice each week but want a clear guide to keep advancing on the double bass.',
@@ -97,30 +60,19 @@ const t = isEN ? {
     'You don’t have a couple of hours a week. You need a minimum of time — not every day (ideal, yes), but at least a couple of days each week.',
   ],
 
-  commEyebrow: 'You’re not alone in this',
-  commBig: 'Courses end. This membership is always with you.',
-  commP: 'A community that’s always there for you. Every week, double bassists around the world are doing the same exercise you are, the same week. Ask your questions in the chat — I’ll gladly answer — and read and comment on everyone else’s too. Together it’s all easier.',
-  commTag: 'Platform access 24/7',
-
-  planH2: 'Founder price.', planSub: '$57 a month, only from July 1 to 10. That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
-  cardName: "Let's study together", cardNameEs: 'Estudiemos juntos', per: '/ month',
-  cardBadge: 'Founder price · July 1–10',
-  cardAfter: 'After July 10, the door stays open at $77.',
-  cardSub: 'Your founder price stays frozen while you’re a member. You pay each month on the date you joined — join on the 20th and your month runs the 20th to the 20th, you never lose days.',
-  checks: [
-    'A new exercise every Thursday',
-    'A new technical concept every month',
-    'A chat with my direct answers',
-    'A global community · 24/7 access',
-    'Cancel whenever you want, no explanations',
+  price: [
+    'Founder price: $57 a month, only from July 1 to 10. That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
+    'You pay each month on the day you joined — join on the 20th and your month runs the 20th to the 20th, you never lose days. After July 10, the door stays open at $77.',
   ],
-  payMain: 'Join here', cardFine: 'Monthly payment · cancel anytime',
+  priceClose: "Let’s study together!",
+  pay: 'Join here',
+  payHref: '#',
 
   pdLabel: 'P.S.',
   pdText: 'I made this membership for the Emilse of 2016 — the one carrying her double bass up the stairs of that rooftop, full of determination not to give up the instrument, but who over time was left not knowing what to study. I owed it to her.',
   pdSign: '— Emilse',
 
-  faqEyebrow: 'Before you join', faqH2: 'Frequently asked questions.',
+  faqH: 'Frequently asked questions',
   faq: [
     { q: 'Do I need to be advanced to join?', a: 'No, but you should at least know the first positions of the instrument. I’ll leave each exercise adapted to a beginner, intermediate or advanced level. These are basic concepts we all study throughout our careers, whatever our level — and the sooner you start, the better.' },
     { q: 'If I join mid-month, can I see the previous content?', a: 'You’ll have access to whatever exercise is live that week until it’s replaced — a new one arrives every Thursday and replaces the previous one. The monthly concept, though, stays for the whole month: it’s a video that helps you understand the foundation of each exercise.' },
@@ -131,40 +83,24 @@ const t = isEN ? {
     { q: 'How much time do I need?', a: 'Half an hour a day, the days you can. That’s enough. Simple as that.' },
     { q: 'What hours can I access the platform?', a: 'It’s available to you 24/7.' },
   ],
-  footBig: "Let's study", footBigEm: 'together.',
-  footAbout: 'Double bassist and teacher. A membership to study, week by week, as a community — half an hour a day, the days you can.',
-  footMembership: 'The membership', footMore: 'More from Emi',
-  footHow: 'How it works', footIncl: "What's included", footPlan: 'The plan',
-  footBase1: '© 2026 Emilse Rios · Madrid', footBase2: "<em>Let's study together</em> — a new exercise every Thursday.",
+
+  referral: 'Know someone who needs a push with the double bass? Forward them this page — it might be exactly what they were looking for.',
+  newsPre: 'Not subscribed to the newsletter yet?',
+  newsLink: 'Subscribe here.',
+  newsHref: '#',
+
+  footPrivacy: 'Privacy policy', footTerms: 'Terms',
+  footLegal: '© 2026 Emilse Rios',
 } : {
   htmlLang: 'es',
   metaTitle: 'Estudiemos Juntos — Membresía de Emilse Rios',
   metaDesc: 'Media hora al día, los días que puedas. Un ejercicio nuevo cada jueves y una comunidad haciéndolo contigo. Sin biblioteca que abrume — solo el presente. Membresía mensual para contrabajistas.',
-  role: 'Contrabajista', menu: 'Menú', close: 'Cerrar',
-  nav: [
-    { num: '01', word: 'La historia', es: 'De dónde viene', href: '#historia' },
-    { num: '02', word: 'Cómo funciona', es: 'Cada semana', href: '#how' },
-    { num: '03', word: 'El plan', es: 'Precio de fundador', href: '#plan' },
-  ],
-  more: 'Más', online: 'En la red', courses: 'Cursos', videos: 'Videos', classroom: 'Aula Virtual',
-  menuLinks: [
-    { label: 'La historia', href: '#historia' },
-    { label: 'Cómo funciona', href: '#how' },
-    { label: 'Qué incluye', href: '#incluye' },
-    { label: 'El plan', href: '#plan' },
-    { label: 'Cursos', href: 'https://emilserios.com/cursos-contrabajo/' },
-    { label: 'Videos', href: 'https://emilserios.com/videos/' },
-  ],
-  menuContactLbl: 'Contacto', menuFollowLbl: 'En la red', menuPlaceLbl: 'Dónde',
-  menuPlace: 'Madrid · Online 24/7',
-  heroEyebrow: 'Membresía · Para contrabajistas',
-  heroTitle: 'Estudiemos juntos', heroTitleEm: "Let's study together",
-  heroGloss: 'Media hora al día, los días que puedas. Un ejercicio nuevo cada jueves y una comunidad haciéndolo contigo — sin biblioteca que abrume, solo el presente.',
-  heroCta: 'Quiero la membresía',
-  heroNote1: 'Precio de fundador', heroNote2: '$57/mes · solo del 1 al 10 de julio',
-  marquee: 'Un ejercicio nuevo cada jueves <i>—</i> Un concepto cada mes <i>—</i> Sin biblioteca <i>—</i> Una comunidad global <i>—</i>',
+  logo: 'Emilse Rios',
+  title: 'Estudiemos juntos',
+  subtitle: 'La membresía',
+  photoAlt: 'Emilse Rios',
+  lede: 'El problema no es que te falte tiempo. El problema es no saber qué hacer con el poco tiempo que tienes.',
 
-  storyEyebrow: 'De dónde viene esto',
   storyLead: 'En 2012 mi único trabajo era tocar lo mejor posible las sinfonías del compositor que más amo en la vida. Pero no siempre fue así — y en esta historia te cuento algo que te va a ayudar a gestionar mejor tu tiempo de estudio, sobre todo si sientes que no tienes tiempo.',
   storyBody1: [
     'Ese año tocamos todas las sinfonías de Mahler. En el Walt Disney Concert Hall, con la Orquesta Sinfónica Simón Bolívar y la Filarmónica de Los Ángeles juntas en el escenario, dirigidas por Gustavo Dudamel.',
@@ -173,41 +109,17 @@ const t = isEN ? {
     'Vivía en un departamento compartido con amigos, así que el único momento que tenía para estudiar era antes de las siete de la mañana. Y el único lugar donde no molestaba a nadie era la azotea del edificio.',
     'Ahí estaba yo, subiendo un contrabajo por las escaleras de una azotea en Buenos Aires. Algunos días lo lograba. Media hora, una hora si me levantaba más temprano. Otros días el cansancio me ganaba.',
   ],
-  discLabel: 'Descubrí dos cosas',
+  discLead: 'Descubrí dos cosas.',
   disc: [
-    { k: '01', t: 'Las excusas siempre van a estar', p: 'Las complicaciones, la falta de tiempo, están — así es la vida y no podemos hacer nada al respecto. Lo que sí podemos es entrenar la disciplina, ser constantes. Si apagas las notificaciones de Instagram o TikTok, por ejemplo, podrías dedicarle 30 min al día al contrabajo. Lo sé porque cada vez que entro y me sale un perrito que me recuerda a mi amado Bach, me toma más o menos ese tiempo desengancharme. Necesitas solo 30 min — tal vez algunos días un poco más.' },
-    { k: '02', t: 'El verdadero rollo es qué hacer con ellos', p: 'Una vez tienes esos 30 min, ese es el verdadero rollo. Te paras frente al atril, afinas, ¿y? ¿Qué vas a tocar? Lo mismo de siempre — terminas estancándote, sintiendo que no avanzas.' },
+    { t: 'La primera: las excusas siempre van a estar.', p: 'Las complicaciones, la falta de tiempo, están — así es la vida y no podemos hacer nada al respecto. Lo que sí podemos es entrenar la disciplina, ser constantes. Si apagas las notificaciones de Instagram o TikTok, por ejemplo, podrías dedicarle 30 min al día al contrabajo. Lo sé porque cada vez que entro y me sale un perrito que me recuerda a mi amado Bach, me toma más o menos ese tiempo desengancharme. Necesitas solo 30 min — tal vez algunos días un poco más.' },
+    { t: 'La segunda: el verdadero rollo es qué hacer con ellos.', p: 'Una vez tienes esos 30 min, ese es el verdadero rollo. Te paras frente al atril, afinas, ¿y? ¿Qué vas a tocar? Lo mismo de siempre — terminas estancándote, sintiendo que no avanzas.' },
   ],
   storyBody2: [
     'Si bien hay muchos ejercicios dando vueltas en internet, te toma más tiempo encontrarlos y organizarlos que estudiarlos. Como lo veo, YouTube muchas veces, más que aportar, se convierte en un ladrón del tiempo de estudio.',
     'Tener una meta nos hace movernos, nos hace abrir espacio en la agenda, nos entrena la constancia. Es mi consejo para ti: anótala. Puede ser una obra que siempre quisiste tocar, o conocer la región aguda del instrumento. Lo que sea, anótala. Ármate un plan para llegar a ella.',
-  ],
-  storyBridge: '¿Necesitas ayuda para llegar? Para eso existe Estudiemos Juntos.',
-
-  howEyebrow: 'El ritmo de cada semana', howH2: 'Una rutina simple, sostenida en el tiempo.',
-  steps: [
-    { day: 'Cada mes', num: '01', h: 'Un concepto', p: 'Cada mes te explico un concepto técnico básico — de dónde vienen los movimientos, la coordinación, el sonido. Solo uno, para que entiendas las bases.' },
-    { day: 'Cada semana', num: '02', h: 'Un ejercicio nuevo', p: 'Un ejercicio diferente para abordar ese concepto desde varios enfoques. Concreto, específico — un granito de arena en tu progreso. Una técnica sólida te hace avanzar más rápido.' },
-    { day: 'Cada jueves', num: '03', h: 'El anterior desaparece', p: 'Cuando entra el ejercicio nuevo, el de la semana pasada se va. Sin biblioteca, sin acumular, sin “lo veo después”.' },
+    '¿Necesitas ayuda para llegar? Para eso existe Estudiemos Juntos.',
   ],
 
-  inclH2: 'Qué incluye', inclEyebrow: 'Todo dentro del aula virtual',
-  incl: [
-    { t: 'Un ejercicio nuevo cada jueves', d: 'Concreto y específico — un granito de arena en tu progreso. Construir una técnica sólida es lo que te hace avanzar más rápido.' },
-    { t: 'Un concepto técnico cada mes', d: 'Un video que te explica de dónde vienen los movimientos, la coordinación y el sonido. Las bases detrás de cada ejercicio.' },
-    { t: 'Sin biblioteca que se acumule', d: 'Cada jueves el ejercicio anterior desaparece. Nada de cincuenta ejercicios archivados “para después” que nunca abres.' },
-    { t: 'Un chat con respuesta directa mía', d: 'Preguntas en el chat del aula y yo respondo. Lees también las preguntas del resto — ahí también se aprende.' },
-    { t: 'Una comunidad global', d: 'Contrabajistas de distintas partes del mundo trabajando el mismo ejercicio, la misma semana. No estás sola en esto.' },
-    { t: 'Acceso 24/7', d: 'La plataforma está disponible para ti a cualquier hora, los días que puedas.' },
-  ],
-
-  focusEyebrow: 'Por qué borro el contenido anterior', focusH2: 'Sí, leíste bien. Yo borro el contenido anterior.',
-  focusP1: '¿Por qué haría eso? Porque las bibliotecas abruman.',
-  focusPull: '“Tener cincuenta ejercicios archivados ‘para después’ termina en no hacer ninguno.”',
-  focusP2: 'Y no solo eso — sino con la culpa encima de que no estás haciendo nada.',
-  focusP3: 'Esta es una membresía para hacer lo justo. Para sostener tu constancia semana a semana, para mejorar sin acumular ejercicios que nunca vas a ver ni practicar. <strong>(Para eso ya está YouTube.)</strong>',
-
-  fitEyebrow: 'Para quién es', fitH2: 'Seamos honestos sobre si encaja.',
   fitYesH: 'Esta membresía es para ti si…',
   fitYes: [
     'Tienes poco tiempo para estudiar a la semana pero quieres una guía clara para seguir avanzando con el contrabajo.',
@@ -225,30 +137,19 @@ const t = isEN ? {
     'No tienes un par de horas a la semana. Necesitas un mínimo de tiempo — no tiene que ser todos los días (aunque sería lo ideal), pero sí al menos un par de días cada semana.',
   ],
 
-  commEyebrow: 'No vas a estar sola en esto',
-  commBig: 'Los cursos se terminan. Esta membresía siempre está contigo.',
-  commP: 'Una comunidad que siempre está para ti. Cada semana, contrabajistas de distintas partes del mundo estamos haciendo el mismo ejercicio que tú, la misma semana. Haces tus preguntas en el chat — con gusto las respondo — y puedes ver y comentar las preguntas de la comunidad también. Juntos todo es más fácil.',
-  commTag: 'Acceso a la plataforma 24/7',
-
-  planH2: 'Precio de fundador.', planSub: '$57 al mes, solo del 1 al 10 de julio. Ese precio se congela para ti: aunque suba (y va a subir), sigues pagando lo mismo durante todo el tiempo que estés dentro.',
-  cardName: 'Estudiemos juntos', cardNameEs: "Let's study together", per: '/ mes',
-  cardBadge: 'Precio de fundador · 1–10 de julio',
-  cardAfter: 'Después del 10 de julio, la puerta sigue abierta a $77.',
-  cardSub: 'Tu precio de fundador queda congelado mientras seas miembro. Pagas cada mes el día que entraste — si entras un 20, tu mes va del 20 al 20, nunca pierdes días.',
-  checks: [
-    'Un ejercicio nuevo cada jueves',
-    'Un concepto técnico nuevo cada mes',
-    'Un chat con respuesta directa mía',
-    'Una comunidad global · acceso 24/7',
-    'Cancela cuando quieras, sin explicaciones',
+  price: [
+    'Precio de fundador: $57 al mes, solo del 1 al 10 de julio. Ese precio se congela para ti: aunque suba (y va a subir), sigues pagando lo mismo durante todo el tiempo que estés dentro.',
+    'Pagas cada mes el día que entras — si entras un 20, tu mes va del 20 al 20, nunca pierdes días. Después del 10 de julio, la puerta sigue abierta a $77.',
   ],
-  payMain: 'Acá te unes', cardFine: 'Pago mensual · cancela cuando quieras',
+  priceClose: '¡Estudiemos juntos!',
+  pay: 'Acá te unes',
+  payHref: '#',
 
   pdLabel: 'P.D.',
   pdText: 'Esta membresía la hice para la Emilse de 2016 — la que subía el contrabajo por las escaleras de esa azotea con todas las ganas de no abandonar el instrumento, pero que con el paso del tiempo se fue quedando sin saber qué estudiar. Se la debía.',
   pdSign: '— Emilse',
 
-  faqEyebrow: 'Antes de entrar', faqH2: 'Preguntas frecuentes.',
+  faqH: 'Preguntas frecuentes',
   faq: [
     { q: '¿Debo tener un nivel avanzado para entrar?', a: 'No, pero sí debes conocer al menos las primeras posiciones del instrumento. Dejaré cada ejercicio adaptado a un nivel inicial, intermedio o avanzado. Son conceptos básicos que todos estudiamos a lo largo de nuestra carrera, sin importar el nivel — y entre más rápido comiences, mejor.' },
     { q: 'Si entro a mitad del mes, ¿puedo ver el contenido anterior?', a: 'Tendrás acceso al ejercicio que esté esa semana hasta que lo reemplace el próximo — cada jueves entra uno nuevo que reemplaza al anterior. El concepto del mes sí queda durante todo el mes: es un video que te hace entender las bases de cada ejercicio.' },
@@ -259,11 +160,14 @@ const t = isEN ? {
     { q: '¿Cuánto tiempo necesito?', a: 'Media hora al día, los días que puedas. Con eso es suficiente. Así de simple.' },
     { q: '¿En qué horarios puedo ingresar a la plataforma?', a: 'Está disponible para ti 24/7.' },
   ],
-  footBig: 'Estudiemos', footBigEm: 'juntos.',
-  footAbout: 'Contrabajista y docente. Una membresía para estudiar, semana a semana, en comunidad — media hora al día, los días que puedas.',
-  footMembership: 'La membresía', footMore: 'Más de Emi',
-  footHow: 'Cómo funciona', footIncl: 'Qué incluye', footPlan: 'El plan',
-  footBase1: '© 2026 Emilse Rios · Madrid', footBase2: '<em>Estudiemos juntos</em> — un ejercicio nuevo cada jueves.',
+
+  referral: '¿Conoces a alguien que necesita un impulso con el contrabajo? Reenvíale esta página — a lo mejor es justo lo que estaba buscando.',
+  newsPre: '¿Aún no estás suscrito al newsletter?',
+  newsLink: 'Acá te suscribes.',
+  newsHref: '#',
+
+  footPrivacy: 'Política de privacidad', footTerms: 'Términos',
+  footLegal: '© 2026 Emilse Rios',
 };
 ---
 <!DOCTYPE html>
@@ -272,795 +176,199 @@ const t = isEN ? {
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script is:inline>
-  // Red de seguridad del enlace mágico: si Supabase no tiene la URL de destino
-  // en su lista de Redirect URLs, redirige al Site URL (la raíz) con el token en
-  // el hash. La landing no carga Supabase, así que reenviamos a /entrar/, que sí
-  // sabe consumir el token (o mostrar el error) y enrutar según el rol.
+  // Red de seguridad del enlace mágico: si Supabase reenvía el token al Site URL
+  // (la raíz) en vez de a /entrar/, lo recogemos y lo pasamos a /entrar/, que sí
+  // sabe consumirlo o mostrar el error.
   if (location.hash.includes('access_token=') || location.hash.includes('error_code=')) {
     location.replace('/entrar/' + location.hash);
   }
-  // Cambio de idioma sin saltar al inicio: si venimos de un toggle EN/ES,
-  // gestionamos el scroll a mano y ocultamos el contenido hasta reposicionar
-  // (evita el parpadeo del salto). Red de seguridad: se revela igual a los 1.5s.
-  try {
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-    if (sessionStorage.getItem('langSwitch')) {
-      document.documentElement.classList.add('lang-enter');
-      setTimeout(function () { document.documentElement.classList.remove('lang-enter'); }, 1500);
-    }
-  } catch (e) {}
 </script>
 <title>{t.metaTitle}</title>
 <meta name="description" content={t.metaDesc} />
 <link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
 <link rel="stylesheet" href="/colors_and_type.css" />
 <style is:inline>
+  /* ---------------------------------------------------------------------------
+     Carta editorial. Un solo lienzo crema, una columna de lectura, texto uniforme.
+     El único peso visual: la foto y los dos botones. Nada más destaca.
+     --------------------------------------------------------------------------- */
   :root {
-    --ink:#0c0c0c; --paper:#ffffff; --color-text:#0c0c0c;
-    --color-accent:#0c0c0c; --color-accent-strong:#000000;
-    --color-border:#e4e2dd; --color-text-soft:#71706b;
-    --edge: clamp(20px, 5vw, 72px);
+    --ink: #17140f;            /* casi negro, cálido — contraste alto */
+    --paper: #faf7f1;          /* crema muy suave, un solo color en toda la página */
+    --soft: #6f6a61;           /* gris para el footer legal y notas menores */
+    --accent: #a94f2b;         /* único acento — solo los botones */
+    --accent-strong: #8f4222;
+    --measure: 680px;          /* ancho máximo de lectura */
+    --edge: clamp(22px, 6vw, 40px);
   }
-  html { scroll-behavior: smooth; }
-  body { background: var(--paper); color: var(--ink); overflow-x: hidden; }
-  ::selection { background: #0c0c0c; color: #fff; }
-  a { color: inherit; }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body), system-ui, sans-serif;
+    font-size: clamp(17px, 0.4vw + 16px, 19px);
+    line-height: 1.66;
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { background: var(--ink); color: var(--paper); }
   img { display: block; max-width: 100%; }
-  .display { font-family: var(--font-display); font-weight: var(--weight-medium);
-             letter-spacing: -0.035em; line-height: 0.92; text-wrap: balance; }
-  .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-         letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-text-soft); }
 
-  /* Menú flotante minimalista — píldora angosta que se despliega en su lugar */
-  .bar { position: fixed; inset: 0 0 auto 0; z-index: 80;
-         display: flex; justify-content: center;
-         padding: clamp(12px, 1.8vw, 20px) var(--edge); pointer-events: none; }
-  .nav { pointer-events: auto; width: min(94vw, 460px); color: var(--ink);
-         background: rgba(255,255,255,0.72);
-         -webkit-backdrop-filter: blur(20px) saturate(1.6);
-         backdrop-filter: blur(20px) saturate(1.6);
-         border: 1px solid rgba(255,255,255,0.55);
-         box-shadow: 0 10px 34px rgba(12,12,12,0.14), inset 0 1px 0 rgba(255,255,255,0.6);
-         border-radius: var(--radius-full); overflow: hidden;
-         transition: border-radius 420ms var(--ease), box-shadow 420ms var(--ease); }
-  .nav.open { border-radius: 26px;
-              box-shadow: 0 24px 60px rgba(12,12,12,0.22), inset 0 1px 0 rgba(255,255,255,0.6); }
-  .nav a, .nav button { color: var(--ink); }
+  .page { max-width: var(--measure); margin: 0 auto; padding: clamp(28px, 7vw, 56px) var(--edge) clamp(48px, 9vw, 88px); }
 
-  .nav__bar { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-              gap: var(--space-3); padding: 11px clamp(16px, 2vw, 22px); }
-  .mark { justify-self: center; font-family: var(--font-display); font-weight: var(--weight-semibold);
-          font-size: var(--text-md); letter-spacing: -0.02em; text-decoration: none;
-          line-height: 1; white-space: nowrap; }
-  .lang { justify-self: start; display: inline-flex; align-items: center; gap: 4px;
-          font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-          letter-spacing: 0.06em; }
-  .lang a { text-decoration: none; padding: 2px 4px; border-radius: var(--radius-full); opacity: 0.45;
-            transition: opacity var(--duration) var(--ease); }
-  .lang a[aria-current="true"] { opacity: 1; text-decoration: underline; text-underline-offset: 4px; }
-  .lang span { opacity: 0.35; }
-  .menu-btn { justify-self: end; appearance: none; background: none; border: 0; cursor: pointer;
-              display: inline-flex; align-items: center; gap: 9px;
-              font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-              letter-spacing: 0.12em; text-transform: uppercase; padding: 4px 0; white-space: nowrap; }
-  .menu-btn__bars { display: inline-flex; flex-direction: column; justify-content: center;
-                    gap: 5px; width: 20px; height: 12px; }
-  .menu-btn__bars i { height: 1.5px; width: 100%; background: currentColor; display: block;
-                      transition: transform 300ms var(--ease), opacity 200ms var(--ease); }
-  .nav.open .menu-btn__bars i:nth-child(1) { transform: translateY(3.25px) rotate(45deg); }
-  .nav.open .menu-btn__bars i:nth-child(2) { transform: translateY(-3.25px) rotate(-45deg); }
-  .menu-btn__lbl--close { display: none; }
-  .nav.open .menu-btn__lbl--open { display: none; }
-  .nav.open .menu-btn__lbl--close { display: inline; }
+  /* 1 · Firma superior (no es enlace, no es navegación) */
+  .logo { text-align: center; font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase;
+          color: var(--ink); font-weight: 600; margin: 0 0 clamp(28px, 6vw, 44px); }
 
-  .nav__panel { display: grid; grid-template-rows: 0fr;
-                transition: grid-template-rows 460ms cubic-bezier(0.76, 0, 0.24, 1); }
-  .nav.open .nav__panel { grid-template-rows: 1fr; }
-  .nav__panelIn { overflow: hidden; min-height: 0; }
-  .nav__panelPad { padding: 2px clamp(16px, 2vw, 22px) clamp(18px, 2.4vw, 24px);
-                   opacity: 0; transform: translateY(6px);
-                   transition: opacity 300ms var(--ease), transform 300ms var(--ease); }
-  .nav.open .nav__panelPad { opacity: 1; transform: none; transition-delay: 150ms; }
+  /* 2 · Foto pequeña */
+  .photo { margin: 0 auto clamp(22px, 5vw, 32px); width: clamp(180px, 46vw, 230px); }
+  .photo img { width: 100%; height: auto; border-radius: 4px; }
 
-  .nav__links { display: grid; grid-template-columns: 1fr 1fr;
-                border-top: 1px solid var(--color-border); }
-  .nav__link { display: block; text-decoration: none; padding: 13px 2px;
-               font-family: var(--font-body); font-size: var(--text-base); font-weight: var(--weight-medium);
-               border-bottom: 1px solid var(--color-border);
-               transition: padding-left var(--duration) var(--ease), opacity var(--duration) var(--ease); }
-  .nav__link:nth-child(odd) { border-right: 1px solid var(--color-border); padding-right: 12px; }
-  .nav__link:nth-child(even) { padding-left: 16px; }
-  .nav__link:hover { opacity: 0.5; }
+  /* 3 · Titular (única jerarquía tipográfica mayor) */
+  .title { font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1.08; letter-spacing: -0.02em;
+           font-weight: 600; margin: 0; text-align: center; text-wrap: balance; }
+  .subtitle { font-size: clamp(1.15rem, 3.4vw, 1.5rem); font-weight: 500; color: var(--ink);
+              text-align: center; margin: 0.35em 0 0; letter-spacing: -0.01em; }
+  .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center; text-wrap: pretty; }
 
-  .nav__meta { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4);
-               padding-top: clamp(16px, 2vw, 20px); }
-  .nav__group { display: flex; flex-direction: column; gap: 5px; }
-  .nav__group .lbl { font-family: var(--font-body); font-size: 10px; font-weight: var(--weight-semibold);
-                     letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft);
-                     margin-bottom: 3px; }
-  .nav__group a, .nav__group span { text-decoration: none; font-size: var(--text-sm); line-height: 1.5; }
-  .nav__group a { transition: opacity var(--duration) var(--ease); }
-  .nav__group a:hover { opacity: 0.5; }
-  .nav__group span { color: var(--color-text-soft); }
+  /* 4–8 · Cuerpo corrido. Un solo estilo de párrafo, sin negritas ni cursivas. */
+  p { margin: 0 0 1.15em; }
+  .body { margin-top: clamp(36px, 7vw, 56px); }
+  .body p:last-child { margin-bottom: 0; }
 
-  .pay {
-    --pay-fg: var(--ink); --pay-fill: var(--ink); --pay-fg-hover: var(--paper);
-    --mx: 50%; --my: 50%;
-    position: relative; isolation: isolate; overflow: hidden;
-    display: inline-flex; align-items: center; gap: 14px;
-    padding: clamp(17px, 2vw, 22px) clamp(26px, 3vw, 36px);
-    border: 1.5px solid var(--ink); border-radius: var(--radius-full);
-    background: transparent; color: var(--pay-fg); cursor: pointer;
-    font-family: var(--font-display); font-weight: var(--weight-medium);
-    font-size: clamp(var(--text-md), 1.4vw, var(--text-lg)); letter-spacing: -0.015em;
-    text-decoration: none; white-space: nowrap;
-    transition: color 360ms var(--ease), transform 420ms cubic-bezier(.22,1,.36,1), box-shadow 420ms var(--ease);
-    will-change: transform;
-  }
-  .pay__fill { position: absolute; top: var(--my); left: var(--mx);
-               width: 260%; aspect-ratio: 1; z-index: -1;
-               background: var(--pay-fill); border-radius: 50%;
-               transform: translate(-50%, -50%) scale(0); transform-origin: center;
-               transition: transform 560ms cubic-bezier(.22,1,.36,1); }
-  .pay:hover { color: var(--pay-fg-hover); }
-  .pay:hover .pay__fill { transform: translate(-50%, -50%) scale(1); }
-  .pay:active { transform: translateY(1px) scale(0.99); }
-  .pay__ar { display: inline-block; transition: transform 360ms cubic-bezier(.22,1,.36,1); }
-  .pay:hover .pay__ar { transform: translateX(6px); }
-  .pay--ring::after { content: ""; position: absolute; inset: -3px; border-radius: inherit;
-                      border: 1.5px solid var(--ink); opacity: 0; z-index: -2; pointer-events: none;
-                      animation: payring 3.6s var(--ease) infinite; }
-  @keyframes payring { 0% { transform: scale(1); opacity: .45; } 70%, 100% { transform: scale(1.16); opacity: 0; } }
-  .pay--invert { --pay-fg: var(--ink); --pay-fill: var(--ink); --pay-fg-hover: var(--paper);
-                 background: var(--paper); border-color: var(--paper);
-                 box-shadow: 0 1px 0 rgba(255,255,255,0.4); }
-  .pay--invert.pay--ring::after { border-color: rgba(255,255,255,0.55); }
+  .block { margin-top: clamp(30px, 6vw, 44px); }
+  .lead-line { margin-bottom: 1.15em; }
 
-  .hero { min-height: 100svh; position: relative;
-          display: grid; grid-template-columns: 1.08fr 0.92fr; align-items: stretch; }
-  .hero__text { padding: clamp(104px, 13vh, 168px) clamp(20px, 3vw, 44px) clamp(40px, 6vh, 72px) var(--edge);
-                display: flex; flex-direction: column; justify-content: center; gap: clamp(22px, 3.4vh, 40px); }
-  .hero__eyebrow { display: flex; align-items: center; gap: 14px; }
-  .hero__eyebrow .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink);
-                        animation: pulse 2.6s var(--ease) infinite; }
-  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.25; } }
-  .hero__title { font-size: clamp(3rem, 8.4vw, 9rem); margin: 0; }
-  .hero__title em { font-style: italic; font-weight: var(--weight-regular); color: var(--color-text-soft);
-                    display: block; font-size: 0.42em; letter-spacing: -0.01em; margin-top: 0.34em; }
-  .hero__gloss { max-width: 34ch; color: #3a3a38; font-size: var(--text-md); line-height: 1.5; }
-  .hero__cta { display: flex; flex-direction: column; gap: 12px; align-items: flex-start; margin-top: var(--space-2); }
-  .hero__note { font-size: var(--text-sm); color: var(--color-text-soft); }
-  .hero__note b { color: var(--ink); font-weight: var(--weight-semibold); }
-  .hero__media { position: relative; overflow: hidden; background: #efeee9; }
-  .hero__media img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 34%;
-                     filter: grayscale(1) contrast(1.04); transform: scale(1.02);
-                     transition: filter 900ms var(--ease), transform 1200ms var(--ease); }
-  .hero:hover .hero__media img { filter: grayscale(0) contrast(1); transform: scale(1); }
-  .hero__credit { position: absolute; left: 16px; bottom: 14px; color: #fff; mix-blend-mode: difference;
-                  font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; }
+  /* Listas es / no es para ti — viñetas simples de guion, mismo tamaño que el cuerpo */
+  .listhead { margin: 0 0 0.7em; }
+  ul.plain { list-style: none; padding: 0; margin: 0 0 0.4em; }
+  ul.plain li { position: relative; padding-left: 1.5em; margin-bottom: 0.7em; }
+  ul.plain li::before { content: "—"; position: absolute; left: 0; color: var(--ink); }
 
-  .marquee { border-top: 1px solid var(--color-border); border-bottom: 1px solid var(--color-border);
-             overflow: hidden; padding: clamp(14px, 2vw, 22px) 0; }
-  .marquee__track { display: inline-flex; gap: 0; white-space: nowrap; will-change: transform;
-                    animation: scroll-x 36s linear infinite; }
-  .marquee:hover .marquee__track { animation-play-state: paused; }
-  .marquee__track span { font-family: var(--font-display); font-weight: var(--weight-medium);
-                         font-size: clamp(1.4rem, 3vw, 2.6rem); letter-spacing: -0.02em; padding: 0 var(--space-5); }
-  .marquee__track span i { font-style: normal; color: var(--color-text-soft); }
-  @keyframes scroll-x { to { transform: translateX(-50%); } }
+  /* Bloque de precio — texto corrido, el precio se lee dentro de la historia */
+  .price-close { margin-top: 0.4em; }
 
-  /* Historia */
-  .story { padding: clamp(72px, 12vh, 150px) var(--edge); }
-  .story__inner { max-width: 760px; margin: 0 auto; }
-  .story__lead { font-family: var(--font-display); font-weight: var(--weight-medium);
-                 font-size: clamp(1.5rem, 3.4vw, 2.5rem); letter-spacing: -0.03em; line-height: 1.12;
-                 margin-top: var(--space-3); text-wrap: balance; }
-  .story__body { margin-top: clamp(28px, 4vh, 46px); }
-  .story__body p { color: #3a3a38; font-size: var(--text-md); line-height: 1.62; margin-bottom: 1.15em; }
-  .story__disc { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(22px, 3vw, 40px);
-                 margin: clamp(32px, 5vh, 56px) 0; }
-  .disc { border-top: 2px solid var(--ink); padding-top: var(--space-3); }
-  .disc__k { font-family: var(--font-display); font-weight: var(--weight-medium);
-             font-size: clamp(2rem, 4vw, 2.8rem); letter-spacing: -0.04em; line-height: 1; }
-  .disc__t { font-family: var(--font-display); font-weight: var(--weight-medium);
-             font-size: var(--text-lg); letter-spacing: -0.02em; margin: 10px 0 8px; line-height: 1.12; }
-  .disc p { color: #3a3a38; font-size: var(--text-base); line-height: 1.55; }
-  .story__advice { font-family: var(--font-display); font-weight: var(--weight-medium);
-                   font-size: clamp(1.4rem, 3vw, 2rem); letter-spacing: -0.03em; line-height: 1.14;
-                   margin-top: clamp(24px, 4vh, 40px); max-width: 30ch; }
-  .story__advice em { font-style: italic; font-weight: var(--weight-regular); color: var(--color-text-soft); }
+  /* 7 y 10 · Botones idénticos — único elemento con color de acento */
+  .cta { text-align: center; margin: clamp(30px, 6vw, 44px) 0; }
+  .btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none;
+         font-family: var(--font-body), system-ui, sans-serif; font-weight: 600;
+         font-size: 1.1rem; letter-spacing: 0.01em;
+         padding: 18px 44px; border-radius: 8px; }
+  .btn:hover { background: var(--accent-strong); }
 
-  .how { padding: clamp(72px, 12vh, 150px) var(--edge); background: #faf9f7; }
-  .how__inner { max-width: 1180px; margin: 0 auto; }
-  .how__head { max-width: 30ch; margin-bottom: clamp(40px, 6vh, 72px); }
-  .how__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
-                  font-size: clamp(2rem, 4.4vw, 3.6rem); letter-spacing: -0.035em; line-height: 1.0;
-                  margin-top: var(--space-3); }
-  .how__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: clamp(20px, 3vw, 40px);
-               border-top: 1px solid var(--ink); }
-  .step { padding-top: var(--space-4); }
-  .step__day { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-               letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-soft); }
-  .step__num { font-family: var(--font-display); font-weight: var(--weight-medium);
-               font-size: clamp(2.6rem, 5vw, 4rem); letter-spacing: -0.04em; line-height: 1;
-               margin: var(--space-3) 0 var(--space-3); }
-  .step h3 { font-family: var(--font-display); font-weight: var(--weight-medium);
-             font-size: var(--text-xl); letter-spacing: -0.025em; margin-bottom: 8px; }
-  .step p { color: #3a3a38; font-size: var(--text-base); line-height: 1.55; max-width: 34ch; }
+  /* 8 · Posdata — texto corrido, sin caja */
+  .pd { margin-top: clamp(30px, 6vw, 44px); }
+  .pd__label { letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.8em; color: var(--soft);
+               margin: 0 0 0.6em; }
+  .pd__sign { margin-top: 0.4em; }
 
-  .incl { padding: clamp(72px, 12vh, 150px) var(--edge); }
-  .incl__inner { max-width: 1180px; margin: 0 auto; }
-  .incl__head { display: flex; align-items: flex-end; justify-content: space-between;
-                gap: var(--space-4); margin-bottom: var(--space-6); flex-wrap: wrap; }
-  .incl__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
-                   font-size: clamp(1.8rem, 3.6vw, 3rem); letter-spacing: -0.03em; }
-  .ilist { border-top: 1px solid var(--color-border); }
-  .irow { display: grid; grid-template-columns: 3.2em 1fr; gap: clamp(12px, 3vw, 48px);
-          align-items: baseline; padding: clamp(20px, 3vw, 34px) 0;
-          border-bottom: 1px solid var(--color-border); transition: padding-left var(--duration) var(--ease); }
-  .irow:hover { padding-left: 14px; }
-  .irow__num { font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text-soft);
-               font-weight: var(--weight-semibold); }
-  .irow__title { font-family: var(--font-display); font-weight: var(--weight-medium);
-                 font-size: clamp(1.35rem, 2.6vw, 2rem); letter-spacing: -0.025em; line-height: 1.08; }
-  .irow__desc { color: var(--color-text-soft); font-size: var(--text-base); margin-top: 8px;
-                max-width: 56ch; line-height: 1.5; }
+  /* 9 · Preguntas frecuentes — visibles, sin acordeón. Numeración como leve distintivo. */
+  .faq { margin-top: clamp(40px, 8vw, 64px); }
+  .faq__h { font-size: clamp(1.5rem, 5vw, 1.9rem); font-weight: 600; letter-spacing: -0.015em;
+            margin: 0 0 clamp(20px, 4vw, 30px); }
+  .qa { margin-bottom: clamp(20px, 4vw, 28px); }
+  .qa__q { margin: 0 0 0.35em; }
+  .qa__q .n { color: var(--soft); margin-right: 0.5em; }
+  .qa__a { margin: 0; }
 
-  .focus { background: var(--ink); color: #f4f3ef; padding: clamp(80px, 14vh, 168px) var(--edge); }
-  .focus__inner { max-width: 1100px; margin: 0 auto;
-                  display: grid; grid-template-columns: 0.42fr 0.58fr; gap: clamp(28px, 6vw, 90px); }
-  .focus__aside { align-self: start; }
-  .focus__aside .ovl { color: #8a8884; }
-  .focus__aside h2 { font-family: var(--font-display); color: #fff; font-weight: var(--weight-medium);
-                     font-size: clamp(1.9rem, 3.6vw, 3rem); letter-spacing: -0.035em; line-height: 1.02;
-                     margin-top: var(--space-3); }
-  .focus__body { font-size: var(--text-md); line-height: 1.62; color: #cbcac6; }
-  .focus__body p { margin-bottom: 1.1em; max-width: 56ch; }
-  .focus__body strong { color: #fff; font-weight: var(--weight-semibold); }
-  .focus__pull { font-family: var(--font-display); font-weight: var(--weight-medium); color: #fff;
-                 font-size: clamp(1.5rem, 3vw, 2.2rem); letter-spacing: -0.03em; line-height: 1.08;
-                 margin: 1em 0; max-width: 24ch; }
+  /* 11 · Referidos — texto plano */
+  .referral { margin-top: clamp(34px, 7vw, 48px); }
 
-  /* Para quién es / no es */
-  .fit { padding: clamp(72px, 12vh, 150px) var(--edge); background: #faf9f7; }
-  .fit__inner { max-width: 1180px; margin: 0 auto; }
-  .fit__head { max-width: 30ch; margin-bottom: clamp(36px, 5vh, 60px); }
-  .fit__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
-                  font-size: clamp(1.9rem, 3.6vw, 3rem); letter-spacing: -0.035em; line-height: 1.02;
-                  margin-top: var(--space-3); }
-  .fit__grid { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(24px, 4vw, 64px); }
-  .fit__col h3 { font-family: var(--font-display); font-weight: var(--weight-medium);
-                 font-size: clamp(1.3rem, 2.4vw, 1.75rem); letter-spacing: -0.025em;
-                 padding-bottom: var(--space-3); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
-  .fit__list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px; }
-  .fit__list li { display: grid; grid-template-columns: 20px 1fr; gap: 12px; align-items: start;
-                  font-size: var(--text-base); line-height: 1.5; color: #3a3a38; }
-  .fit__list .mk { font-family: var(--font-display); line-height: 1.3; font-size: var(--text-md); }
-  .fit__col--yes .mk { color: var(--ink); }
-  .fit__col--no .mk { color: var(--color-text-soft); }
-  .fit__col--no .fit__list li { color: var(--color-text-soft); }
+  /* 12 · Único enlace externo — menor que el cuerpo, subrayado, sin botón */
+  .news { margin-top: clamp(20px, 4vw, 28px); font-size: 0.9em; color: var(--soft); }
+  .news a { color: var(--soft); text-underline-offset: 3px; }
 
-  /* Comunidad */
-  .comm { padding: clamp(80px, 14vh, 168px) var(--edge); text-align: center; }
-  .comm__inner { max-width: 820px; margin: 0 auto; }
-  .comm__big { font-family: var(--font-display); font-weight: var(--weight-medium);
-               font-size: clamp(1.9rem, 4.4vw, 3.4rem); letter-spacing: -0.035em; line-height: 1.02;
-               margin-top: var(--space-3); text-wrap: balance; }
-  .comm__p { color: #3a3a38; font-size: var(--text-md); line-height: 1.6; max-width: 60ch;
-             margin: var(--space-4) auto 0; }
-  .comm__tag { display: inline-flex; align-items: center; gap: 10px; margin-top: var(--space-5);
-               font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-               letter-spacing: 0.14em; text-transform: uppercase; color: var(--color-text-soft);
-               border: 1px solid var(--color-border); border-radius: var(--radius-full);
-               padding: 10px 18px; }
-  .comm__tag .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ink);
-                    animation: pulse 2.6s var(--ease) infinite; }
+  /* 13 · Footer mínimo — solo legal, gris pequeño */
+  .foot { margin-top: clamp(48px, 9vw, 80px); font-size: 0.8rem; color: var(--soft);
+          display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
+  .foot a { color: var(--soft); text-decoration: none; }
+  .foot a:hover { text-decoration: underline; }
+  .foot .sep { opacity: 0.5; }
+  .foot .lang { margin-left: auto; display: inline-flex; gap: 6px; }
+  .foot .lang a[aria-current="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
 
-  .plan { padding: clamp(80px, 14vh, 170px) var(--edge); background: #faf9f7; }
-  .plan__inner { max-width: 980px; margin: 0 auto; }
-  .plan__head { text-align: center; margin-bottom: clamp(36px, 5vh, 56px); }
-  .plan__head h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
-                   font-size: clamp(2.2rem, 5vw, 4.4rem); letter-spacing: -0.035em; line-height: 0.98; }
-  .plan__head p { color: var(--color-text-soft); font-size: var(--text-md); margin: var(--space-4) auto 0;
-                  max-width: 52ch; line-height: 1.5; }
-  .card { border: 1px solid var(--ink); border-radius: var(--radius-lg); overflow: hidden;
-          display: grid; grid-template-columns: 1.05fr 0.95fr; background: var(--paper); }
-  .card__left { padding: clamp(32px, 4vw, 52px); border-right: 1px solid var(--color-border); }
-  .card__badge { display: inline-block; font-family: var(--font-body); font-size: 11px;
-                 font-weight: var(--weight-semibold); letter-spacing: 0.14em; text-transform: uppercase;
-                 color: var(--paper); background: var(--ink); border-radius: var(--radius-full);
-                 padding: 6px 12px; margin-bottom: var(--space-4); }
-  .card__name { font-family: var(--font-display); font-weight: var(--weight-medium);
-                font-size: var(--text-xl); letter-spacing: -0.02em; }
-  .card__name span { font-style: italic; font-weight: var(--weight-regular); color: var(--color-text-soft);
-                     font-size: 0.7em; }
-  .card__price { display: flex; align-items: baseline; gap: 10px; margin: var(--space-4) 0 4px; }
-  .card__amount { font-family: var(--font-display); font-weight: var(--weight-medium);
-                  font-size: clamp(3.4rem, 8vw, 5.2rem); letter-spacing: -0.04em; line-height: 0.9; }
-  .card__per { color: var(--color-text-soft); font-size: var(--text-md); }
-  .card__after { color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-                 margin-top: 6px; }
-  .card__sub { color: var(--color-text-soft); font-size: var(--text-sm); margin-top: var(--space-3);
-               line-height: 1.5; }
-  .card__right { padding: clamp(32px, 4vw, 52px); display: flex; flex-direction: column;
-                 justify-content: space-between; gap: var(--space-5); background: #faf9f7; }
-  .checks { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 14px; }
-  .checks li { display: grid; grid-template-columns: 22px 1fr; gap: 12px; align-items: start;
-               font-size: var(--text-base); line-height: 1.4; }
-  .checks .tick { font-family: var(--font-display); line-height: 1; font-size: var(--text-md); }
-  .card__action { display: flex; flex-direction: column; gap: 12px; align-items: stretch; }
-  .card__action .pay { justify-content: center; }
-  .card__fine { font-size: var(--text-sm); color: var(--color-text-soft); text-align: center; }
-
-  /* Postdata */
-  .pd { padding: clamp(72px, 12vh, 150px) var(--edge); }
-  .pd__inner { max-width: 680px; margin: 0 auto; border-left: 2px solid var(--ink);
-               padding-left: clamp(20px, 4vw, 40px); }
-  .pd__label { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
-               letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-text-soft); }
-  .pd__text { font-family: var(--font-display); font-weight: var(--weight-regular); font-style: italic;
-              font-size: clamp(1.3rem, 2.8vw, 1.9rem); letter-spacing: -0.02em; line-height: 1.25;
-              margin: var(--space-3) 0 var(--space-4); text-wrap: balance; }
-  .pd__sign { font-family: var(--font-body); font-size: var(--text-md); color: var(--color-text-soft); }
-
-  .faq { padding: 0 var(--edge) clamp(72px, 12vh, 150px); }
-  .faq__inner { max-width: 1180px; margin: 0 auto;
-                display: grid; grid-template-columns: 0.4fr 0.6fr; gap: clamp(28px, 6vw, 90px); }
-  .faq__aside h2 { font-family: var(--font-display); font-weight: var(--weight-medium);
-                   font-size: clamp(1.9rem, 3.6vw, 3rem); letter-spacing: -0.035em; line-height: 1.0;
-                   margin-top: var(--space-3); }
-  .qa { border-top: 1px solid var(--color-border); }
-  .qitem { border-bottom: 1px solid var(--color-border); }
-  .qitem summary { list-style: none; cursor: pointer; display: flex; align-items: center;
-                   justify-content: space-between; gap: var(--space-4);
-                   padding: clamp(20px, 2.6vw, 28px) 0;
-                   font-family: var(--font-display); font-weight: var(--weight-medium);
-                   font-size: clamp(1.15rem, 2.2vw, 1.5rem); letter-spacing: -0.02em; }
-  .qitem summary::-webkit-details-marker { display: none; }
-  .qitem .pm { flex: none; width: 22px; height: 22px; position: relative; }
-  .qitem .pm::before, .qitem .pm::after { content: ""; position: absolute; inset: 0; margin: auto;
-        background: var(--ink); transition: transform var(--duration) var(--ease), opacity var(--duration) var(--ease); }
-  .qitem .pm::before { width: 100%; height: 1.5px; }
-  .qitem .pm::after { width: 1.5px; height: 100%; }
-  .qitem[open] .pm::after { transform: scaleY(0); opacity: 0; }
-  .qitem__a { overflow: hidden; color: #3a3a38; font-size: var(--text-base); line-height: 1.6;
-              max-width: 60ch; padding-bottom: clamp(20px, 2.6vw, 28px); }
-
-  .foot { border-top: 1px solid var(--ink); padding: clamp(56px, 9vh, 110px) var(--edge) clamp(28px, 4vh, 48px); }
-  .foot__big { font-family: var(--font-display); font-weight: var(--weight-medium);
-               font-size: clamp(2.4rem, 11vw, 10rem); letter-spacing: -0.04em; line-height: 0.86;
-               margin-bottom: clamp(40px, 7vh, 90px); }
-  .foot__big em { font-style: italic; font-weight: var(--weight-regular); color: var(--color-text-soft); }
-  .foot__cols { display: grid; grid-template-columns: 1.4fr repeat(3, 0.8fr); gap: var(--space-5);
-                padding-bottom: var(--space-6); border-bottom: 1px solid var(--color-border); }
-  .foot__col h4 { font-family: var(--font-body); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase;
-                  color: var(--color-text-soft); font-weight: var(--weight-semibold); margin-bottom: var(--space-3); }
-  .foot__col a { display: block; text-decoration: none; color: var(--ink); font-size: var(--text-base);
-                 margin-bottom: 8px; width: fit-content; transition: opacity var(--duration) var(--ease); }
-  .foot__col a:hover { opacity: 0.5; }
-  .foot__col p { color: var(--color-text-soft); font-size: var(--text-sm); line-height: 1.5; }
-  .foot__base { display: flex; justify-content: space-between; gap: var(--space-4); flex-wrap: wrap;
-                padding-top: var(--space-4); color: var(--color-text-soft); font-size: var(--text-sm); }
-  .foot__base em { font-style: italic; }
-
-  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 760ms var(--ease), transform 760ms var(--ease); }
-  .reveal.in { opacity: 1; transform: none; }
-
-  /* Cambio de idioma en el sitio: fade-out al salir, fade-in al entrar */
-  #top { transition: opacity 300ms var(--ease); }
-  #top.lang-leaving { opacity: 0; }
-  html.lang-enter #top { opacity: 0; }
-
-  @media (max-width: 960px) {
-    .hero { grid-template-columns: 1fr; min-height: auto; }
-    .hero__text { padding-top: clamp(110px, 18vh, 160px); }
-    .hero__media { height: 72vh; order: 2; }
-    .hero:hover .hero__media img, .hero__media img { filter: grayscale(0) contrast(1); transform: scale(1); }
-    .story__disc { grid-template-columns: 1fr; }
-    .how__grid { grid-template-columns: 1fr; gap: 0; }
-    .step { border-bottom: 1px solid var(--color-border); padding-bottom: var(--space-5); }
-    .step:last-child { border-bottom: 0; }
-    .focus__inner { grid-template-columns: 1fr; gap: var(--space-5); }
-    .fit__grid { grid-template-columns: 1fr; gap: var(--space-6); }
-    .card { grid-template-columns: 1fr; }
-    .card__left { border-right: 0; border-bottom: 1px solid var(--color-border); }
-    .faq__inner { grid-template-columns: 1fr; gap: var(--space-5); }
-    .foot__cols { grid-template-columns: 1fr 1fr; }
-  }
-  @media (max-width: 540px) {
-    .foot__cols { grid-template-columns: 1fr; }
-    .irow { grid-template-columns: 2.4em 1fr; }
-    .nav__bar { gap: var(--space-2); }
-    .menu-btn { font-size: 0; gap: 0; }
-    .menu-btn__bars { width: 20px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
-    .reveal { opacity: 1; transform: none; }
-    .marquee__track { animation: none; }
-    .pay--ring::after { display: none; }
-    .nav, .nav__panel, .nav__panelPad, .menu-btn__bars i { transition: none !important; }
+  @media (max-width: 460px) {
+    .btn { display: block; padding: 18px 24px; }
   }
 </style>
 </head>
 <body>
+  <main class="page">
 
-  <header class="bar">
-    <div class="nav" id="nav">
-      <div class="nav__bar">
-        <div class="lang" aria-label="Idioma / Language">
-          <a href="/" aria-current={(!isEN).toString()}>ES</a>
-          <span aria-hidden="true">/</span>
-          <a href="/en/" aria-current={isEN.toString()}>EN</a>
-        </div>
-        <a class="mark" href="#top" aria-label="Emilse Rios">Emilse Rios</a>
-        <button class="menu-btn" id="menuToggle" aria-expanded="false" aria-controls="navPanel">
-          <span class="menu-btn__lbl--open">{t.menu}</span>
-          <span class="menu-btn__lbl--close">{t.close}</span>
-          <span class="menu-btn__bars" aria-hidden="true"><i></i><i></i></span>
-        </button>
-      </div>
-      <div class="nav__panel" id="navPanel">
-        <div class="nav__panelIn">
-          <div class="nav__panelPad">
-            <nav class="nav__links" aria-label={t.menu}>
-              {t.menuLinks.map((l) => (
-                <a class="nav__link" href={l.href}>{l.label}</a>
-              ))}
-            </nav>
-            <div class="nav__meta">
-              <div class="nav__group">
-                <span class="lbl">{t.menuContactLbl}</span>
-                <a href="mailto:hola@emilserios.com">hola@emilserios.com</a>
-                <a href="https://emilserios.com/dashboard">{t.classroom}</a>
-              </div>
-              <div class="nav__group">
-                <span class="lbl">{t.menuFollowLbl}</span>
-                <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
-                <a href="https://www.youtube.com/" target="_blank" rel="noopener">YouTube</a>
-              </div>
-            </div>
-            <div class="nav__meta">
-              <div class="nav__group">
-                <span class="lbl">{t.menuPlaceLbl}</span>
-                <span>{t.menuPlace}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </header>
+    <p class="logo">{t.logo}</p>
 
-  <main id="top">
+    <figure class="photo">
+      <img src="/emi-city.jpg" alt={t.photoAlt} />
+    </figure>
 
-    <section class="hero">
-      <div class="hero__text">
-        <div class="hero__eyebrow ovl"><span class="dot"></span> {t.heroEyebrow}</div>
-        <h1 class="hero__title display">{t.heroTitle}<em>{t.heroTitleEm}</em></h1>
-        <p class="hero__gloss">{t.heroGloss}</p>
-        <div class="hero__cta">
-          <a class="pay pay--ring" href="#plan" data-magnetic>
-            <span class="pay__fill" aria-hidden="true"></span>
-            {t.heroCta} <span class="pay__ar" aria-hidden="true">&rarr;</span>
-          </a>
-          <span class="hero__note"><b>{t.heroNote1}</b> · {t.heroNote2}</span>
-        </div>
-      </div>
-      <div class="hero__media">
-        <img src="/emi-city.jpg" alt="Emilse Rios" />
-        <span class="hero__credit">Madrid</span>
-      </div>
-    </section>
+    <h1 class="title">{t.title}</h1>
+    <p class="subtitle">{t.subtitle}</p>
+    <p class="lede">{t.lede}</p>
 
-    <div class="marquee" aria-hidden="true">
-      <div class="marquee__track">
-        <span set:html={t.marquee + '&nbsp;'} />
-        <span set:html={t.marquee + '&nbsp;'} />
-      </div>
+    <div class="body">
+      <p>{t.storyLead}</p>
+      {t.storyBody1.map((p) => (<p>{p}</p>))}
+      <p class="lead-line">{t.discLead}</p>
+      {t.disc.map((d) => (<><p class="lead-line">{d.t}</p><p>{d.p}</p></>))}
+      {t.storyBody2.map((p) => (<p>{p}</p>))}
     </div>
 
-    <section class="story" id="historia">
-      <div class="story__inner">
-        <div class="reveal">
-          <span class="ovl">{t.storyEyebrow}</span>
-          <p class="story__lead">{t.storyLead}</p>
-        </div>
-        <div class="story__body reveal">
-          {t.storyBody1.map((p) => (<p>{p}</p>))}
-        </div>
-        <div class="reveal">
-          <span class="ovl">{t.discLabel}</span>
-          <div class="story__disc">
-            {t.disc.map((d) => (
-              <div class="disc">
-                <div class="disc__k">{d.k}</div>
-                <div class="disc__t">{d.t}</div>
-                <p>{d.p}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div class="story__body reveal">
-          {t.storyBody2.map((p) => (<p>{p}</p>))}
-        </div>
-        <p class="story__advice reveal" set:html={t.storyBridge} />
-      </div>
-    </section>
+    <div class="block">
+      <p class="listhead">{t.fitYesH}</p>
+      <ul class="plain">{t.fitYes.map((li) => (<li>{li}</li>))}</ul>
+    </div>
+    <div class="block">
+      <p class="listhead">{t.fitNoH}</p>
+      <ul class="plain">{t.fitNo.map((li) => (<li>{li}</li>))}</ul>
+    </div>
 
-    <section class="how" id="how">
-      <div class="how__inner">
-        <div class="how__head reveal">
-          <span class="ovl">{t.howEyebrow}</span>
-          <h2>{t.howH2}</h2>
-        </div>
-        <div class="how__grid">
-          {t.steps.map((s) => (
-            <div class="step reveal">
-              <span class="step__day">{s.day}</span>
-              <div class="step__num">{s.num}</div>
-              <h3>{s.h}</h3>
-              <p>{s.p}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <div class="block">
+      {t.price.map((p) => (<p>{p}</p>))}
+      <p class="price-close">{t.priceClose}</p>
+    </div>
 
-    <section class="incl" id="incluye">
-      <div class="incl__inner">
-        <div class="incl__head reveal">
-          <h2>{t.inclH2}</h2>
-          <span class="ovl">{t.inclEyebrow}</span>
-        </div>
-        <div class="ilist reveal">
-          {t.incl.map((it, i) => (
-            <div class="irow">
-              <span class="irow__num">{String(i + 1).padStart(2, '0')}</span>
-              <div>
-                <div class="irow__title">{it.t}</div>
-                <p class="irow__desc">{it.d}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
+    <div class="cta">
+      <a class="btn" href={t.payHref}>{t.pay}</a>
+    </div>
 
-    <section class="focus">
-      <div class="focus__inner">
-        <aside class="focus__aside reveal">
-          <span class="ovl">{t.focusEyebrow}</span>
-          <h2>{t.focusH2}</h2>
-        </aside>
-        <div class="focus__body reveal">
-          <p>{t.focusP1}</p>
-          <p class="focus__pull">{t.focusPull}</p>
-          <p>{t.focusP2}</p>
-          <p set:html={t.focusP3} />
-        </div>
-      </div>
-    </section>
-
-    <section class="fit">
-      <div class="fit__inner">
-        <div class="fit__head reveal">
-          <span class="ovl">{t.fitEyebrow}</span>
-          <h2>{t.fitH2}</h2>
-        </div>
-        <div class="fit__grid reveal">
-          <div class="fit__col fit__col--yes">
-            <h3>{t.fitYesH}</h3>
-            <ul class="fit__list">
-              {t.fitYes.map((li) => (
-                <li><span class="mk" aria-hidden="true">✓</span> <span>{li}</span></li>
-              ))}
-            </ul>
-          </div>
-          <div class="fit__col fit__col--no">
-            <h3>{t.fitNoH}</h3>
-            <ul class="fit__list">
-              {t.fitNo.map((li) => (
-                <li><span class="mk" aria-hidden="true">—</span> <span>{li}</span></li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="comm">
-      <div class="comm__inner reveal">
-        <span class="ovl">{t.commEyebrow}</span>
-        <h2 class="comm__big">{t.commBig}</h2>
-        <p class="comm__p">{t.commP}</p>
-        <span class="comm__tag"><span class="dot" aria-hidden="true"></span> {t.commTag}</span>
-      </div>
-    </section>
-
-    <section class="plan" id="plan">
-      <div class="plan__inner">
-        <div class="plan__head reveal">
-          <h2 class="display">{t.planH2}</h2>
-          <p>{t.planSub}</p>
-        </div>
-        <div class="card reveal">
-          <div class="card__left">
-            <span class="card__badge">{t.cardBadge}</span>
-            <div class="card__name">{t.cardName} <span>{t.cardNameEs}</span></div>
-            <div class="card__price">
-              <span class="card__amount">$57</span>
-              <span class="card__per">{t.per}</span>
-            </div>
-            <p class="card__after">{t.cardAfter}</p>
-            <p class="card__sub">{t.cardSub}</p>
-          </div>
-          <div class="card__right">
-            <ul class="checks">
-              {t.checks.map((c) => (
-                <li><span class="tick" aria-hidden="true">→</span> {c}</li>
-              ))}
-            </ul>
-            <div class="card__action">
-              <a class="pay pay--invert pay--ring" href="#" id="payMain" data-magnetic>
-                <span class="pay__fill" aria-hidden="true"></span>
-                {t.payMain} <span class="pay__ar" aria-hidden="true">&rarr;</span>
-              </a>
-              <span class="card__fine">{t.cardFine}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="pd">
-      <div class="pd__inner reveal">
-        <span class="pd__label">{t.pdLabel}</span>
-        <p class="pd__text">{t.pdText}</p>
-        <span class="pd__sign">{t.pdSign}</span>
-      </div>
-    </section>
+    <div class="pd">
+      <p class="pd__label">{t.pdLabel}</p>
+      <p>{t.pdText}</p>
+      <p class="pd__sign">{t.pdSign}</p>
+    </div>
 
     <section class="faq">
-      <div class="faq__inner">
-        <aside class="faq__aside reveal">
-          <span class="ovl">{t.faqEyebrow}</span>
-          <h2>{t.faqH2}</h2>
-        </aside>
-        <div class="qa reveal">
-          {t.faq.map((f) => (
-            <details class="qitem">
-              <summary>{f.q} <span class="pm" aria-hidden="true"></span></summary>
-              <div class="qitem__a">{f.a}</div>
-            </details>
-          ))}
+      <h2 class="faq__h">{t.faqH}</h2>
+      {t.faq.map((f, i) => (
+        <div class="qa">
+          <p class="qa__q"><span class="n">{i + 1}.</span>{f.q}</p>
+          <p class="qa__a">{f.a}</p>
         </div>
-      </div>
+      ))}
     </section>
 
+    <div class="cta">
+      <a class="btn" href={t.payHref}>{t.pay}</a>
+    </div>
+
+    <p class="referral">{t.referral}</p>
+
+    <p class="news">{t.newsPre} <a href={t.newsHref}>{t.newsLink}</a></p>
+
     <footer class="foot">
-      <div class="foot__big display">{t.footBig} <em>{t.footBigEm}</em></div>
-      <div class="foot__cols">
-        <div class="foot__col">
-          <h4>Emilse Rios</h4>
-          <p>{t.footAbout}</p>
-        </div>
-        <div class="foot__col">
-          <h4>{t.footMembership}</h4>
-          <a href="#how">{t.footHow}</a>
-          <a href="#incluye">{t.footIncl}</a>
-          <a href="#plan">{t.footPlan}</a>
-        </div>
-        <div class="foot__col">
-          <h4>{t.footMore}</h4>
-          <a href="https://emilserios.com/cursos-contrabajo/">{t.courses}</a>
-          <a href="https://emilserios.com/videos/">{t.videos}</a>
-          <a href="https://emilserios.com/dashboard">{t.classroom}</a>
-        </div>
-        <div class="foot__col">
-          <h4>{t.online}</h4>
-          <a href="https://www.instagram.com/" target="_blank" rel="noopener">Instagram</a>
-          <a href="https://www.youtube.com/" target="_blank" rel="noopener">YouTube</a>
-          <a href="mailto:hola@emilserios.com">Email</a>
-        </div>
-      </div>
-      <div class="foot__base">
-        <span>{t.footBase1}</span>
-        <span set:html={t.footBase2} />
-      </div>
+      <a href="#">{t.footPrivacy}</a>
+      <span class="sep" aria-hidden="true">·</span>
+      <a href="#">{t.footTerms}</a>
+      <span class="sep" aria-hidden="true">·</span>
+      <span>{t.footLegal}</span>
+      <span class="lang" aria-label="Idioma / Language">
+        <a href="/" aria-current={(!isEN).toString()}>ES</a>
+        <a href="/en/" aria-current={isEN.toString()}>EN</a>
+      </span>
     </footer>
 
   </main>
-
-<script is:inline>
-  (function () {
-    // --- Cambio de idioma EN/ES sin volver al inicio ---
-    var main = document.getElementById('top');
-    var htmlEl = document.documentElement;
-    function topKids() { return main ? Array.prototype.slice.call(main.children) : []; }
-
-    // Al ENTRAR: si venimos de un toggle, restauramos la posición y revelamos.
-    try {
-      var saved = sessionStorage.getItem('langSwitch');
-      if (saved) {
-        sessionStorage.removeItem('langSwitch');
-        var d = JSON.parse(saved);
-        var kids = topKids();
-        var anchor = kids[d.i];
-        var y = anchor ? anchor.offsetTop + d.d : d.y;
-        var prev = htmlEl.style.scrollBehavior;
-        htmlEl.style.scrollBehavior = 'auto';
-        window.scrollTo(0, Math.max(0, y));
-        htmlEl.style.scrollBehavior = prev;
-        // Revelar el contenido (fade del main + reveal por sección al intersectar)
-        requestAnimationFrame(function () { htmlEl.classList.remove('lang-enter'); });
-      } else {
-        htmlEl.classList.remove('lang-enter');
-      }
-    } catch (e) { htmlEl.classList.remove('lang-enter'); }
-
-    // Al SALIR: guardamos la sección/posición actual, hacemos fade-out y navegamos.
-    var reduceMo = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document.querySelectorAll('.lang a').forEach(function (a) {
-      a.addEventListener('click', function (e) {
-        e.preventDefault();
-        if (a.getAttribute('aria-current') === 'true') return; // ya estamos en ese idioma
-        var href = a.getAttribute('href');
-        var kids = topKids();
-        var sy = window.scrollY || window.pageYOffset || 0;
-        var idx = 0;
-        for (var k = 0; k < kids.length; k++) {
-          if (kids[k].offsetTop <= sy + 2) idx = k; else break;
-        }
-        var delta = kids[idx] ? sy - kids[idx].offsetTop : 0;
-        try { sessionStorage.setItem('langSwitch', JSON.stringify({ i: idx, d: delta, y: sy })); } catch (err) {}
-        if (main) main.classList.add('lang-leaving');
-        setTimeout(function () { window.location.href = href; }, reduceMo ? 0 : 260);
-      });
-    });
-
-    var nav = document.getElementById('nav');
-    var toggle = document.getElementById('menuToggle');
-    function openMenu() { nav.classList.add('open'); toggle.setAttribute('aria-expanded', 'true'); }
-    function closeMenu() { nav.classList.remove('open'); toggle.setAttribute('aria-expanded', 'false'); }
-    toggle.addEventListener('click', function () { nav.classList.contains('open') ? closeMenu() : openMenu(); });
-    // Cerrar al elegir un enlace del panel
-    nav.addEventListener('click', function (e) { if (e.target.closest('.nav__link, .nav__group a')) closeMenu(); });
-    // Cerrar al hacer clic fuera de la píldora
-    document.addEventListener('click', function (e) { if (nav.classList.contains('open') && !nav.contains(e.target)) closeMenu(); });
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && nav.classList.contains('open')) closeMenu(); });
-
-    var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
-    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    document.querySelectorAll('.pay[data-magnetic]').forEach(function (btn) {
-      btn.addEventListener('pointermove', function (e) {
-        var r = btn.getBoundingClientRect();
-        var x = e.clientX - r.left, y = e.clientY - r.top;
-        btn.style.setProperty('--mx', x + 'px');
-        btn.style.setProperty('--my', y + 'px');
-        if (fine && !reduce) {
-          var dx = (x - r.width / 2) / r.width, dy = (y - r.height / 2) / r.height;
-          btn.style.transform = 'translate(' + (dx * 10).toFixed(2) + 'px,' + (dy * 8).toFixed(2) + 'px)';
-        }
-      });
-      btn.addEventListener('pointerleave', function () { btn.style.transform = ''; });
-    });
-
-    var payMain = document.getElementById('payMain');
-    if (payMain) payMain.addEventListener('click', function (e) {
-      e.preventDefault();
-      payMain.querySelector('.pay__ar').textContent = '✓';
-      var fine2 = payMain.closest('.card__action').querySelector('.card__fine');
-      if (fine2) fine2.textContent = '…';
-    });
-
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) { entry.target.classList.add('in'); io.unobserve(entry.target); }
-      });
-    }, { threshold: 0.16 });
-    document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
-  })();
-</script>
 </body>
 </html>
