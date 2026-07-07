@@ -98,17 +98,28 @@ control de DNS y no depender de él.
       en la voz de Emi (apertura, referidos, cierre "¡Estudiemos juntos!") porque no estaban en el
       copy previo. Botones y newsletter siguen en **placeholder** (`href="#"`) hasta conectar Stripe
       y el alta al newsletter "Contrabajo en la Ciudad".
-- [~] **Ajustes de fluidez sobre la carta** (rama `claude/sales-page-redesign-67469k`, PR #12, EN CURSO):
-      Emi pide que "respire" y se sienta fluida/seductora. **Paso 1 hecho — píldora EN/ES**: se
-      añadió una **píldora fija en la esquina superior derecha** (vidrio esmerilado, `backdrop-filter`,
-      solo EN/ES) que **cambia de idioma sin volver al inicio**: guarda el bloque + offset donde está
-      el scroll, hace **fade-out** del `.page`, navega a la otra página SSR y **restaura la misma
-      posición** con **fade-in**. Anclaje por hijo directo de `.page` con `getBoundingClientRect`;
-      `history.scrollRestoration='manual'` + pre-oculta el contenido (`html.lang-enter`) hasta
-      reposicionar; respeta `prefers-reduced-motion`. Verificado headless: al togglear a media página
-      el scroll se conserva (delta ~60px por el largo distinto del texto) y queda en la misma sección.
-      El toggle del footer comparte el mismo comportamiento (`[data-lang-switch]`). **Pendiente**:
-      seguir con respiros/espaciado y ritmo de lectura del resto de la carta.
+- [x] **Píldora EN/ES con cambio de idioma in-situ** (PR #13, MERGEADO a `main`): primer paso de
+      los "ajustes de fluidez" que pidió Emi. **Píldora fija en la esquina superior derecha** (vidrio
+      esmerilado, `backdrop-filter`, solo EN/ES) que **cambia de idioma sin volver al inicio**: guarda
+      el bloque + offset donde está el scroll, hace **fade-out** del `.page`, navega a la otra página
+      SSR y **restaura la misma posición** con **fade-in**. Anclaje por hijo directo de `.page` con
+      `getBoundingClientRect`; `history.scrollRestoration='manual'` + pre-oculta el contenido
+      (`html.lang-enter`) hasta reposicionar; respeta `prefers-reduced-motion`. Verificado headless: al
+      togglear a media página el scroll se conserva (delta ~60px por el largo distinto del texto) y
+      queda en la misma sección. El toggle del footer comparte el mismo comportamiento
+      (`[data-lang-switch]`). ⚙️ Nota de entorno: `astro preview` no es alcanzable aquí (el proxy
+      intercepta `localhost`); para verificar en navegador, servir el build estático
+      (`.vercel/output/static`, las páginas `/` y `/en/` están prerenderizadas) con
+      `python3 -m http.server` y `NO_PROXY='*'`.
+- [ ] **Ajustes de fluidez de la carta (SIGUIENTE — retomar aquí)**: Emi dijo *"no me gusta nada"*
+      del rediseño inicial y quiere que la carta **respire** y se sienta **fluida y seductora para
+      vender**. Ya está hecha la píldora EN/ES (arriba). **Falta** trabajar el ritmo de lectura del
+      resto: respiros/espaciado entre bloques, jerarquía sutil en la historia para que no sea un muro
+      de texto, la apertura (titular + foto) más envolvente, y que los dos botones se sientan como un
+      "momento" con aire alrededor — todo sin romper el principio del brief ("nada distrae de la
+      lectura"; solo destacan la foto y los dos botones). Preguntas abiertas para Emi al retomar:
+      ¿qué le molesta más hoy — espaciado plano, muro de texto en la historia, apertura fría, o los
+      botones? El copy sigue cerrado; esto es solo contenedor visual.
 - [x] Aula — prototipo visual
 - [x] Panel de Emi — prototipo visual
 - [x] Esquema de BD + RLS (`supabase/migrations/0001_init.sql`)
@@ -235,10 +246,10 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-Rama actual: **`claude/sales-page-redesign-67469k`** (rediseño "carta editorial", PR #12),
-rebasada sobre `main` tras mergearse el **#11** (bitácora nav/lang).
-Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora, **#9** menú desplegable,
-**#10** cambio de idioma, **#11** actualización de bitácora.
+**Todo mergeado a `main`.** No hay trabajo abierto: la próxima sesión arranca **desde `main`
+fresco** con una rama nueva (ver flujo de Adrián abajo) para los "ajustes de fluidez" de la carta.
+Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
+**#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES.
 
 ## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
 Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo
