@@ -2,23 +2,25 @@
 // Página de ventas de la membresía «Estudiemos Juntos» — componente bilingüe
 // (prop lang: 'es' | 'en'). Rutas: / (es) y /en/ (en).
 //
-// PRINCIPIO RECTOR (brief jul 2026): esto se lee como una carta, no como una
-// landing. Nada puede distraer de la lectura. Una columna, una foto pequeña, dos
-// botones. Sin menú, sin marquesina, sin tarjetas, sin sección oscura, sin
-// acordeón, sin animaciones, sin iconos. El peso visual lo llevan solo la foto y
-// los dos botones. El copy está cerrado.
-// NOTA: los botones son placeholder hasta conectar el checkout de Stripe; el
-// enlace al newsletter también es placeholder.
+// PRINCIPIO (ajustes de fluidez, brief jul 2026): la carta ahora RESPIRA y
+// seduce. Sigue siendo una columna de lectura, pero con jerarquía y ritmo:
+// el logo en el hero, la foto, la frase de apertura grande en cursiva, los dos
+// descubrimientos con protagonismo, el precio en un cuadro que se invierte al
+// pasar el cursor con el botón dentro, FAQ desplegable, y fundidos al hacer
+// scroll. Acento único: terracota (botones) + marrón instrumento en los hovers.
+// NOTA: los botones de pago son placeholder hasta conectar Stripe; el newsletter
+// ya apunta al alta real (Klaviyo/kmail).
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
 const other = isEN ? '/' : '/en/';
+const newsHref = 'https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=RxE3BW';
 
 const t = isEN ? {
   htmlLang: 'en',
   metaTitle: "Let's Study Together — Emilse Rios Membership",
   metaDesc: "Half an hour a day, the days you can. A new exercise every Thursday and a community doing it with you. No overwhelming library — just the present. Monthly membership for double bassists.",
-  logo: 'Emilse Rios',
+  logoAlt: 'Emilse Rios',
   title: "Let's study together",
   subtitle: 'The membership',
   photoAlt: 'Emilse Rios',
@@ -40,8 +42,8 @@ const t = isEN ? {
   storyBody2: [
     'There are plenty of exercises floating around the internet, but finding and organizing them takes longer than actually practicing them. The way I see it, YouTube often steals more practice time than it gives back.',
     'Having a goal makes us move — it makes us carve out space in the calendar, it trains our consistency. That’s my advice to you: write it down. It can be a piece you always wanted to play, or getting to know the high register of the instrument. Whatever it is, write it down. Build a plan to reach it.',
-    'Need help getting there? That’s exactly why Estudiemos Juntos exists.',
   ],
+  needHelp: 'Need help getting there? That’s exactly why Estudiemos Juntos exists.',
 
   fitYesH: 'This membership is for you if…',
   fitYes: [
@@ -60,11 +62,11 @@ const t = isEN ? {
     'You don’t have a couple of hours a week. You need a minimum of time — not every day (ideal, yes), but at least a couple of days each week.',
   ],
 
-  price: [
-    'Founder price: $57 a month, only from July 1 to 10. That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
-    'You pay each month on the day you joined — join on the 20th and your month runs the 20th to the 20th, you never lose days. After July 10, the door stays open at $77.',
-  ],
-  priceClose: "Let’s study together!",
+  priceLabel: 'Founder price',
+  priceAmount: '$57',
+  pricePer: '/mo',
+  priceInBox: 'Only from July 1 to 10. That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
+  priceBelow: 'You pay each month on the day you joined — join on the 20th and your month runs the 20th to the 20th, you never lose days. After July 10, the door stays open at $77.',
   pay: 'Join here',
   payHref: '#',
 
@@ -84,10 +86,10 @@ const t = isEN ? {
     { q: 'What hours can I access the platform?', a: 'It’s available to you 24/7.' },
   ],
 
+  finalMsg: "Let’s study together!",
   referral: 'Know someone who needs a push with the double bass? Forward them this page — it might be exactly what they were looking for.',
   newsPre: 'Not subscribed to the newsletter yet?',
-  newsLink: 'Subscribe here.',
-  newsHref: '#',
+  newsLink: 'Subscribe here',
 
   footPrivacy: 'Privacy policy', footTerms: 'Terms',
   footLegal: '© 2026 Emilse Rios',
@@ -95,7 +97,7 @@ const t = isEN ? {
   htmlLang: 'es',
   metaTitle: 'Estudiemos Juntos — Membresía de Emilse Rios',
   metaDesc: 'Media hora al día, los días que puedas. Un ejercicio nuevo cada jueves y una comunidad haciéndolo contigo. Sin biblioteca que abrume — solo el presente. Membresía mensual para contrabajistas.',
-  logo: 'Emilse Rios',
+  logoAlt: 'Emilse Rios',
   title: 'Estudiemos juntos',
   subtitle: 'La membresía',
   photoAlt: 'Emilse Rios',
@@ -117,8 +119,8 @@ const t = isEN ? {
   storyBody2: [
     'Si bien hay muchos ejercicios dando vueltas en internet, te toma más tiempo encontrarlos y organizarlos que estudiarlos. Como lo veo, YouTube muchas veces, más que aportar, se convierte en un ladrón del tiempo de estudio.',
     'Tener una meta nos hace movernos, nos hace abrir espacio en la agenda, nos entrena la constancia. Es mi consejo para ti: anótala. Puede ser una obra que siempre quisiste tocar, o conocer la región aguda del instrumento. Lo que sea, anótala. Ármate un plan para llegar a ella.',
-    '¿Necesitas ayuda para llegar? Para eso existe Estudiemos Juntos.',
   ],
+  needHelp: '¿Necesitas ayuda para llegar? Para eso existe Estudiemos Juntos.',
 
   fitYesH: 'Esta membresía es para ti si…',
   fitYes: [
@@ -137,11 +139,11 @@ const t = isEN ? {
     'No tienes un par de horas a la semana. Necesitas un mínimo de tiempo — no tiene que ser todos los días (aunque sería lo ideal), pero sí al menos un par de días cada semana.',
   ],
 
-  price: [
-    'Precio de fundador: $57 al mes, solo del 1 al 10 de julio. Ese precio se congela para ti: aunque suba (y va a subir), sigues pagando lo mismo durante todo el tiempo que estés dentro.',
-    'Pagas cada mes el día que entras — si entras un 20, tu mes va del 20 al 20, nunca pierdes días. Después del 10 de julio, la puerta sigue abierta a $77.',
-  ],
-  priceClose: '¡Estudiemos juntos!',
+  priceLabel: 'Precio de fundador',
+  priceAmount: '$57',
+  pricePer: '/mes',
+  priceInBox: 'Solo del 1 al 10 de julio. Ese precio se congela para ti: aunque suba (y va a subir), sigues pagando lo mismo durante todo el tiempo que estés dentro.',
+  priceBelow: 'Pagas cada mes el día que entras — si entras un 20, tu mes va del 20 al 20, nunca pierdes días. Después del 10 de julio, la puerta sigue abierta a $77.',
   pay: 'Acá te unes',
   payHref: '#',
 
@@ -161,10 +163,10 @@ const t = isEN ? {
     { q: '¿En qué horarios puedo ingresar a la plataforma?', a: 'Está disponible para ti 24/7.' },
   ],
 
+  finalMsg: '¡Estudiemos juntos!',
   referral: '¿Conoces a alguien que necesita un impulso con el contrabajo? Reenvíale esta página — a lo mejor es justo lo que estaba buscando.',
   newsPre: '¿Aún no estás suscrito al newsletter?',
-  newsLink: 'Acá te suscribes.',
-  newsHref: '#',
+  newsLink: 'Acá te suscribes',
 
   footPrivacy: 'Política de privacidad', footTerms: 'Términos',
   footLegal: '© 2026 Emilse Rios',
@@ -199,15 +201,18 @@ const t = isEN ? {
 <link rel="stylesheet" href="/colors_and_type.css" />
 <style is:inline>
   /* ---------------------------------------------------------------------------
-     Carta editorial. Un solo lienzo crema, una columna de lectura, texto uniforme.
-     El único peso visual: la foto y los dos botones. Nada más destaca.
+     Carta editorial con ritmo. Un solo lienzo crema, una columna de lectura, pero
+     con jerarquía: logo, foto, apertura grande, dos descubrimientos, cuadro
+     comparativo, cuadro de precio que se invierte, FAQ desplegable y fundidos.
+     Acentos: terracota (botones) + marrón instrumento (hovers de texto).
      --------------------------------------------------------------------------- */
   :root {
     --ink: #17140f;            /* casi negro, cálido — contraste alto */
-    --paper: #faf7f1;          /* crema muy suave, un solo color en toda la página */
-    --soft: #6f6a61;           /* gris para el footer legal y notas menores */
-    --accent: #a94f2b;         /* único acento — solo los botones */
+    --paper: #faf7f1;          /* crema muy suave */
+    --soft: #6f6a61;           /* gris para notas menores y footer */
+    --accent: #a94f2b;         /* terracota — botones */
     --accent-strong: #8f4222;
+    --wood: #6b3f2a;           /* marrón del instrumento — hovers de texto */
     --measure: 680px;          /* ancho máximo de lectura */
     --edge: clamp(22px, 6vw, 40px);
   }
@@ -222,7 +227,11 @@ const t = isEN ? {
     margin: 0;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* 14 · Cursor experimental: arco alemán de contrabajo */
+    cursor: url('/img/bow-cursor.svg') 5 5, auto;
   }
+  /* Elementos interactivos conservan afordancia de clic */
+  a, button, summary, .btn { cursor: pointer; }
   ::selection { background: var(--ink); color: var(--paper); }
   img { display: block; max-width: 100%; }
 
@@ -246,69 +255,138 @@ const t = isEN ? {
   .page.is-leaving { opacity: 0; }
   html.lang-enter .page { opacity: 0; }
 
-  /* 1 · Firma superior (no es enlace, no es navegación) */
-  .logo { text-align: center; font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase;
-          color: var(--ink); font-weight: 600; margin: 0 0 clamp(28px, 6vw, 44px); }
+  /* 13 · Fundido al hacer scroll (reveal) */
+  .reveal { opacity: 0; transform: translateY(20px); transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .reveal.is-visible { opacity: 1; transform: none; }
 
-  /* 2 · Foto pequeña */
-  .photo { margin: 0 auto clamp(22px, 5vw, 32px); width: clamp(180px, 46vw, 230px); }
-  .photo img { width: 100%; height: auto; border-radius: 4px; }
+  /* 1 · Logo (reemplaza la firma en texto) */
+  .logo { text-align: center; margin: 0 0 clamp(24px, 6vw, 40px); }
+  .logo__img { display: inline-block; height: clamp(46px, 11vw, 68px); width: auto; margin: 0 auto; }
+  .logo__text { font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
 
-  /* 3 · Titular (única jerarquía tipográfica mayor) */
+  /* 2 · Foto */
+  .photo { margin: 0 auto clamp(24px, 5vw, 34px); width: clamp(190px, 48vw, 250px); }
+  .photo img { width: 100%; height: auto; border-radius: 6px; box-shadow: 0 18px 44px rgba(23, 20, 15, 0.14); }
+
+  /* 3 · Titular + apertura */
   .title { font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1.08; letter-spacing: -0.02em;
            font-weight: 600; margin: 0; text-align: center; text-wrap: balance; }
   .subtitle { font-size: clamp(1.15rem, 3.4vw, 1.5rem); font-weight: 500; color: var(--ink);
               text-align: center; margin: 0.35em 0 0; letter-spacing: -0.01em; }
-  .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center; text-wrap: pretty; }
+  .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center; text-wrap: balance;
+          font-style: italic; font-weight: 700; font-size: clamp(1.3rem, 4vw, 1.85rem); line-height: 1.36;
+          letter-spacing: -0.01em; transition: color 0.45s ease, transform 0.45s ease; }
+  .lede:hover { color: var(--wood); transform: scale(1.015); }
 
-  /* 4–8 · Cuerpo corrido. Un solo estilo de párrafo, sin negritas ni cursivas. */
+  /* Cuerpo corrido */
   p { margin: 0 0 1.15em; }
   .body { margin-top: clamp(36px, 7vw, 56px); }
   .body p:last-child { margin-bottom: 0; }
 
-  .block { margin-top: clamp(30px, 6vw, 44px); }
-  .lead-line { margin-bottom: 1.15em; }
+  /* 4 · Los dos descubrimientos — con protagonismo */
+  .disc { margin-top: clamp(34px, 7vw, 52px); }
+  .disc__lead { font-size: clamp(1.6rem, 5.2vw, 2.15rem); font-weight: 800; line-height: 1.12;
+                letter-spacing: -0.02em; margin: 0 0 0.9em; text-wrap: balance; }
+  .disc__item { margin-bottom: 1.3em; }
+  .disc__item:last-child { margin-bottom: 0; }
+  .disc__t { font-weight: 700; font-style: italic; font-size: clamp(1.12rem, 2.6vw, 1.32rem);
+             line-height: 1.3; margin: 0 0 0.35em; color: var(--ink); }
+  .disc__p { margin: 0; }
 
-  /* Listas es / no es para ti — viñetas simples de guion, mismo tamaño que el cuerpo */
-  .listhead { margin: 0 0 0.7em; }
-  ul.plain { list-style: none; padding: 0; margin: 0 0 0.4em; }
-  ul.plain li { position: relative; padding-left: 1.5em; margin-bottom: 0.7em; }
-  ul.plain li::before { content: "—"; position: absolute; left: 0; color: var(--ink); }
+  .body2 { margin-top: clamp(30px, 6vw, 44px); }
+  .body2 p:last-child { margin-bottom: 0; }
 
-  /* Bloque de precio — texto corrido, el precio se lee dentro de la historia */
-  .price-close { margin-top: 0.4em; }
+  /* 5 · «¿Necesitas ayuda para llegar?» — centrada, protagónica */
+  .needhelp { text-align: center; font-weight: 700; font-style: italic; font-size: clamp(1.3rem, 4vw, 1.7rem);
+              line-height: 1.32; margin: clamp(32px, 6vw, 46px) 0 0; text-wrap: balance;
+              transition: color 0.4s ease; }
+  .needhelp:hover { color: var(--wood); }
 
-  /* 7 y 10 · Botones idénticos — único elemento con color de acento */
-  .cta { text-align: center; margin: clamp(30px, 6vw, 44px) 0; }
-  .btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none;
-         font-family: var(--font-body), system-ui, sans-serif; font-weight: 600;
-         font-size: 1.1rem; letter-spacing: 0.01em;
-         padding: 18px 44px; border-radius: 8px; }
-  .btn:hover { background: var(--accent-strong); }
+  /* 6 · Cuadro comparativo — para ti / no es para ti */
+  .compare { margin-top: clamp(36px, 7vw, 56px); display: grid; grid-template-columns: 1fr 1fr;
+             gap: clamp(14px, 3vw, 22px); align-items: start; }
+  .compare__col { border: 1px solid rgba(23, 20, 15, 0.14); border-radius: 14px; padding: clamp(18px, 3vw, 26px);
+                  background: rgba(255, 255, 255, 0.5); }
+  .compare__col--no { background: rgba(23, 20, 15, 0.035); }
+  .compare__h { font-weight: 700; margin: 0 0 0.9em; font-size: 1.02em; line-height: 1.25; text-wrap: balance; }
+  .compare__col ul { list-style: none; padding: 0; margin: 0; }
+  .compare__col li { position: relative; padding-left: 1.5em; margin-bottom: 0.8em; font-size: 0.96em; line-height: 1.5; }
+  .compare__col li:last-child { margin-bottom: 0; }
+  .compare__col--yes li::before { content: "✓"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+  .compare__col--no li::before { content: "–"; position: absolute; left: 0; color: var(--soft); font-weight: 700; }
+  @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
 
-  /* 8 · Posdata — texto corrido, sin caja */
-  .pd { margin-top: clamp(30px, 6vw, 44px); }
-  .pd__label { letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.8em; color: var(--soft);
-               margin: 0 0 0.6em; }
-  .pd__sign { margin-top: 0.4em; }
+  /* 7 · Cuadro de precio — se invierte al pasar el cursor; botón dentro */
+  .plan { margin-top: clamp(40px, 8vw, 60px); }
+  .pricebox { max-width: 420px; margin: 0 auto; border: 2px solid var(--ink); border-radius: 18px;
+              background: #fff; color: #17140f; padding: clamp(26px, 5vw, 40px) clamp(22px, 5vw, 34px);
+              text-align: center; transition: background 0.35s ease, color 0.35s ease, box-shadow 0.35s ease, transform 0.35s ease; }
+  .pricebox:hover { background: var(--ink); color: #fff; box-shadow: 0 24px 60px rgba(23, 20, 15, 0.28); transform: translateY(-3px); }
+  .pricebox__label { text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.76rem; font-weight: 700;
+                     margin: 0 0 0.5em; opacity: 0.85; }
+  .pricebox__amount { margin: 0 0 0.45em; line-height: 1; }
+  .pricebox__amount .num { font-size: clamp(3.3rem, 13vw, 4.6rem); font-weight: 800; letter-spacing: -0.03em; }
+  .pricebox__amount .per { font-size: 1.15rem; font-weight: 600; opacity: 0.65; margin-left: 0.15em; }
+  .pricebox__note { font-size: 0.92em; margin: 0 0 1.5em; opacity: 0.9; line-height: 1.5; }
+  .plan__below { margin: clamp(20px, 4vw, 30px) auto 0; max-width: 560px; text-align: center;
+                 font-size: 0.94em; color: var(--soft); text-wrap: pretty; }
 
-  /* 9 · Preguntas frecuentes — visibles, sin acordeón. Numeración como leve distintivo. */
-  .faq { margin-top: clamp(40px, 8vw, 64px); }
+  /* Botones de acento — con barrido de brillo y efecto magnético (JS) */
+  .cta { text-align: center; margin: clamp(32px, 6vw, 48px) 0; }
+  .cta--inbox { margin: 0; }
+  .btn { position: relative; display: inline-block; overflow: hidden; background: var(--accent); color: #fff;
+         text-decoration: none; font-family: var(--font-body), system-ui, sans-serif; font-weight: 700;
+         font-size: 1.12rem; letter-spacing: 0.01em; padding: 18px 46px; border-radius: 11px;
+         box-shadow: 0 8px 22px rgba(169, 79, 43, 0.3);
+         transition: transform 0.25s cubic-bezier(0.2, 0.7, 0.2, 1), box-shadow 0.25s ease, background 0.25s ease;
+         will-change: transform; }
+  .btn:hover { background: var(--accent-strong); box-shadow: 0 16px 38px rgba(169, 79, 43, 0.42); }
+  .btn .txt { position: relative; z-index: 1; }
+  .btn::before { content: ""; position: absolute; top: 0; left: -120%; width: 55%; height: 100%;
+                 background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+                 transform: skewX(-18deg); pointer-events: none; }
+  .btn:hover::before { animation: sheen 0.85s ease; }
+  @keyframes sheen { to { left: 140%; } }
+
+  /* 8 · Posdata — cursiva, más pequeña, fuera del cuadro */
+  .pd { margin-top: clamp(34px, 7vw, 50px); font-style: italic; font-size: 0.94em; color: var(--soft); }
+  .pd__label { font-style: normal; letter-spacing: 0.16em; text-transform: uppercase; font-size: 0.78em;
+               color: var(--soft); margin: 0 0 0.6em; }
+  .pd__sign { margin-top: 0.5em; }
+
+  /* 9 · FAQ desplegable (click para ver la respuesta) */
+  .faq { margin-top: clamp(44px, 8vw, 68px); }
   .faq__h { font-size: clamp(1.5rem, 5vw, 1.9rem); font-weight: 600; letter-spacing: -0.015em;
-            margin: 0 0 clamp(20px, 4vw, 30px); }
-  .qa { margin-bottom: clamp(20px, 4vw, 28px); }
-  .qa__q { margin: 0 0 0.35em; }
-  .qa__q .n { color: var(--soft); margin-right: 0.5em; }
-  .qa__a { margin: 0; }
+            margin: 0 0 clamp(10px, 2vw, 16px); }
+  .qa { border-top: 1px solid rgba(23, 20, 15, 0.12); }
+  .qa:last-of-type { border-bottom: 1px solid rgba(23, 20, 15, 0.12); }
+  .qa summary { list-style: none; padding: clamp(15px, 3vw, 19px) 2em clamp(15px, 3vw, 19px) 0; position: relative;
+                font-weight: 600; line-height: 1.4; }
+  .qa summary::-webkit-details-marker { display: none; }
+  .qa summary .n { color: var(--soft); margin-right: 0.5em; }
+  .qa summary::after { content: "+"; position: absolute; right: 0; top: 50%; transform: translateY(-50%);
+                       font-size: 1.4em; line-height: 1; color: var(--accent); transition: transform 0.25s ease; }
+  .qa[open] summary::after { content: "–"; }
+  .qa summary:hover { color: var(--wood); }
+  .qa__a { margin: 0; padding: 0 0 clamp(15px, 3vw, 19px); color: var(--ink); animation: faqin 0.32s ease; }
+  @keyframes faqin { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: none; } }
 
-  /* 11 · Referidos — texto plano */
-  .referral { margin-top: clamp(34px, 7vw, 48px); }
+  /* 11 · Mensaje final — grande, bold, italic */
+  .finalmsg { text-align: center; font-weight: 800; font-style: italic; font-size: clamp(1.7rem, 6.5vw, 2.5rem);
+              line-height: 1.14; letter-spacing: -0.02em; margin: clamp(36px, 7vw, 52px) 0 0; text-wrap: balance;
+              transition: color 0.4s ease; }
+  .finalmsg:hover { color: var(--wood); }
 
-  /* 12 · Único enlace externo — menor que el cuerpo, subrayado, sin botón */
-  .news { margin-top: clamp(20px, 4vw, 28px); font-size: 0.9em; color: var(--soft); }
-  .news a { color: var(--soft); text-underline-offset: 3px; }
+  /* Referidos — texto suave centrado */
+  .referral { margin-top: clamp(24px, 5vw, 34px); text-align: center; font-size: 0.94em; color: var(--soft); text-wrap: pretty; }
 
-  /* 13 · Footer mínimo — solo legal, gris pequeño */
+  /* 12 · Newsletter — centrado, botón que lleva al alta real */
+  .news { margin-top: clamp(34px, 7vw, 50px); text-align: center; }
+  .news__pre { margin: 0 0 1em; color: var(--soft); }
+  .btn--news { background: var(--ink); box-shadow: 0 8px 22px rgba(23, 20, 15, 0.2); font-size: 1rem; padding: 15px 36px; }
+  .btn--news:hover { background: #000; box-shadow: 0 16px 34px rgba(23, 20, 15, 0.3); }
+
+  /* Footer mínimo */
   .foot { margin-top: clamp(48px, 9vw, 80px); font-size: 0.8rem; color: var(--soft);
           display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; }
   .foot a { color: var(--soft); text-decoration: none; }
@@ -319,6 +397,12 @@ const t = isEN ? {
 
   @media (max-width: 460px) {
     .btn { display: block; padding: 18px 24px; }
+    .btn--news { display: inline-block; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .lede:hover, .pricebox:hover { transform: none; }
+    .btn:hover::before { animation: none; }
   }
 </style>
 </head>
@@ -331,65 +415,92 @@ const t = isEN ? {
 
   <main class="page">
 
-    <p class="logo">{t.logo}</p>
+    <p class="logo">
+      <img class="logo__img" src="/img/logo.png" alt={t.logoAlt}
+           onerror="this.style.display='none';var f=this.parentNode&&this.parentNode.querySelector('.logo__text');if(f)f.hidden=false;" />
+      <span class="logo__text" hidden>{t.logoAlt}</span>
+    </p>
 
-    <figure class="photo">
-      <img src="/emi-city.jpg" alt={t.photoAlt} />
+    <figure class="photo reveal">
+      <img src="/img/foto.jpg" alt={t.photoAlt} onerror="this.onerror=null;this.src='/emi-city.jpg';" />
     </figure>
 
-    <h1 class="title">{t.title}</h1>
-    <p class="subtitle">{t.subtitle}</p>
-    <p class="lede">{t.lede}</p>
+    <h1 class="title reveal">{t.title}</h1>
+    <p class="subtitle reveal">{t.subtitle}</p>
+    <p class="lede reveal">{t.lede}</p>
 
-    <div class="body">
+    <div class="body reveal">
       <p>{t.storyLead}</p>
       {t.storyBody1.map((p) => (<p>{p}</p>))}
-      <p class="lead-line">{t.discLead}</p>
-      {t.disc.map((d) => (<><p class="lead-line">{d.t}</p><p>{d.p}</p></>))}
+    </div>
+
+    <div class="disc reveal">
+      <p class="disc__lead">{t.discLead}</p>
+      {t.disc.map((d) => (
+        <div class="disc__item">
+          <p class="disc__t">{d.t}</p>
+          <p class="disc__p">{d.p}</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="body2 reveal">
       {t.storyBody2.map((p) => (<p>{p}</p>))}
     </div>
 
-    <div class="block">
-      <p class="listhead">{t.fitYesH}</p>
-      <ul class="plain">{t.fitYes.map((li) => (<li>{li}</li>))}</ul>
-    </div>
-    <div class="block">
-      <p class="listhead">{t.fitNoH}</p>
-      <ul class="plain">{t.fitNo.map((li) => (<li>{li}</li>))}</ul>
+    <p class="needhelp reveal">{t.needHelp}</p>
+
+    <div class="compare reveal">
+      <div class="compare__col compare__col--yes">
+        <p class="compare__h">{t.fitYesH}</p>
+        <ul>{t.fitYes.map((li) => (<li>{li}</li>))}</ul>
+      </div>
+      <div class="compare__col compare__col--no">
+        <p class="compare__h">{t.fitNoH}</p>
+        <ul>{t.fitNo.map((li) => (<li>{li}</li>))}</ul>
+      </div>
     </div>
 
-    <div class="block">
-      {t.price.map((p) => (<p>{p}</p>))}
-      <p class="price-close">{t.priceClose}</p>
+    <div class="plan reveal">
+      <div class="pricebox">
+        <p class="pricebox__label">{t.priceLabel}</p>
+        <p class="pricebox__amount"><span class="num">{t.priceAmount}</span><span class="per">{t.pricePer}</span></p>
+        <p class="pricebox__note">{t.priceInBox}</p>
+        <div class="cta cta--inbox">
+          <a class="btn btn--magnetic" href={t.payHref}><span class="txt">{t.pay}</span></a>
+        </div>
+      </div>
+      <p class="plan__below">{t.priceBelow}</p>
     </div>
 
-    <div class="cta">
-      <a class="btn" href={t.payHref}>{t.pay}</a>
-    </div>
-
-    <div class="pd">
+    <div class="pd reveal">
       <p class="pd__label">{t.pdLabel}</p>
       <p>{t.pdText}</p>
       <p class="pd__sign">{t.pdSign}</p>
     </div>
 
-    <section class="faq">
+    <section class="faq reveal">
       <h2 class="faq__h">{t.faqH}</h2>
       {t.faq.map((f, i) => (
-        <div class="qa">
-          <p class="qa__q"><span class="n">{i + 1}.</span>{f.q}</p>
+        <details class="qa">
+          <summary><span class="n">{i + 1}.</span>{f.q}</summary>
           <p class="qa__a">{f.a}</p>
-        </div>
+        </details>
       ))}
     </section>
 
-    <div class="cta">
-      <a class="btn" href={t.payHref}>{t.pay}</a>
+    <div class="cta reveal">
+      <a class="btn btn--magnetic" href={t.payHref}><span class="txt">{t.pay}</span></a>
     </div>
 
-    <p class="referral">{t.referral}</p>
+    <p class="finalmsg reveal">{t.finalMsg}</p>
 
-    <p class="news">{t.newsPre} <a href={t.newsHref}>{t.newsLink}</a></p>
+    <p class="referral reveal">{t.referral}</p>
+
+    <div class="news reveal">
+      <p class="news__pre">{t.newsPre}</p>
+      <a class="btn btn--news" href={newsHref} target="_blank" rel="noopener"><span class="txt">{t.newsLink}</span></a>
+    </div>
 
     <footer class="foot">
       <a href="#">{t.footPrivacy}</a>
@@ -405,6 +516,39 @@ const t = isEN ? {
 
   </main>
 
+<script is:inline>
+  // 13 · Fundido al hacer scroll + 7/10 · botón magnético.
+  (function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Reveal por IntersectionObserver
+    var revs = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      revs.forEach(function (el) { el.classList.add('is-visible'); });
+    } else {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (en) {
+          if (en.isIntersecting) { en.target.classList.add('is-visible'); io.unobserve(en.target); }
+        });
+      }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
+      revs.forEach(function (el) { io.observe(el); });
+    }
+
+    // Botón magnético: sigue sutilmente al cursor (solo puntero fino)
+    if (!reduce && window.matchMedia('(pointer: fine)').matches) {
+      document.querySelectorAll('.btn--magnetic').forEach(function (btn) {
+        var strength = 0.28;
+        btn.addEventListener('pointermove', function (e) {
+          var r = btn.getBoundingClientRect();
+          var mx = e.clientX - (r.left + r.width / 2);
+          var my = e.clientY - (r.top + r.height / 2);
+          btn.style.transform = 'translate(' + (mx * strength).toFixed(1) + 'px,' + (my * strength).toFixed(1) + 'px)';
+        });
+        btn.addEventListener('pointerleave', function () { btn.style.transform = ''; });
+      });
+    }
+  })();
+</script>
 <script is:inline>
   (function () {
     // Cambio de idioma EN/ES sin volver al inicio. Las dos páginas son SSR
