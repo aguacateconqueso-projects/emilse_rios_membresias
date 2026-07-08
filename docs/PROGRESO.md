@@ -111,15 +111,36 @@ control de DNS y no depender de él.
       intercepta `localhost`); para verificar en navegador, servir el build estático
       (`.vercel/output/static`, las páginas `/` y `/en/` están prerenderizadas) con
       `python3 -m http.server` y `NO_PROXY='*'`.
-- [ ] **Ajustes de fluidez de la carta (SIGUIENTE — retomar aquí)**: Emi dijo *"no me gusta nada"*
-      del rediseño inicial y quiere que la carta **respire** y se sienta **fluida y seductora para
-      vender**. Ya está hecha la píldora EN/ES (arriba). **Falta** trabajar el ritmo de lectura del
-      resto: respiros/espaciado entre bloques, jerarquía sutil en la historia para que no sea un muro
-      de texto, la apertura (titular + foto) más envolvente, y que los dos botones se sientan como un
-      "momento" con aire alrededor — todo sin romper el principio del brief ("nada distrae de la
-      lectura"; solo destacan la foto y los dos botones). Preguntas abiertas para Emi al retomar:
-      ¿qué le molesta más hoy — espaciado plano, muro de texto en la historia, apertura fría, o los
-      botones? El copy sigue cerrado; esto es solo contenedor visual.
+- [x] **Rediseño "fluido y pro" de la carta (mergeado a `main`, PRs #16/#17/#18, rama
+      `claude/sales-page-updates-cpmkk1`, jul 8)**: Emi dijo del rediseño inicial *"no me gusta nada"*
+      y luego que los botones se veían *"como cualquier AI chimbo"*. Se rehízo TODO el contenedor visual
+      de `Landing.astro` (el copy sigue cerrado) hasta dejarlo editorial, monocromático y seductor:
+      - **Logo e imagen reales**: hero con el wordmark caligráfico **`public/img/logo_emi_alpha.png`**
+        (transparente) y foto nueva del contrabajo **`public/img/foto.jpg`** (`THL_7767`). Los archivos
+        se subieron a `main` desde la web; en el código se referencian con nombres limpios. Quedó sin uso
+        `public/img/logo.png` (el de los arcos "EMILSE RIOS ACADEMY"); se dejó por si sirve para favicon.
+      - **Jerarquía de lectura**: apertura grande en bold+italic — **primera oración en una línea, el
+        resto en dos** (misma estructura ES/EN) — más pequeña que el título para no competir; título un
+        poco mayor. "Descubrí dos cosas" con protagonismo (lead grande, excusas en bold+italic).
+        "¿Necesitas ayuda para llegar?" centrada. Cuadro comparativo "para ti / no es para ti" en dos
+        columnas más anchas (rompe la columna de 680px). P.D. en cursiva pequeña. **FAQ desplegable**
+        (`<details>`). Mensaje final grande. Fundidos al hacer scroll (IntersectionObserver).
+      - **Tarjeta de precio** (formato de una referencia que pasó Emi): dos columnas — izquierda nombre
+        "Estudiemos juntos / *Let's study together*" (echo del otro idioma en cursiva) + **$57** + nota;
+        derecha "qué incluye" con flechas → + botón + reassurance. La **info de facturación** (día de cobro
+        / $77) va DENTRO del cuadro, fila a todo el ancho (ojo: hubo que anular el `max-width` global de
+        `<p>` = `var(--measure)`), centrada y en **negrita**. La tarjeta **se invierte de color** (crema↔tinta)
+        al pasar el cursor.
+      - **Botones**: cuadrados y monocromáticos (se quitó el terracota y los brillos). Animación que sí
+        le gustó a Emi (de un HTML de referencia): **relleno de tinta que crece desde la posición del
+        cursor** + flecha que se desliza + magnético sutil. Corregido dos veces el subrayado heredado del
+        `a:hover` global de `colors_and_type.css`. **Notas musicales de colores** flotan al hover.
+      - **Cursor personalizado de clave de fa** (`public/img/clef-cursor.svg`), con **versión clara**
+        (`clef-cursor-light.svg`) que entra cuando el fondo se pone oscuro (tarjeta invertida y botones
+        rellenos de tinta) para que no se pierda. Se mantiene sobre enlaces/botones (no vuelve a la manito).
+      - Newsletter apunta al **alta real** (Klaviyo/kmail:
+        `https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=RxE3BW`). Los botones de PAGO
+        siguen en **placeholder** (`href="#"`) hasta conectar Stripe. Verificado headless en ES y EN.
 - [x] Aula — prototipo visual
 - [x] Panel de Emi — prototipo visual
 - [x] Esquema de BD + RLS (`supabase/migrations/0001_init.sql`)
@@ -247,9 +268,12 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 
 ## Rama de trabajo
 **Todo mergeado a `main`.** No hay trabajo abierto: la próxima sesión arranca **desde `main`
-fresco** con una rama nueva (ver flujo de Adrián abajo) para los "ajustes de fluidez" de la carta.
+fresco** con una rama nueva (ver flujo de Adrián abajo). El rediseño "fluido y pro" de la carta
+ya está en producción; lo siguiente es **conectar Stripe** (los botones de pago siguen en placeholder).
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
-**#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES.
+**#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
+**#16/#17/#18** rediseño fluido/pro de la carta (logo+foto reales, tarjeta de precio, botones con
+relleno desde el cursor, cursor de clave de fa, notas musicales).
 
 ## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
 Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo
