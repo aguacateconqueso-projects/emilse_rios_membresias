@@ -5,11 +5,12 @@
 // PRINCIPIO (ajustes de fluidez, brief jul 2026): la carta ahora RESPIRA y
 // seduce. Sigue siendo una columna de lectura, pero con jerarquía y ritmo:
 // el logo en el hero, la foto, la frase de apertura grande en cursiva, los dos
-// descubrimientos con protagonismo, el precio en un cuadro que se invierte al
-// pasar el cursor con el botón dentro, FAQ desplegable, y fundidos al hacer
-// scroll. Paleta monocromática (tinta/crema); botones cuadrados que se invierten al
-// hover, sin color ni brillos. Único toque de color: el marrón del instrumento en los
-// hovers de texto (apertura, cierre).
+// descubrimientos con protagonismo, la tarjeta de precio de dos columnas que se
+// invierte de color al pasar el cursor, FAQ desplegable, y fundidos al hacer scroll.
+// Paleta monocromática (tinta/crema); botones cuadrados con relleno de tinta que crece
+// desde el cursor + flecha (referencia de Emi) y notas musicales al hover. Cursor de
+// clave de fa. Único toque de color de texto: el marrón del instrumento en los hovers
+// (apertura, cierre).
 // NOTA: los botones de pago son placeholder hasta conectar Stripe; el newsletter
 // ya apunta al alta real (Klaviyo/kmail).
 interface Props { lang?: 'es' | 'en'; }
@@ -26,7 +27,8 @@ const t = isEN ? {
   title: "Let's study together",
   subtitle: 'The membership',
   photoAlt: 'Emilse Rios',
-  lede: "The problem isn't that you're short on time. The problem is not knowing what to do with the little time you have.",
+  ledeA: "The problem isn't that you're short on time.",
+  ledeB: 'The problem is not knowing what to do with the little time you have.',
 
   storyLead: 'In 2012 my only job was to play, as well as I possibly could, the symphonies of the composer I love most in the world. But it wasn’t always like that — and in this story there’s something that might help you manage your practice time, especially if you feel you don’t have any.',
   storyBody1: [
@@ -45,7 +47,7 @@ const t = isEN ? {
     'There are plenty of exercises floating around the internet, but finding and organizing them takes longer than actually practicing them. The way I see it, YouTube often steals more practice time than it gives back.',
     'Having a goal makes us move — it makes us carve out space in the calendar, it trains our consistency. That’s my advice to you: write it down. It can be a piece you always wanted to play, or getting to know the high register of the instrument. Whatever it is, write it down. Build a plan to reach it.',
   ],
-  needHelp: 'Need help getting there? That’s exactly why Estudiemos Juntos exists.',
+  needHelp: 'Need help getting there? That’s exactly why Let’s study together exists.',
 
   fitYesH: 'This membership is for you if…',
   fitYes: [
@@ -64,10 +66,19 @@ const t = isEN ? {
     'You don’t have a couple of hours a week. You need a minimum of time — not every day (ideal, yes), but at least a couple of days each week.',
   ],
 
+  titleEcho: 'Estudiemos juntos',
   priceLabel: 'Founder price',
   priceAmount: '$57',
   pricePer: '/mo',
   priceInBox: 'Only from July 1 to 10. That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
+  priceFeatures: [
+    'A new exercise every Thursday (video + PDF)',
+    'Half an hour a day, the days you can',
+    'A questions forum — Emilse answers',
+    'Mark your exercises as done',
+    'Available to you 24/7, wherever you are',
+  ],
+  priceReassure: 'Cancel anytime, no questions asked.',
   priceBelow: 'You pay each month on the day you joined — join on the 20th and your month runs the 20th to the 20th, you never lose days. After July 10, the door stays open at $77.',
   pay: 'Join here',
   payHref: '#',
@@ -103,7 +114,8 @@ const t = isEN ? {
   title: 'Estudiemos juntos',
   subtitle: 'La membresía',
   photoAlt: 'Emilse Rios',
-  lede: 'El problema no es que te falte tiempo. El problema es no saber qué hacer con el poco tiempo que tienes.',
+  ledeA: 'El problema no es que te falte tiempo.',
+  ledeB: 'El problema es no saber qué hacer con el poco tiempo que tienes.',
 
   storyLead: 'En 2012 mi único trabajo era tocar lo mejor posible las sinfonías del compositor que más amo en la vida. Pero no siempre fue así — y en esta historia te cuento algo que te va a ayudar a gestionar mejor tu tiempo de estudio, sobre todo si sientes que no tienes tiempo.',
   storyBody1: [
@@ -141,10 +153,19 @@ const t = isEN ? {
     'No tienes un par de horas a la semana. Necesitas un mínimo de tiempo — no tiene que ser todos los días (aunque sería lo ideal), pero sí al menos un par de días cada semana.',
   ],
 
+  titleEcho: 'Let’s study together',
   priceLabel: 'Precio de fundador',
   priceAmount: '$57',
   pricePer: '/mes',
   priceInBox: 'Solo del 1 al 10 de julio. Ese precio se congela para ti: aunque suba (y va a subir), sigues pagando lo mismo durante todo el tiempo que estés dentro.',
+  priceFeatures: [
+    'Un ejercicio nuevo cada jueves (video + PDF)',
+    'Media hora al día, los días que puedas',
+    'Un foro de preguntas — te responde Emilse',
+    'Marca tus ejercicios completados',
+    'Disponible para ti 24/7, desde donde estés',
+  ],
+  priceReassure: 'Cancela cuando quieras, sin explicar nada.',
   priceBelow: 'Pagas cada mes el día que entras — si entras un 20, tu mes va del 20 al 20, nunca pierdes días. Después del 10 de julio, la puerta sigue abierta a $77.',
   pay: 'Acá te unes',
   payHref: '#',
@@ -229,11 +250,10 @@ const t = isEN ? {
     margin: 0;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
-    /* 14 · Cursor experimental: arco alemán de contrabajo */
-    cursor: url('/img/bow-cursor.svg') 5 5, auto;
+    /* 14 · Cursor: clave de fa (clave del contrabajo) */
+    cursor: url('/img/clef-cursor.svg') 11 13, auto;
   }
-  /* Elementos interactivos conservan afordancia de clic */
-  a, button, summary, .btn { cursor: pointer; }
+  /* El cursor de clave de fa se mantiene también sobre enlaces y botones (no vuelve a la manito) */
   ::selection { background: var(--ink); color: var(--paper); }
   img { display: block; max-width: 100%; }
 
@@ -263,7 +283,7 @@ const t = isEN ? {
 
   /* 1 · Logo (reemplaza la firma en texto) */
   .logo { text-align: center; margin: 0 0 clamp(24px, 6vw, 40px); }
-  .logo__img { display: inline-block; height: clamp(46px, 11vw, 68px); width: auto; margin: 0 auto; }
+  .logo__img { display: inline-block; width: clamp(240px, 62vw, 340px); height: auto; margin: 0 auto; }
   .logo__text { font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
 
   /* 2 · Foto */
@@ -271,14 +291,19 @@ const t = isEN ? {
   .photo img { width: 100%; height: auto; border-radius: 0; box-shadow: 0 14px 36px rgba(23, 20, 15, 0.12); }
 
   /* 3 · Titular + apertura */
-  .title { font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1.08; letter-spacing: -0.02em;
+  .title { font-size: clamp(2.2rem, 7.6vw, 3rem); line-height: 1.06; letter-spacing: -0.025em;
            font-weight: 600; margin: 0; text-align: center; text-wrap: balance; }
   .subtitle { font-size: clamp(1.15rem, 3.4vw, 1.5rem); font-weight: 500; color: var(--ink);
               text-align: center; margin: 0.35em 0 0; letter-spacing: -0.01em; }
-  .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center; text-wrap: balance;
-          font-style: italic; font-weight: 700; font-size: clamp(1.3rem, 4vw, 1.85rem); line-height: 1.36;
-          letter-spacing: -0.01em; transition: color 0.45s ease; }
+  /* La primera oración va en UNA línea; el resto se balancea en dos. Más pequeña
+     que el título para que no compita con él. */
+  .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center;
+          font-style: italic; font-weight: 700; font-size: clamp(1.12rem, 3vw, 1.5rem); line-height: 1.38;
+          letter-spacing: -0.005em; transition: color 0.45s ease; }
   .lede:hover { color: var(--wood); }
+  .lede__a { display: block; white-space: nowrap; }
+  .lede__b { display: block; text-wrap: balance; }
+  @media (max-width: 440px) { .lede__a { white-space: normal; text-wrap: balance; } }
 
   /* Cuerpo corrido */
   p { margin: 0 0 1.15em; }
@@ -304,47 +329,109 @@ const t = isEN ? {
               transition: color 0.4s ease; }
   .needhelp:hover { color: var(--wood); }
 
-  /* 6 · Cuadro comparativo — para ti / no es para ti */
-  .compare { margin-top: clamp(36px, 7vw, 56px); display: grid; grid-template-columns: 1fr 1fr;
-             gap: clamp(14px, 3vw, 22px); align-items: start; }
-  .compare__col { border: 1px solid rgba(23, 20, 15, 0.16); border-radius: 0; padding: clamp(18px, 3vw, 26px);
+  /* 6 · Cuadro comparativo — para ti / no es para ti.
+     Rompe la columna de lectura (680px) para respirar más ancho y centrado. */
+  .compare { margin-top: clamp(36px, 7vw, 56px);
+             width: min(880px, 94vw);
+             margin-left: calc((100% - min(880px, 94vw)) / 2);
+             margin-right: calc((100% - min(880px, 94vw)) / 2);
+             display: grid; grid-template-columns: 1fr 1fr;
+             gap: clamp(18px, 3vw, 28px); align-items: start; }
+  .compare__col { border: 1px solid rgba(23, 20, 15, 0.16); border-radius: 0; padding: clamp(22px, 3.4vw, 34px);
                   background: rgba(255, 255, 255, 0.5); }
   .compare__col--no { background: rgba(23, 20, 15, 0.035); }
-  .compare__h { font-weight: 700; margin: 0 0 0.9em; font-size: 1.02em; line-height: 1.25; text-wrap: balance; }
+  .compare__h { font-weight: 700; margin: 0 0 1em; font-size: 1.05em; line-height: 1.25; text-wrap: balance; }
   .compare__col ul { list-style: none; padding: 0; margin: 0; }
-  .compare__col li { position: relative; padding-left: 1.5em; margin-bottom: 0.8em; font-size: 0.96em; line-height: 1.5; }
+  .compare__col li { position: relative; padding-left: 1.5em; margin-bottom: 0.9em; font-size: 0.96em; line-height: 1.55; }
   .compare__col li:last-child { margin-bottom: 0; }
   .compare__col--yes li::before { content: "✓"; position: absolute; left: 0; color: var(--ink); font-weight: 700; }
   .compare__col--no li::before { content: "–"; position: absolute; left: 0; color: var(--soft); font-weight: 700; }
   @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
 
-  /* 7 · Cuadro de precio — se invierte al pasar el cursor; botón dentro */
+  /* 7 · Tarjeta de precio — formato de dos columnas (referencia de Emi):
+     izquierda = nombre + $57 + nota; derecha = qué incluye + botón. Cuadrada
+     (coherente con la página) y se invierte de color al pasar el cursor. */
   .plan { margin-top: clamp(40px, 8vw, 60px); }
-  .pricebox { max-width: 420px; margin: 0 auto; border: 1.5px solid var(--ink); border-radius: 0;
-              background: #fff; color: #17140f; padding: clamp(28px, 5vw, 44px) clamp(22px, 5vw, 36px);
-              text-align: center; transition: background 0.4s ease, color 0.4s ease; }
-  .pricebox:hover { background: var(--ink); color: var(--paper); }
-  .pricebox__label { text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.76rem; font-weight: 700;
-                     margin: 0 0 0.5em; opacity: 0.85; }
-  .pricebox__amount { margin: 0 0 0.45em; line-height: 1; }
-  .pricebox__amount .num { font-size: clamp(3.3rem, 13vw, 4.6rem); font-weight: 800; letter-spacing: -0.03em; }
-  .pricebox__amount .per { font-size: 1.15rem; font-weight: 600; opacity: 0.65; margin-left: 0.15em; }
-  .pricebox__note { font-size: 0.92em; margin: 0 0 1.5em; opacity: 0.9; line-height: 1.5; }
-  /* El botón dentro del cuadro se invierte junto con la caja */
-  .pricebox .btn { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .pricebox:hover .btn { background: var(--paper); color: var(--ink); border-color: var(--paper); }
-  .plan__below { margin: clamp(20px, 4vw, 30px) auto 0; max-width: 560px; text-align: center;
-                 font-size: 0.94em; color: var(--soft); text-wrap: pretty; }
+  .pricecard { width: min(940px, 96vw);
+               margin-left: calc((100% - min(940px, 96vw)) / 2);
+               margin-right: calc((100% - min(940px, 96vw)) / 2);
+               border: 1.5px solid var(--ink); border-radius: 0; overflow: hidden;
+               background: #fff; color: #17140f;
+               display: grid; grid-template-columns: 1.05fr 0.95fr;
+               transition: background 0.45s ease, color 0.45s ease; }
+  .pricecard:hover { background: var(--ink); color: var(--paper); }
+  .pricecard__left { padding: clamp(28px, 4vw, 50px); border-right: 1px solid rgba(23, 20, 15, 0.14);
+                     transition: border-color 0.45s ease; }
+  .pricecard:hover .pricecard__left { border-right-color: rgba(250, 247, 241, 0.18); }
+  .pricecard__name { font-weight: 700; font-size: clamp(1.4rem, 3vw, 1.8rem); letter-spacing: -0.02em;
+                     margin: 0; line-height: 1.1; }
+  .pricecard__name .echo { font-style: italic; font-weight: 400; color: var(--soft); font-size: 0.66em;
+                           letter-spacing: 0; transition: color 0.45s ease; }
+  .pricecard:hover .pricecard__name .echo { color: rgba(250, 247, 241, 0.7); }
+  .pricecard__plan { text-transform: uppercase; letter-spacing: 0.16em; font-size: 0.74rem; font-weight: 700;
+                     margin: clamp(18px, 3vw, 26px) 0 0.4em; opacity: 0.8; }
+  .pricecard__price { display: flex; align-items: baseline; gap: 10px; margin: 0 0 4px; }
+  .pricecard__price .num { font-size: clamp(3.2rem, 8vw, 5rem); font-weight: 800; letter-spacing: -0.04em; line-height: 0.9; }
+  .pricecard__price .per { font-size: 1.05rem; opacity: 0.62; }
+  .pricecard__note { font-size: 0.9em; margin: clamp(14px, 2.5vw, 20px) 0 0; opacity: 0.82; line-height: 1.55; }
+  .pricecard__right { padding: clamp(28px, 4vw, 50px); display: flex; flex-direction: column; justify-content: space-between;
+                      gap: clamp(22px, 3vw, 32px); }
+  .pricecard__feat { list-style: none; padding: 0; margin: 0; }
+  .pricecard__feat li { position: relative; padding-left: 1.9em; margin-bottom: 0.9em; font-size: 0.96em; line-height: 1.45; }
+  .pricecard__feat li:last-child { margin-bottom: 0; }
+  .pricecard__feat li::before { content: "→"; position: absolute; left: 0; top: 0; opacity: 0.7; }
+  .pricecard__action { display: flex; flex-direction: column; gap: 12px; }
+  .pricecard__fine { font-size: 0.82em; color: var(--soft); text-align: center; margin: 0; transition: color 0.45s ease; }
+  .pricecard:hover .pricecard__fine { color: rgba(250, 247, 241, 0.6); }
+  /* Fila inferior a todo el ancho: info de facturación destacada (negrita, centrada) */
+  .pricecard__foot { grid-column: 1 / -1; border-top: 1px solid rgba(23, 20, 15, 0.14);
+                     margin: 0; padding: clamp(20px, 3vw, 30px) clamp(28px, 4vw, 50px);
+                     text-align: center; font-weight: 700; font-size: clamp(1rem, 1.6vw, 1.12rem);
+                     line-height: 1.5; text-wrap: pretty; transition: border-color 0.45s ease; }
+  .pricecard:hover .pricecard__foot { border-top-color: rgba(250, 247, 241, 0.18); }
+  @media (max-width: 620px) {
+    .pricecard { grid-template-columns: 1fr; }
+    .pricecard__left { border-right: 0; border-bottom: 1px solid rgba(23, 20, 15, 0.14); }
+    .pricecard:hover .pricecard__left { border-bottom-color: rgba(250, 247, 241, 0.18); }
+  }
 
-  /* Botones — editoriales, monocromáticos, cuadrados. Sin color, sin brillos. */
+  /* Botones — cuadrados, monocromáticos. Animación (referencia de Emi): al pasar
+     el cursor, un relleno de tinta crece DESDE la posición del cursor y la flecha
+     se desliza. Sin color de acento. */
   .cta { text-align: center; margin: clamp(32px, 6vw, 48px) 0; }
   .cta--inbox { margin: 0; }
-  .btn { display: inline-block; background: var(--ink); color: var(--paper);
+  .btn { --fill: var(--ink); --fg: var(--ink); --fg-hover: var(--paper); --mx: 50%; --my: 50%;
+         position: relative; isolation: isolate; overflow: hidden;
+         display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+         background: transparent; color: var(--fg);
          text-decoration: none; font-family: var(--font-body), system-ui, sans-serif; font-weight: 600;
          font-size: 0.92rem; letter-spacing: 0.16em; text-transform: uppercase;
-         padding: 20px 52px; border: 1.5px solid var(--ink); border-radius: 0;
-         transition: background 0.35s ease, color 0.35s ease; }
-  .btn:hover { background: transparent; color: var(--ink); text-decoration: none; }
+         padding: 20px 46px; border: 1.5px solid currentColor; border-radius: 0; cursor: inherit;
+         transition: color 360ms cubic-bezier(.22,1,.36,1), border-color 360ms ease,
+                     transform 420ms cubic-bezier(.22,1,.36,1); will-change: transform; }
+  .btn__fill { position: absolute; top: var(--my); left: var(--mx); width: 260%; aspect-ratio: 1; z-index: -1;
+               background: var(--fill); border-radius: 50%; transform: translate(-50%, -50%) scale(0);
+               transition: transform 560ms cubic-bezier(.22,1,.36,1); }
+  .btn__label, .btn__ar { position: relative; z-index: 1; }
+  .btn__ar { transition: transform 360ms cubic-bezier(.22,1,.36,1); }
+  .btn, .btn:hover { text-decoration: none; }
+  .btn:hover { color: var(--fg-hover); }
+  .btn:hover .btn__fill { transform: translate(-50%, -50%) scale(1); }
+  .btn:hover .btn__ar { transform: translateX(6px); }
+  .btn:active { transform: translateY(1px) scale(0.99); }
+  /* Dentro de la tarjeta invertida, el botón usa la paleta contraria para verse */
+  .pricecard:hover .btn { --fill: var(--paper); --fg: var(--paper); --fg-hover: var(--ink); }
+  /* Botón de compra standalone — ancho */
+  .cta:not(.cta--inbox) .btn { min-width: min(420px, 80%); }
+
+  /* Notas musicales de colores que flotan al pasar el cursor por los botones */
+  .note-pop { position: fixed; z-index: 60; pointer-events: none; font-weight: 700;
+              will-change: transform, opacity; animation: notefloat 1s ease-out forwards; }
+  @keyframes notefloat {
+    0%   { opacity: 0; transform: translate(0, 0) scale(0.6) rotate(0deg); }
+    18%  { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--dx, 0), -66px) scale(1.15) rotate(var(--rot, 0deg)); }
+  }
 
   /* 8 · Posdata — cursiva, más pequeña, fuera del cuadro */
   .pd { margin-top: clamp(34px, 7vw, 50px); font-style: italic; font-size: 0.94em; color: var(--soft); }
@@ -422,7 +509,10 @@ const t = isEN ? {
 
     <h1 class="title reveal">{t.title}</h1>
     <p class="subtitle reveal">{t.subtitle}</p>
-    <p class="lede reveal">{t.lede}</p>
+    <p class="lede reveal">
+      <span class="lede__a">{t.ledeA}</span>
+      <span class="lede__b">{t.ledeB}</span>
+    </p>
 
     <div class="body reveal">
       <p>{t.storyLead}</p>
@@ -457,15 +547,26 @@ const t = isEN ? {
     </div>
 
     <div class="plan reveal">
-      <div class="pricebox">
-        <p class="pricebox__label">{t.priceLabel}</p>
-        <p class="pricebox__amount"><span class="num">{t.priceAmount}</span><span class="per">{t.pricePer}</span></p>
-        <p class="pricebox__note">{t.priceInBox}</p>
-        <div class="cta cta--inbox">
-          <a class="btn" href={t.payHref}>{t.pay}</a>
+      <div class="pricecard">
+        <div class="pricecard__left">
+          <p class="pricecard__name">{t.title} <span class="echo">{t.titleEcho}</span></p>
+          <p class="pricecard__plan">{t.priceLabel}</p>
+          <p class="pricecard__price"><span class="num">{t.priceAmount}</span><span class="per">{t.pricePer}</span></p>
+          <p class="pricecard__note">{t.priceInBox}</p>
         </div>
+        <div class="pricecard__right">
+          <ul class="pricecard__feat">{t.priceFeatures.map((f) => (<li>{f}</li>))}</ul>
+          <div class="pricecard__action">
+            <a class="btn" href={t.payHref}>
+              <span class="btn__fill" aria-hidden="true"></span>
+              <span class="btn__label">{t.pay}</span>
+              <span class="btn__ar" aria-hidden="true">→</span>
+            </a>
+            <p class="pricecard__fine">{t.priceReassure}</p>
+          </div>
+        </div>
+        <p class="pricecard__foot">{t.priceBelow}</p>
       </div>
-      <p class="plan__below">{t.priceBelow}</p>
     </div>
 
     <div class="pd reveal">
@@ -485,7 +586,11 @@ const t = isEN ? {
     </section>
 
     <div class="cta reveal">
-      <a class="btn" href={t.payHref}>{t.pay}</a>
+      <a class="btn" href={t.payHref}>
+        <span class="btn__fill" aria-hidden="true"></span>
+        <span class="btn__label">{t.pay}</span>
+        <span class="btn__ar" aria-hidden="true">→</span>
+      </a>
     </div>
 
     <p class="finalmsg reveal">{t.finalMsg}</p>
@@ -494,7 +599,11 @@ const t = isEN ? {
 
     <div class="news reveal">
       <p class="news__pre">{t.newsPre}</p>
-      <a class="btn btn--news" href={newsHref} target="_blank" rel="noopener">{t.newsLink}</a>
+      <a class="btn btn--news" href={newsHref} target="_blank" rel="noopener">
+        <span class="btn__fill" aria-hidden="true"></span>
+        <span class="btn__label">{t.newsLink}</span>
+        <span class="btn__ar" aria-hidden="true">→</span>
+      </a>
     </div>
 
     <footer class="foot">
@@ -512,7 +621,7 @@ const t = isEN ? {
   </main>
 
 <script is:inline>
-  // 13 · Fundido al hacer scroll + 7/10 · botón magnético.
+  // 13 · Fundido al hacer scroll + notas musicales al hover de los botones.
   (function () {
     var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -527,6 +636,54 @@ const t = isEN ? {
         });
       }, { rootMargin: '0px 0px -8% 0px', threshold: 0.06 });
       revs.forEach(function (el) { io.observe(el); });
+    }
+
+    var fine = window.matchMedia('(pointer: fine)').matches;
+
+    // Relleno de tinta que crece desde el cursor (--mx/--my) + magnético sutil.
+    document.querySelectorAll('.btn').forEach(function (btn) {
+      btn.addEventListener('pointermove', function (e) {
+        var r = btn.getBoundingClientRect();
+        var x = e.clientX - r.left, y = e.clientY - r.top;
+        btn.style.setProperty('--mx', x + 'px');
+        btn.style.setProperty('--my', y + 'px');
+        if (fine && !reduce) {
+          var dx = (x - r.width / 2) / r.width, dy = (y - r.height / 2) / r.height;
+          btn.style.transform = 'translate(' + (dx * 8).toFixed(1) + 'px,' + (dy * 6).toFixed(1) + 'px)';
+        }
+      });
+      btn.addEventListener('pointerleave', function () { btn.style.transform = ''; });
+    });
+
+    // Notas musicales de colores que salen de los botones al hacer hover.
+    if (!reduce && fine) {
+      var GLYPHS = ['♪', '♫', '♩', '♬'];
+      var COLORS = ['#a94f2b', '#6b3f2a', '#c9a24a', '#7a8b5a', '#4a6d8c', '#b5504a'];
+      function pop(btn) {
+        var r = btn.getBoundingClientRect();
+        var count = 2 + Math.floor(Math.random() * 2);
+        for (var i = 0; i < count; i++) {
+          var s = document.createElement('span');
+          s.className = 'note-pop';
+          s.textContent = GLYPHS[Math.floor(Math.random() * GLYPHS.length)];
+          s.style.left = (r.left + 12 + Math.random() * (r.width - 24)) + 'px';
+          s.style.top = (r.top + r.height * 0.3) + 'px';
+          s.style.color = COLORS[Math.floor(Math.random() * COLORS.length)];
+          s.style.fontSize = (15 + Math.random() * 13) + 'px';
+          s.style.setProperty('--dx', ((Math.random() * 2 - 1) * 46).toFixed(0) + 'px');
+          s.style.setProperty('--rot', ((Math.random() * 2 - 1) * 40).toFixed(0) + 'deg');
+          document.body.appendChild(s);
+          s.addEventListener('animationend', function () { this.remove(); });
+        }
+      }
+      document.querySelectorAll('.btn').forEach(function (btn) {
+        var timer = null;
+        btn.addEventListener('pointerenter', function () {
+          pop(btn);
+          timer = setInterval(function () { pop(btn); }, 460);
+        });
+        btn.addEventListener('pointerleave', function () { if (timer) { clearInterval(timer); timer = null; } });
+      });
     }
   })();
 </script>

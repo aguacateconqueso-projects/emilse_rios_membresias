@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" viewBox="0 0 38 38">
+  <!-- Clave de fa (bass clef): ojo + voluta que baja a la izquierda + los dos puntos -->
+  <path d="M11 15 C11 10 18 9 22 13 C26 17 23 25 14 30 C11 31.6 8 32 5.5 32"
+        fill="none" stroke="#1a1712" stroke-width="3.2" stroke-linecap="round"/>
+  <circle cx="12" cy="13.5" r="3.7" fill="#1a1712"/>
+  <circle cx="27" cy="12" r="1.9" fill="#1a1712"/>
+  <circle cx="27" cy="19" r="1.9" fill="#1a1712"/>
+</svg>
