@@ -27,7 +27,8 @@ const t = isEN ? {
   title: "Let's study together",
   subtitle: 'The membership',
   photoAlt: 'Emilse Rios',
-  lede: "The problem isn't that you're short on time. The problem is not knowing what to do with the little time you have.",
+  ledeA: "The problem isn't that you're short on time.",
+  ledeB: 'The problem is not knowing what to do with the little time you have.',
 
   storyLead: 'In 2012 my only job was to play, as well as I possibly could, the symphonies of the composer I love most in the world. But it wasn’t always like that — and in this story there’s something that might help you manage your practice time, especially if you feel you don’t have any.',
   storyBody1: [
@@ -46,7 +47,7 @@ const t = isEN ? {
     'There are plenty of exercises floating around the internet, but finding and organizing them takes longer than actually practicing them. The way I see it, YouTube often steals more practice time than it gives back.',
     'Having a goal makes us move — it makes us carve out space in the calendar, it trains our consistency. That’s my advice to you: write it down. It can be a piece you always wanted to play, or getting to know the high register of the instrument. Whatever it is, write it down. Build a plan to reach it.',
   ],
-  needHelp: 'Need help getting there? That’s exactly why Estudiemos Juntos exists.',
+  needHelp: 'Need help getting there? That’s exactly why Let’s study together exists.',
 
   fitYesH: 'This membership is for you if…',
   fitYes: [
@@ -113,7 +114,8 @@ const t = isEN ? {
   title: 'Estudiemos juntos',
   subtitle: 'La membresía',
   photoAlt: 'Emilse Rios',
-  lede: 'El problema no es que te falte tiempo. El problema es no saber qué hacer con el poco tiempo que tienes.',
+  ledeA: 'El problema no es que te falte tiempo.',
+  ledeB: 'El problema es no saber qué hacer con el poco tiempo que tienes.',
 
   storyLead: 'En 2012 mi único trabajo era tocar lo mejor posible las sinfonías del compositor que más amo en la vida. Pero no siempre fue así — y en esta historia te cuento algo que te va a ayudar a gestionar mejor tu tiempo de estudio, sobre todo si sientes que no tienes tiempo.',
   storyBody1: [
@@ -289,14 +291,19 @@ const t = isEN ? {
   .photo img { width: 100%; height: auto; border-radius: 0; box-shadow: 0 14px 36px rgba(23, 20, 15, 0.12); }
 
   /* 3 · Titular + apertura */
-  .title { font-size: clamp(2rem, 7vw, 2.6rem); line-height: 1.08; letter-spacing: -0.02em;
+  .title { font-size: clamp(2.2rem, 7.6vw, 3rem); line-height: 1.06; letter-spacing: -0.025em;
            font-weight: 600; margin: 0; text-align: center; text-wrap: balance; }
   .subtitle { font-size: clamp(1.15rem, 3.4vw, 1.5rem); font-weight: 500; color: var(--ink);
               text-align: center; margin: 0.35em 0 0; letter-spacing: -0.01em; }
-  .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center; text-wrap: balance;
-          font-style: italic; font-weight: 700; font-size: clamp(1.3rem, 4vw, 1.85rem); line-height: 1.36;
-          letter-spacing: -0.01em; transition: color 0.45s ease; }
+  /* La primera oración va en UNA línea; el resto se balancea en dos. Más pequeña
+     que el título para que no compita con él. */
+  .lede { margin: clamp(28px, 6vw, 40px) 0 0; text-align: center;
+          font-style: italic; font-weight: 700; font-size: clamp(1.12rem, 3vw, 1.5rem); line-height: 1.38;
+          letter-spacing: -0.005em; transition: color 0.45s ease; }
   .lede:hover { color: var(--wood); }
+  .lede__a { display: block; white-space: nowrap; }
+  .lede__b { display: block; text-wrap: balance; }
+  @media (max-width: 440px) { .lede__a { white-space: normal; text-wrap: balance; } }
 
   /* Cuerpo corrido */
   p { margin: 0 0 1.15em; }
@@ -376,13 +383,17 @@ const t = isEN ? {
   .pricecard__action { display: flex; flex-direction: column; gap: 12px; }
   .pricecard__fine { font-size: 0.82em; color: var(--soft); text-align: center; margin: 0; transition: color 0.45s ease; }
   .pricecard:hover .pricecard__fine { color: rgba(250, 247, 241, 0.6); }
+  /* Fila inferior a todo el ancho: info de facturación destacada (negrita, centrada) */
+  .pricecard__foot { grid-column: 1 / -1; border-top: 1px solid rgba(23, 20, 15, 0.14);
+                     margin: 0; padding: clamp(20px, 3vw, 30px) clamp(28px, 4vw, 50px);
+                     text-align: center; font-weight: 700; font-size: clamp(1rem, 1.6vw, 1.12rem);
+                     line-height: 1.5; text-wrap: pretty; transition: border-color 0.45s ease; }
+  .pricecard:hover .pricecard__foot { border-top-color: rgba(250, 247, 241, 0.18); }
   @media (max-width: 620px) {
     .pricecard { grid-template-columns: 1fr; }
     .pricecard__left { border-right: 0; border-bottom: 1px solid rgba(23, 20, 15, 0.14); }
     .pricecard:hover .pricecard__left { border-bottom-color: rgba(250, 247, 241, 0.18); }
   }
-  .plan__below { margin: clamp(20px, 4vw, 30px) auto 0; max-width: 560px; text-align: center;
-                 font-size: 0.94em; color: var(--soft); text-wrap: pretty; }
 
   /* Botones — cuadrados, monocromáticos. Animación (referencia de Emi): al pasar
      el cursor, un relleno de tinta crece DESDE la posición del cursor y la flecha
@@ -498,7 +509,10 @@ const t = isEN ? {
 
     <h1 class="title reveal">{t.title}</h1>
     <p class="subtitle reveal">{t.subtitle}</p>
-    <p class="lede reveal">{t.lede}</p>
+    <p class="lede reveal">
+      <span class="lede__a">{t.ledeA}</span>
+      <span class="lede__b">{t.ledeB}</span>
+    </p>
 
     <div class="body reveal">
       <p>{t.storyLead}</p>
@@ -551,8 +565,8 @@ const t = isEN ? {
             <p class="pricecard__fine">{t.priceReassure}</p>
           </div>
         </div>
+        <p class="pricecard__foot">{t.priceBelow}</p>
       </div>
-      <p class="plan__below">{t.priceBelow}</p>
     </div>
 
     <div class="pd reveal">
