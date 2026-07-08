@@ -254,6 +254,13 @@ const t = isEN ? {
     cursor: url('/img/clef-cursor.svg') 11 13, auto;
   }
   /* El cursor de clave de fa se mantiene también sobre enlaces y botones (no vuelve a la manito) */
+  /* Cuando el fondo se pone oscuro, el cursor cambia a su versión clara para no perderse: */
+  /*  · la tarjeta de precio al invertirse a negro */
+  .pricecard:hover, .pricecard:hover * { cursor: url('/img/clef-cursor-light.svg') 11 13, auto; }
+  /*  · los botones al rellenarse de tinta (el relleno nace bajo el cursor) */
+  .btn:hover { cursor: url('/img/clef-cursor-light.svg') 11 13, auto; }
+  /*  · excepción: el botón DENTRO de la tarjeta negra se rellena de crema → cursor oscuro */
+  .pricecard:hover .btn:hover { cursor: url('/img/clef-cursor.svg') 11 13, auto; }
   ::selection { background: var(--ink); color: var(--paper); }
   img { display: block; max-width: 100%; }
 
@@ -283,7 +290,7 @@ const t = isEN ? {
 
   /* 1 · Logo (reemplaza la firma en texto) */
   .logo { text-align: center; margin: 0 0 clamp(24px, 6vw, 40px); }
-  .logo__img { display: inline-block; width: clamp(240px, 62vw, 340px); height: auto; margin: 0 auto; }
+  .logo__img { display: inline-block; width: clamp(260px, 66vw, 400px); height: auto; margin: 0 auto; }
   .logo__text { font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
 
   /* 2 · Foto */
@@ -383,9 +390,11 @@ const t = isEN ? {
   .pricecard__action { display: flex; flex-direction: column; gap: 12px; }
   .pricecard__fine { font-size: 0.82em; color: var(--soft); text-align: center; margin: 0; transition: color 0.45s ease; }
   .pricecard:hover .pricecard__fine { color: rgba(250, 247, 241, 0.6); }
-  /* Fila inferior a todo el ancho: info de facturación destacada (negrita, centrada) */
-  .pricecard__foot { grid-column: 1 / -1; border-top: 1px solid rgba(23, 20, 15, 0.14);
-                     margin: 0; padding: clamp(20px, 3vw, 30px) clamp(28px, 4vw, 50px);
+  /* Fila inferior a todo el ancho: info de facturación destacada (negrita, centrada).
+     max-width: none anula el límite global de <p> (var(--measure)) para que ocupe
+     todo el ancho de la tarjeta y el texto quede centrado de verdad. */
+  .pricecard__foot { grid-column: 1 / -1; max-width: none; border-top: 1px solid rgba(23, 20, 15, 0.14);
+                     margin: 0; padding: clamp(20px, 3vw, 30px) clamp(40px, 6vw, 80px);
                      text-align: center; font-weight: 700; font-size: clamp(1rem, 1.6vw, 1.12rem);
                      line-height: 1.5; text-wrap: pretty; transition: border-color 0.45s ease; }
   .pricecard:hover .pricecard__foot { border-top-color: rgba(250, 247, 241, 0.18); }
@@ -498,7 +507,7 @@ const t = isEN ? {
   <main class="page">
 
     <p class="logo">
-      <img class="logo__img" src="/img/logo.png" alt={t.logoAlt}
+      <img class="logo__img" src="/img/logo_emi_alpha.png" alt={t.logoAlt}
            onerror="this.style.display='none';var f=this.parentNode&&this.parentNode.querySelector('.logo__text');if(f)f.hidden=false;" />
       <span class="logo__text" hidden>{t.logoAlt}</span>
     </p>
