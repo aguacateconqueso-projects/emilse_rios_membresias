@@ -290,7 +290,7 @@ const t = isEN ? {
 
   /* 1 · Logo (reemplaza la firma en texto) */
   .logo { text-align: center; margin: 0 0 clamp(24px, 6vw, 40px); }
-  .logo__img { display: inline-block; width: clamp(240px, 62vw, 340px); height: auto; margin: 0 auto; }
+  .logo__img { display: inline-block; width: clamp(260px, 66vw, 400px); height: auto; margin: 0 auto; }
   .logo__text { font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
 
   /* 2 · Foto */
@@ -507,7 +507,7 @@ const t = isEN ? {
   <main class="page">
 
     <p class="logo">
-      <img class="logo__img" src="/img/logo.png" alt={t.logoAlt}
+      <img class="logo__img" src="/img/logo_emi_alpha.png" alt={t.logoAlt}
            onerror="this.style.display='none';var f=this.parentNode&&this.parentNode.querySelector('.logo__text');if(f)f.hidden=false;" />
       <span class="logo__text" hidden>{t.logoAlt}</span>
     </p>
