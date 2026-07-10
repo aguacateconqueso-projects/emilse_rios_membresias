@@ -223,10 +223,21 @@ control de DNS y no depender de él.
       esto: niveles y ahora Vimeo).
 
 ### Pendiente ⬜
+- [ ] **STRIPE (SIGUIENTE — retomar aquí en la próxima sesión)**: es el gran bloque que queda.
+      Alcance acordado con Adrián/Emi:
+      - **Checkout** de suscripción mensual con los dos precios: **fundador $57** y **estándar $77**
+        (el precio con el que entra el miembro se le congela). El día de cobro es el día en que entra
+        (mes del 20 al 20, etc.).
+      - **Webhook** (función serverless en Vercel) que escuche los eventos de Stripe y **cree/actualice
+        la fila en `subscriptions`** de Supabase (hoy el gating se **simula** con una fila manual).
+      - **Portal de cliente** de Stripe para que el miembro gestione tarjeta y baja (la copy de la carta
+        ya promete "Cancela cuando quieras" y gestión desde el portal).
+      - Conectar los **botones de pago** de la carta de ventas (`Landing.astro`), que hoy están en
+        **placeholder** (`href="#"`), al checkout real.
+      - Cuando esté, **atar el gating de suscripción** (aula/`/aula`) a Stripe real en vez de la fila
+        simulada. Claves de Stripe: pedirlas / configurarlas como variables de entorno en Vercel.
 - [ ] **Recorrido completo end-to-end**: Emi crea ejercicio (sin nivel)
       → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta.
-- [ ] **Stripe**: checkout $57/$77 + webhook (función de Vercel) + portal de cliente.
-- [ ] Atar el gating de suscripción a Stripe real (hoy se simula con una fila en `subscriptions`).
 - [ ] (Opcional, limpieza) Servir el **favicon** desde el dominio propio en vez del WordPress
       viejo (`emilserios.com`) — quita un aviso de CORS y otra dependencia del tercero.
       ⚠️ Reapareció al probar el cambio de idioma: el `<link rel="icon">` apunta a
