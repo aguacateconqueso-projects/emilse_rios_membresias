@@ -289,13 +289,24 @@ const t = isEN ? {
   .reveal.is-visible { opacity: 1; transform: none; }
 
   /* 1 · Logo (reemplaza la firma en texto) */
-  .logo { text-align: center; margin: 0 0 clamp(24px, 6vw, 40px); }
+  .logo { text-align: center; margin: 0; }
   .logo__img { display: inline-block; width: clamp(260px, 66vw, 400px); height: auto; margin: 0 auto; }
   .logo__text { font-size: 0.95rem; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600; }
 
-  /* 2 · Foto */
-  .photo { margin: 0 auto clamp(24px, 5vw, 34px); width: clamp(190px, 48vw, 250px); }
-  .photo img { width: 100%; height: auto; border-radius: 0; box-shadow: 0 14px 36px rgba(23, 20, 15, 0.12); }
+  /* 2 · Foto — misma distancia al logo (arriba) que al título (abajo); el logo tiene
+     aire interno propio, así que el margen inferior compensa ese hueco. Drop shadow
+     marcado para que no se vea plana. B&W → color al hacer hover (solo donde hay hover;
+     en táctil se ve siempre a color). */
+  .logo { line-height: 0; }
+  .photo { margin: 0 auto clamp(46px, 8vw, 66px); width: clamp(190px, 48vw, 250px); }
+  .photo img { width: 100%; height: auto; border-radius: 0;
+               box-shadow: 0 26px 56px -12px rgba(23, 20, 15, 0.34), 0 10px 20px -8px rgba(23, 20, 15, 0.22);
+               transition: filter 0.7s ease, box-shadow 0.5s ease, transform 0.5s ease; }
+  @media (hover: hover) {
+    .photo img { filter: grayscale(1) contrast(1.02); }
+    .photo img:hover { filter: grayscale(0); box-shadow: 0 34px 70px -14px rgba(23, 20, 15, 0.4), 0 12px 24px -8px rgba(23, 20, 15, 0.24);
+                       transform: translateY(-4px); }
+  }
 
   /* 3 · Titular + apertura */
   .title { font-size: clamp(2.2rem, 7.6vw, 3rem); line-height: 1.06; letter-spacing: -0.025em;
@@ -494,6 +505,8 @@ const t = isEN ? {
   }
   @media (prefers-reduced-motion: reduce) {
     .reveal { opacity: 1; transform: none; transition: none; }
+    .photo img { transition: filter 0.3s ease; }
+    .photo img:hover { transform: none; }
   }
 </style>
 </head>
