@@ -284,11 +284,13 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 ## Rama de trabajo
 **Todo mergeado a `main`.** No hay trabajo abierto: la próxima sesión arranca **desde `main`
 fresco** con una rama nueva (ver flujo de Adrián abajo). El rediseño "fluido y pro" de la carta
-ya está en producción; lo siguiente es **conectar Stripe** (los botones de pago siguen en placeholder).
+ya está en producción; **lo SIGUIENTE es conectar Stripe** (ver el bloque "STRIPE (SIGUIENTE — retomar
+aquí)" en la sección Pendiente ⬜; los botones de pago siguen en placeholder).
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
 **#16/#17/#18** rediseño fluido/pro de la carta (logo+foto reales, tarjeta de precio, botones con
-relleno desde el cursor, cursor de clave de fa, notas musicales).
+relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitácora + handoff de Stripe,
+**#20** ajuste del hero (foto equidistante, B&W→color al hover, drop shadow).
 
 ## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
 Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo
