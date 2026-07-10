@@ -225,21 +225,45 @@ control de DNS y no depender de él.
       que producción no reproducía aún. El PR #5 llevó los commits faltantes. **Al mergear,
       verificar SIEMPRE que el PR incluye el ÚLTIMO commit de la rama** (ya van dos incidentes por
       esto: niveles y ahora Vimeo).
+- [x] **STRIPE — CÓDIGO COMPLETO** (esta rama): integración de la suscripción mensual.
+      Decisiones: **1b** (los dos Prices $57/$77 ya creados; se leen por env) + **2a** (pago
+      **anónimo** en la carta pública; el webhook **enlaza por email** creando el usuario
+      passwordless, así al pagar la cuenta ya existe y solo falta el enlace mágico). Piezas:
+      - `src/lib/stripe.ts` — cliente Stripe (solo servidor) + elección de tier por fecha
+        (fundador hasta `STRIPE_FOUNDER_UNTIL`, si no estándar) + mapeo Price↔tier.
+      - `src/lib/supabase-admin.ts` — cliente `service_role` (webhook) + validador del token
+        del navegador (portal).
+      - `GET /api/checkout?lang=es|en` — crea la sesión de Checkout y redirige; los botones de
+        la carta son un `<a href>` directo (funciona sin JS). El idioma de la página de pago se
+        fija con `locale` (**no hacen falta 4 precios**, solo 2). `success_url=/entrar/?pago=ok`.
+      - `POST /api/stripe-webhook` — verifica la firma (cuerpo crudo) y espeja Stripe en
+        `subscriptions`; crea/enlaza el usuario por el correo del pago. Robusto al orden de
+        eventos (resuelve el user por metadata → fila previa → email del customer) e idempotente
+        (UPSERT por `stripe_subscription_id`).
+      - `POST /api/portal` — portal de cliente (tarjeta/baja) para el miembro autenticado.
+      - `Landing.astro` — `payHref` de ambos idiomas ya apunta al checkout real (se acabó el
+        placeholder `#`).
+      - `entrar/` — banner "¡Pago recibido!" al volver de Stripe (`?pago=ok`).
+      - `aula/` — el gating quedó atado a Stripe real: se distingue "sin suscripción" (muestra
+        puerta de pago `#subGate`) de "sin ejercicio en ventana", y los miembros activos ven el
+        enlace **Suscripción** (portal). Al volver de pagar reintenta leer la fila unos segundos
+        (el webhook tarda 1-3 s). Migración `0006_stripe_subscription_link.sql` (índice único).
+      Verificado con `npm run build` (endpoints empaquetados como función serverless). Falta SOLO
+      la config de dashboard/env (ver Pendiente ⬜ y `docs/STRIPE.md`); sin esas variables los
+      endpoints responden 500 controlado.
 
 ### Pendiente ⬜
-- [ ] **STRIPE (SIGUIENTE — retomar aquí en la próxima sesión)**: es el gran bloque que queda.
-      Alcance acordado con Adrián/Emi:
-      - **Checkout** de suscripción mensual con los dos precios: **fundador $57** y **estándar $77**
-        (el precio con el que entra el miembro se le congela). El día de cobro es el día en que entra
-        (mes del 20 al 20, etc.).
-      - **Webhook** (función serverless en Vercel) que escuche los eventos de Stripe y **cree/actualice
-        la fila en `subscriptions`** de Supabase (hoy el gating se **simula** con una fila manual).
-      - **Portal de cliente** de Stripe para que el miembro gestione tarjeta y baja (la copy de la carta
-        ya promete "Cancela cuando quieras" y gestión desde el portal).
-      - Conectar los **botones de pago** de la carta de ventas (`Landing.astro`), que hoy están en
-        **placeholder** (`href="#"`), al checkout real.
-      - Cuando esté, **atar el gating de suscripción** (aula/`/aula`) a Stripe real en vez de la fila
-        simulada. Claves de Stripe: pedirlas / configurarlas como variables de entorno en Vercel.
+- [ ] **STRIPE — CONFIG DE DASHBOARD/VERCEL (el CÓDIGO ya está, ver "Hecho")**. Lo que falta
+      NO es código, es configuración que hace Adrián (guía completa en `docs/STRIPE.md`):
+      1. **Webhook** en Stripe apuntando a `https://emilseriosacademy.com/api/stripe-webhook`
+         (eventos: `checkout.session.completed`, `customer.subscription.created/updated/deleted`,
+         `invoice.paid`, `invoice.payment_failed`) → copiar el `whsec_...`.
+      2. **Variables de entorno** en Vercel: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
+         `STRIPE_PRICE_FOUNDER`, `STRIPE_PRICE_STANDARD`, `SUPABASE_SERVICE_ROLE_KEY`
+         (y opcional `STRIPE_FOUNDER_UNTIL`). Redeploy.
+      3. Correr la migración `supabase/migrations/0006_stripe_subscription_link.sql`.
+      4. Probar con tarjeta `4242 4242 4242 4242` (modo test) → pasar a LIVE.
+      Flujo elegido con Adrián: **2a pago anónimo + enlace por email** y **1b precios ya creados**.
 - [ ] **Recorrido completo end-to-end**: Emi crea ejercicio (sin nivel)
       → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta.
 - [ ] (Opcional, limpieza) Servir el **favicon** desde el dominio propio en vez del WordPress
@@ -282,10 +306,10 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Todo mergeado a `main`.** No hay trabajo abierto: la próxima sesión arranca **desde `main`
-fresco** con una rama nueva (ver flujo de Adrián abajo). El rediseño "fluido y pro" de la carta
-ya está en producción; **lo SIGUIENTE es conectar Stripe** (ver el bloque "STRIPE (SIGUIENTE — retomar
-aquí)" en la sección Pendiente ⬜; los botones de pago siguen en placeholder).
+**Rama actual: `claude/intelligent-lamport-5jbpsp`** — lleva la **integración de Stripe (código)**.
+Nace de `main` fresco. Cuando Adrián la mergee, hay que hacer la **config de dashboard/Vercel**
+de `docs/STRIPE.md` (webhook + variables de entorno + migración `0006`) para que quede vivo en
+producción; el código sin esas variables responde un 500 controlado.
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
 **#16/#17/#18** rediseño fluido/pro de la carta (logo+foto reales, tarjeta de precio, botones con

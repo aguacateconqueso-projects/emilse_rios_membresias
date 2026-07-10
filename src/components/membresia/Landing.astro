@@ -11,8 +11,9 @@
 // desde el cursor + flecha (referencia de Emi) y notas musicales al hover. Cursor de
 // clave de fa. Único toque de color de texto: el marrón del instrumento en los hovers
 // (apertura, cierre).
-// NOTA: los botones de pago son placeholder hasta conectar Stripe; el newsletter
-// ya apunta al alta real (Klaviyo/kmail).
+// NOTA: los botones de pago ya apuntan al checkout real de Stripe
+// (/api/checkout?lang=es|en, GET que redirige a la página de pago). El newsletter
+// apunta al alta real (Klaviyo/kmail).
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
@@ -81,7 +82,7 @@ const t = isEN ? {
   priceReassure: 'Cancel anytime, no questions asked.',
   priceBelow: 'You pay each month on the day you joined — join on the 20th and your month runs the 20th to the 20th, you never lose days. After July 10, the door stays open at $77.',
   pay: 'Join here',
-  payHref: '#',
+  payHref: '/api/checkout?lang=en',
 
   pdLabel: 'P.S.',
   pdText: 'I made this membership for the Emilse of 2016 — the one carrying her double bass up the stairs of that rooftop, full of determination not to give up the instrument, but who over time was left not knowing what to study. I owed it to her.',
@@ -168,7 +169,7 @@ const t = isEN ? {
   priceReassure: 'Cancela cuando quieras, sin explicar nada.',
   priceBelow: 'Pagas cada mes el día que entras — si entras un 20, tu mes va del 20 al 20, nunca pierdes días. Después del 10 de julio, la puerta sigue abierta a $77.',
   pay: 'Acá te unes',
-  payHref: '#',
+  payHref: '/api/checkout?lang=es',
 
   pdLabel: 'P.D.',
   pdText: 'Esta membresía la hice para la Emilse de 2016 — la que subía el contrabajo por las escaleras de esa azotea con todas las ganas de no abandonar el instrumento, pero que con el paso del tiempo se fue quedando sin saber qué estudiar. Se la debía.',
