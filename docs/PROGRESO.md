@@ -141,6 +141,10 @@ control de DNS y no depender de él.
       - Newsletter apunta al **alta real** (Klaviyo/kmail:
         `https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=RxE3BW`). Los botones de PAGO
         siguen en **placeholder** (`href="#"`) hasta conectar Stripe. Verificado headless en ES y EN.
+      - **Ajuste posterior del hero** (misma rama): la foto quedó **equidistante** del logo y del título
+        (se anuló el interlineado del `<p>` del logo y se midió su aire interno con un scan de alpha para
+        cuadrar los gaps ~64/67px), recuperada la animación **B&W → color al hover** (con `@media (hover:hover)`
+        para que en táctil se vea siempre a color) y un **drop shadow marcado** para que no se vea plana.
 - [x] Aula — prototipo visual
 - [x] Panel de Emi — prototipo visual
 - [x] Esquema de BD + RLS (`supabase/migrations/0001_init.sql`)
