@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { stripe, currentTier, priceForTier } from '../../lib/stripe';
+import { stripe, currentTier, priceForTier, siteOrigin } from '../../lib/stripe';
 
 // Endpoint bajo demanda (no se prerenderiza): crea la sesión de Stripe Checkout
 // y redirige. Flujo 2a: pago ANÓNIMO. El comprador no inicia sesión antes; Stripe
@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
 
   const url = new URL(request.url);
   const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'es';
-  const origin = url.origin;
+  const origin = siteOrigin(request);
 
   // El precio (fundador $57 / estándar $77) lo decide la fecha. El tier queda
   // congelado en la suscripción: Stripe seguirá cobrando ese precio.

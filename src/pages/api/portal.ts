@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { stripe } from '../../lib/stripe';
+import { stripe, siteOrigin } from '../../lib/stripe';
 import { supabaseAdmin, getUserFromRequest } from '../../lib/supabase-admin';
 
 // Portal de cliente de Stripe: el miembro (ya autenticado en el aula) gestiona
@@ -17,7 +17,7 @@ export const POST: APIRoute = async ({ request }) => {
   let body: any = {};
   try { body = await request.json(); } catch {}
   const lang = body?.lang === 'en' ? 'en' : 'es';
-  const origin = new URL(request.url).origin;
+  const origin = siteOrigin(request);
 
   const { data: sub } = await admin
     .from('subscriptions')
