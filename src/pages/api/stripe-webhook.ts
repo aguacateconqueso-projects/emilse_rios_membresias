@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
 import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { stripe, tierForPrice } from '../../lib/stripe';
+import { stripe } from '../../lib/stripe';
 import { supabaseAdmin } from '../../lib/supabase-admin';
+import { writeSubscriptionRow } from '../../lib/stripe-sync';
 
 // Webhook de Stripe (función serverless). Escucha los eventos y mantiene la tabla
 // `subscriptions` de Supabase como espejo del estado de Stripe. Flujo 2a: el
@@ -100,27 +101,7 @@ async function upsertSub(
     return;
   }
 
-  const item = sub.items.data[0] as any;
-  const priceId = item?.price?.id ?? null;
-  const tier = tierForPrice(priceId) || (sub.metadata?.tier as any) || null;
-  // El período vive en el item (API nueva "basil") o en el nivel superior (API previa).
-  const periodStart = item?.current_period_start ?? (sub as any).current_period_start ?? null;
-  const periodEnd = item?.current_period_end ?? (sub as any).current_period_end ?? null;
-
-  const row = {
-    user_id: userId,
-    stripe_customer_id: customerId,
-    stripe_subscription_id: sub.id,
-    status: sub.status,
-    tier,
-    current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : null,
-    current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : null,
-    cancel_at_period_end: sub.cancel_at_period_end ?? false,
-    updated_at: new Date().toISOString(),
-  };
-
-  const { error } = await admin.from('subscriptions').upsert(row, { onConflict: 'stripe_subscription_id' });
-  if (error) console.error('[stripe-webhook] upsert error', error);
+  await writeSubscriptionRow(admin, sub, userId);
 }
 
 // Busca el perfil por correo; si no existe, crea el usuario passwordless (el

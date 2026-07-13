@@ -110,7 +110,7 @@
   if (params.get('pago') === 'ok') {
     const payNote = document.getElementById('payNote');
     if (payNote) {
-      payNote.textContent = '¡Pago recibido! Escribe abajo el mismo correo con el que pagaste y te enviamos el enlace para entrar.';
+      payNote.textContent = '¡Pago recibido! Escribe abajo el mismo correo con el que pagaste y te enviamos el enlace para entrar. Ojo: el enlace suele llegar a la carpeta de spam o promociones.';
       payNote.hidden = false;
     }
     history.replaceState(null, '', window.location.pathname);
@@ -201,7 +201,7 @@
       if (error) {
         showError(error);
       } else {
-        msgOk.textContent = 'Listo. Revisa tu correo y abre el enlace para entrar.';
+        msgOk.textContent = 'Listo. Revisa tu correo y abre el enlace para entrar. Si no lo ves en unos minutos, mira en la carpeta de spam o promociones (a veces llega ahí).';
         msgOk.hidden = false;
         btn.textContent = 'Enlace enviado';
       }
