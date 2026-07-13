@@ -107,6 +107,7 @@ const t = isEN ? {
 
   footPrivacy: 'Privacy policy', footTerms: 'Terms',
   footLegal: '© 2026 Emilse Rios',
+  enter: 'Log in',
 } : {
   htmlLang: 'es',
   metaTitle: 'Estudiemos Juntos — Membresía de Emilse Rios',
@@ -194,6 +195,7 @@ const t = isEN ? {
 
   footPrivacy: 'Política de privacidad', footTerms: 'Términos',
   footLegal: '© 2026 Emilse Rios',
+  enter: 'Entrar',
 };
 ---
 <!DOCTYPE html>
@@ -279,6 +281,11 @@ const t = isEN ? {
                 letter-spacing: 0.04em; line-height: 1; padding: 6px 12px; border-radius: 999px;
                 transition: color 200ms ease, background 200ms ease; }
   .langpill a:hover { color: var(--ink); }
+  /* Separador y acceso "Entrar" (miembros que ya pagaron y vuelven). */
+  .langpill__sep { width: 1px; align-self: stretch; margin: 4px 2px;
+                   background: rgba(23, 20, 15, 0.14); }
+  .langpill__enter { color: var(--ink) !important; }
+  .langpill__enter:hover { background: rgba(23, 20, 15, 0.06); }
   .langpill a[aria-current="true"] { color: var(--ink); background: rgba(23, 20, 15, 0.06); }
 
   /* Fundido del texto al cambiar de idioma */
@@ -516,6 +523,8 @@ const t = isEN ? {
   <nav class="langpill" aria-label="Idioma / Language">
     <a href="/" aria-current={(!isEN).toString()} data-lang-switch>ES</a>
     <a href="/en/" aria-current={isEN.toString()} data-lang-switch>EN</a>
+    <span class="langpill__sep" aria-hidden="true"></span>
+    <a class="langpill__enter" href="/entrar/">{t.enter}</a>
   </nav>
 
   <main class="page">
