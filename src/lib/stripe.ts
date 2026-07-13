@@ -35,3 +35,16 @@ export function tierForPrice(priceId: string | null | undefined): Tier | null {
   if (priceId === PRICE_STANDARD) return 'standard_77';
   return null;
 }
+
+// Origen público del sitio para las URLs de retorno (success/cancel/portal).
+// OJO: NO usar new URL(request.url).origin — en serverless (Vercel) a veces
+// resuelve a http://localhost y Stripe devolvería al visitante a "localhost".
+// Preferimos PUBLIC_SITE_URL; si no, el Host reenviado por el proxy.
+export function siteOrigin(request: Request): string {
+  const configured = process.env.PUBLIC_SITE_URL || import.meta.env.PUBLIC_SITE_URL;
+  if (configured) return String(configured).replace(/\/+$/, '');
+  const proto = request.headers.get('x-forwarded-proto') || 'https';
+  const host = request.headers.get('x-forwarded-host') || request.headers.get('host');
+  if (host) return `${proto}://${host}`;
+  return new URL(request.url).origin;
+}

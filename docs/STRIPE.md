@@ -50,6 +50,7 @@ Project → **Settings → Environment Variables** (marca Production y Preview):
 | `STRIPE_PRICE_STANDARD` | Price ID del de $77 |
 | `STRIPE_FOUNDER_UNTIL` | (opcional) fin de la ventana de $57, ISO Madrid |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role |
+| `PUBLIC_SITE_URL` | dominio canónico, p. ej. `https://emilseriosacademy.com` (URLs de retorno de Stripe) |
 
 `PUBLIC_SUPABASE_URL` y `PUBLIC_SUPABASE_ANON_KEY` ya están configuradas.
 Redeploy tras añadirlas.
