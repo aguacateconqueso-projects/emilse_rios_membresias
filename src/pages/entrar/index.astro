@@ -58,6 +58,8 @@
     <h1 class="display">Entrar</h1>
     <p class="sub">Escribe tu correo y te enviamos un enlace para entrar. Sin contraseñas.</p>
 
+    <p class="msg ok" id="payNote" hidden></p>
+
     <form id="loginForm">
       <div class="field">
         <label for="email">Tu correo</label>
@@ -99,6 +101,18 @@
       ? 'Ese enlace ya caducó o ya se usó (es de un solo uso). Escribe tu correo y te enviamos uno nuevo.'
       : 'No se pudo iniciar sesión: ' + (hashErr.get('error_description') || hashErr.get('error_code') || hashErr.get('error'));
     msgErr.hidden = false;
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  // Al volver de Stripe (?pago=ok): el pago se recibió pero el visitante aún no
+  // tiene sesión. Le pedimos entrar con el MISMO correo con el que pagó.
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('pago') === 'ok') {
+    const payNote = document.getElementById('payNote');
+    if (payNote) {
+      payNote.textContent = '¡Pago recibido! Escribe abajo el mismo correo con el que pagaste y te enviamos el enlace para entrar.';
+      payNote.hidden = false;
+    }
     history.replaceState(null, '', window.location.pathname);
   }
 
