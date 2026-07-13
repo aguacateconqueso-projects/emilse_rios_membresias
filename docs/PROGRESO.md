@@ -225,7 +225,8 @@ control de DNS y no depender de él.
       que producción no reproducía aún. El PR #5 llevó los commits faltantes. **Al mergear,
       verificar SIEMPRE que el PR incluye el ÚLTIMO commit de la rama** (ya van dos incidentes por
       esto: niveles y ahora Vimeo).
-- [x] **STRIPE — CÓDIGO COMPLETO** (esta rama): integración de la suscripción mensual.
+- [x] **STRIPE — CÓDIGO COMPLETO** (base en `main` vía **PR #22**; arreglos en **PR #23**):
+      integración de la suscripción mensual.
       Decisiones: **1b** (los dos Prices $57/$77 ya creados; se leen por env) + **2a** (pago
       **anónimo** en la carta pública; el webhook **enlaza por email** creando el usuario
       passwordless, así al pagar la cuenta ya existe y solo falta el enlace mágico). Piezas:
@@ -248,22 +249,45 @@ control de DNS y no depender de él.
         puerta de pago `#subGate`) de "sin ejercicio en ventana", y los miembros activos ven el
         enlace **Suscripción** (portal). Al volver de pagar reintenta leer la fila unos segundos
         (el webhook tarda 1-3 s). Migración `0006_stripe_subscription_link.sql` (índice único).
-      Verificado con `npm run build` (endpoints empaquetados como función serverless). Falta SOLO
-      la config de dashboard/env (ver Pendiente ⬜ y `docs/STRIPE.md`); sin esas variables los
-      endpoints responden 500 controlado.
+      Verificado con `npm run build` (endpoints empaquetados como función serverless).
+- [x] **STRIPE — PROBADO EN PRODUCCIÓN: el webhook graba las suscripciones ✅** (PR #22 mergeado).
+      Adrián configuró webhook + variables + migración `0006` y pagó de prueba: en la tabla
+      `subscriptions` aparecen filas `status=active`, `tier=founder_57`. O sea el flujo
+      pago→webhook→BD funciona. Aprendizajes de esa prueba (arreglos en **PR #23**):
+      - **Redirect a `localhost` tras pagar** (`b2f6e98`): el `success_url` se construía con
+        `new URL(request.url).origin`, que en serverless (Vercel) resuelve a `http://localhost`;
+        Stripe devolvía a `localhost/entrar/?pago=ok`. Fix: helper `siteOrigin(request)` en
+        `src/lib/stripe.ts` (prefiere `PUBLIC_SITE_URL`, si no la cabecera `Host`), usado en
+        checkout (success/cancel) y portal (return). **Requiere setear `PUBLIC_SITE_URL=
+        https://emilseriosacademy.com` en Vercel.**
+      - **La carta no tenía acceso a login** (`074c5a1`): el rediseño editorial quitó el menú, así
+        que un miembro que ya pagó no hallaba cómo volver. Se añadió **"Entrar"** (bilingüe) en la
+        píldora superior derecha → `/entrar/` (que ya rutea a quien tiene sesión: "Ir a tu espacio").
+        Flujo de reingreso: carta → Entrar → /entrar → (sesión viva: directo al aula · o enlace
+        mágico) → /aula. También pueden marcar `…/aula` en favoritos.
+      - **Gating recordatorio**: `/aula` decide por el usuario logueado — sin sesión manda a
+        `/entrar`; con sesión sin sub activa muestra la puerta de pago; con sub activa muestra el
+        contenido. Hay que entrar con **el mismo correo con que se pagó**.
+      - ⚠️ **Cosmético pendiente**: en las filas grabadas `current_period_start` queda NULL (el
+        `end` sí trae fecha; el gating usa el `end`, así que no afecta acceso). Pulir el mapeo del
+        período en el webhook (`upsertSub`) en un PR aparte.
 
 ### Pendiente ⬜
-- [ ] **STRIPE — CONFIG DE DASHBOARD/VERCEL (el CÓDIGO ya está, ver "Hecho")**. Lo que falta
-      NO es código, es configuración que hace Adrián (guía completa en `docs/STRIPE.md`):
-      1. **Webhook** en Stripe apuntando a `https://emilseriosacademy.com/api/stripe-webhook`
-         (eventos: `checkout.session.completed`, `customer.subscription.created/updated/deleted`,
-         `invoice.paid`, `invoice.payment_failed`) → copiar el `whsec_...`.
-      2. **Variables de entorno** en Vercel: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-         `STRIPE_PRICE_FOUNDER`, `STRIPE_PRICE_STANDARD`, `SUPABASE_SERVICE_ROLE_KEY`
-         (y opcional `STRIPE_FOUNDER_UNTIL`). Redeploy.
-      3. Correr la migración `supabase/migrations/0006_stripe_subscription_link.sql`.
-      4. Probar con tarjeta `4242 4242 4242 4242` (modo test) → pasar a LIVE.
-      Flujo elegido con Adrián: **2a pago anónimo + enlace por email** y **1b precios ya creados**.
+- [ ] **STRIPE — CERRAR LA PRUEBA (retomar aquí)**. Ya hecho por Adrián: webhook, variables base,
+      migración `0006`, y pago de prueba que grabó la suscripción. Lo que queda:
+      1. **Mergear el PR #23** (fix del redirect a localhost + enlace "Entrar"). ⚠️ El #22 mergeó
+         solo el primer commit; por eso hubo que abrir el #23 con los arreglos (regla de Adrián:
+         un PR mergeado queda cerrado, lo nuevo arranca de `main` fresco).
+      2. **Setear `PUBLIC_SITE_URL=https://emilseriosacademy.com`** en Vercel (de esto depende que
+         el redirect post-pago deje de ir a `localhost`) → redeploy.
+      3. Si se quiere cobrar **$57 fundador**, poner `STRIPE_FOUNDER_UNTIL` con fecha futura (sin
+         ella, el default vence el 10-jul-2025 → cobra $77). En las pruebas ya salió `founder_57`,
+         confirmar si ya está seteada.
+      4. Reprobar el recorrido: pagar (`4242 4242 4242 4242`) → volver a `/entrar/?pago=ok` (ya NO
+         a localhost) → entrar con ese correo → aula con contenido + enlace "Suscripción" (portal).
+      5. Cuando esté fino en test → pasar a **LIVE** (claves `live`, webhook y precios live). Guía
+         completa en `docs/STRIPE.md`.
+      Decisiones: **1b** (precios ya creados) + **2a** (pago anónimo + enlace por email).
 - [ ] **Recorrido completo end-to-end**: Emi crea ejercicio (sin nivel)
       → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta.
 - [ ] (Opcional, limpieza) Servir el **favicon** desde el dominio propio en vez del WordPress
@@ -306,15 +330,16 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Rama actual: `claude/intelligent-lamport-5jbpsp`** — lleva la **integración de Stripe (código)**.
-Nace de `main` fresco. Cuando Adrián la mergee, hay que hacer la **config de dashboard/Vercel**
-de `docs/STRIPE.md` (webhook + variables de entorno + migración `0006`) para que quede vivo en
-producción; el código sin esas variables responde un 500 controlado.
+**Rama actual: `claude/intelligent-lamport-5jbpsp`** — reiniciada desde `main` fresco; ahora lleva
+el **PR #23** (fix del redirect a localhost + enlace "Entrar" + esta actualización de bitácora).
+**PR #22 ya mergeado** (base de Stripe en `main`). Al retomar: revisar si el **#23 ya se mergeó**;
+si sí, la siguiente tarea arranca de `main` fresco (rama nueva). Ver "STRIPE — CERRAR LA PRUEBA".
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
 **#16/#17/#18** rediseño fluido/pro de la carta (logo+foto reales, tarjeta de precio, botones con
 relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitácora + handoff de Stripe,
-**#20** ajuste del hero (foto equidistante, B&W→color al hover, drop shadow).
+**#20** ajuste del hero (foto equidistante, B&W→color al hover, drop shadow), **#22** integración
+base de Stripe (checkout + webhook + portal + gating).
 
 ## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
 Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo
