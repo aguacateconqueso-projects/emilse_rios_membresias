@@ -251,6 +251,29 @@ control de DNS y no depender de él.
       Verificado con `npm run build` (endpoints empaquetados como función serverless). Falta SOLO
       la config de dashboard/env (ver Pendiente ⬜ y `docs/STRIPE.md`); sin esas variables los
       endpoints responden 500 controlado.
+- [x] **Bucle de pago arreglado + red de seguridad contra el webhook** (rama
+      `claude/payment-verification-loop-790vpb`): un miembro que pagó (caso real
+      `hello@arcmediahouse.com`) entraba con su enlace mágico y el aula le pedía **pagar de
+      nuevo**. Causa: el acceso depende 100% de que el **webhook** haya escrito la fila de
+      `subscriptions`; si no llegó/falló/tardó, el que ya pagó queda encerrado en la puerta de
+      pago, y el reintento existente (5×2s) solo corría al volver de Stripe con `?pago=ok` —
+      nunca al llegar por el enlace del correo. Arreglo:
+      - **`POST /api/verify-subscription`** (nuevo): para el miembro autenticado, le pregunta a
+        Stripe por su **correo** si tiene una suscripción vigente (`active`/`trialing`); si sí,
+        **espeja la fila** en `subscriptions` (service_role) y enlaza el customer. Red de
+        seguridad definitiva independiente del webhook.
+      - **`src/lib/stripe-sync.ts`** (nuevo): `writeSubscriptionRow()` + `subGrantsAccess()`,
+        compartidos por el webhook y el nuevo endpoint (misma fila, sin desincronizarse). El
+        webhook (`stripe-webhook.ts`) ahora usa este helper en vez de construir la fila inline.
+      - **`Aula.astro`**: si un miembro (no admin) no ve suscripción activa, ahora **reconcilia
+        con Stripe** y vuelve a leer — tanto viniendo de pagar (`?pago=ok`, con un par de
+        reintentos por si el webhook tarda) como llegando por el enlace mágico del correo.
+      - **`/entrar/`**: aviso de **spam** — el mensaje de "enlace enviado" y el de "¡Pago
+        recibido!" ahora aclaran que el enlace suele caer en spam/promociones (lo pidió Adrián).
+      Verificado con `npm run build` (endpoint empaquetado como función serverless). Nota:
+      requiere que `STRIPE_SECRET_KEY` y `SUPABASE_SERVICE_ROLE_KEY` estén en Vercel (ya lo
+      están, dado que el checkout cobra); el webhook sigue siendo el camino normal, esto es solo
+      la red de seguridad.
 
 ### Pendiente ⬜
 - [ ] **STRIPE — CONFIG DE DASHBOARD/VERCEL (el CÓDIGO ya está, ver "Hecho")**. Lo que falta

@@ -469,17 +469,43 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     let sub = await loadSub();
     let hasActive = isActiveSub(sub);
 
-    // Si venimos de pagar (?pago=ok), el webhook puede tardar 1-3 s en escribir la
-    // fila. Reintenta unas veces antes de decidir que no hay suscripción.
+    // Pregunta a Stripe directamente (por el correo del miembro) si ya pagó y
+    // espeja la fila que falte. Es la red de seguridad contra el "bucle de pago":
+    // si el webhook no llegó/falló/tardó, el miembro que YA pagó no queda
+    // encerrado en la puerta de pago. Falla en silencio (devuelve false).
+    async function reconcileWithStripe() {
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        const res = await fetch('/api/verify-subscription', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (s && s.access_token || '') },
+        });
+        const out = await res.json();
+        return !!(out && out.active);
+      } catch (_) { return false; }
+    }
+
+    // Solo tiene sentido para un miembro (no admin) sin suscripción activa a la vista.
     const search = new URLSearchParams(window.location.search);
-    if (search.get('pago') === 'ok') {
-      for (let i = 0; i < 5 && !hasActive; i++) {
-        await new Promise((r) => setTimeout(r, 2000));
+    const justPaid = search.get('pago') === 'ok';
+    if (!hasActive && !isAdmin) {
+      // Si viene de pagar (?pago=ok), el webhook puede tardar 1-3 s: dale un par
+      // de reintentos de lectura antes de molestar a Stripe.
+      if (justPaid) {
+        for (let i = 0; i < 3 && !hasActive; i++) {
+          await new Promise((r) => setTimeout(r, 2000));
+          sub = await loadSub();
+          hasActive = isActiveSub(sub);
+        }
+      }
+      // Red de seguridad definitiva: confirma con Stripe y vuelve a leer. Cubre
+      // también al que llega por el enlace mágico del correo (sin ?pago=ok).
+      if (!hasActive && await reconcileWithStripe()) {
         sub = await loadSub();
         hasActive = isActiveSub(sub);
       }
-      history.replaceState(null, '', window.location.pathname);
     }
+    if (justPaid) history.replaceState(null, '', window.location.pathname);
 
     // Miembros con suscripción activa ven el enlace al portal de Stripe (gestionar
     // tarjeta / baja). Emi (admin) no lo necesita.
