@@ -251,8 +251,8 @@ control de DNS y no depender de él.
       Verificado con `npm run build` (endpoints empaquetados como función serverless). Falta SOLO
       la config de dashboard/env (ver Pendiente ⬜ y `docs/STRIPE.md`); sin esas variables los
       endpoints responden 500 controlado.
-- [x] **Bucle de pago arreglado + red de seguridad contra el webhook** (rama
-      `claude/payment-verification-loop-790vpb`): un miembro que pagó (caso real
+- [x] **Bucle de pago arreglado + red de seguridad contra el webhook** (PR #24 MERGEADO a
+      `main`, rama `claude/payment-verification-loop-790vpb`): un miembro que pagó (caso real
       `hello@arcmediahouse.com`) entraba con su enlace mágico y el aula le pedía **pagar de
       nuevo**. Causa: el acceso depende 100% de que el **webhook** haya escrito la fila de
       `subscriptions`; si no llegó/falló/tardó, el que ya pagó queda encerrado en la puerta de
@@ -329,15 +329,26 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Rama actual: `claude/intelligent-lamport-5jbpsp`** — lleva la **integración de Stripe (código)**.
-Nace de `main` fresco. Cuando Adrián la mergee, hay que hacer la **config de dashboard/Vercel**
-de `docs/STRIPE.md` (webhook + variables de entorno + migración `0006`) para que quede vivo en
-producción; el código sin esas variables responde un 500 controlado.
+**Todo mergeado a `main`.** No hay trabajo en vuelo. El siguiente cambio arranca de `main`
+fresco (`git fetch origin main` → rama nueva).
+
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
 **#16/#17/#18** rediseño fluido/pro de la carta (logo+foto reales, tarjeta de precio, botones con
 relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitácora + handoff de Stripe,
-**#20** ajuste del hero (foto equidistante, B&W→color al hover, drop shadow).
+**#20** ajuste del hero (foto equidistante, B&W→color al hover, drop shadow), **#21/#22** Stripe
+(checkout + webhook + portal, pago anónimo + enlace por email; URLs de retorno desde el dominio real),
+**#23** enlace "Entrar" en la carta para miembros que vuelven, **#24** bucle de pago arreglado +
+red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam en `/entrar`).
+
+### ⚠️ Lo más urgente para la próxima sesión
+El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el
+caso `hello@arcmediahouse.com` cayó en el bucle de pago). El PR #24 puso una **red de seguridad**
+(verificación directa con Stripe por correo), así que los usuarios ya NO quedan bloqueados, pero el
+webhook es el camino normal y conviene dejarlo sano. Revisar en Stripe → Developers → Webhooks si el
+endpoint `https://emilseriosacademy.com/api/stripe-webhook` existe, está apuntando bien y sus entregas
+salen 200 (no 400 "firma inválida" ni 500). Verificar también que `STRIPE_WEBHOOK_SECRET` y
+`SUPABASE_SERVICE_ROLE_KEY` estén en Vercel. Guía en `docs/STRIPE.md` (ver Pendiente ⬜).
 
 ## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
 Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo
