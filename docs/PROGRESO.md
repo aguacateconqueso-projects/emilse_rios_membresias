@@ -9,8 +9,10 @@
 > **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27), puntos **3 + 4 + 12
 > (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30) y punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
-> `/nueva-clave/`, PR #31). **En este PR:** punto **8** — el webhook envía **automáticamente** el
-> correo de bienvenida (crear contraseña → `/nueva-clave/`) al crear una cuenta nueva al pagar.
+> `/nueva-clave/`, PR #31) y punto **8** (el webhook envía el correo de bienvenida al pagar,
+> PR #32). **En este PR:** **8b** — el correo de bienvenida ahora es **bilingüe (ES/EN)** según
+> el idioma en que se pagó, se envía **por Resend** con copy propio, y la página de crear
+> contraseña se hizo bilingüe (`/nueva-clave/` + `/nueva-clave/en/`).
 > Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
 > destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
 
@@ -76,10 +78,20 @@
       `sendPasswordSetupEmail()` (flujo público anon → `resetPasswordForEmail`) de
       `supabase-admin.ts`, con `redirectTo = <origin>/nueva-clave/` (el origin sale de
       `siteOrigin(request)`). No es fatal si falla (se loguea). Así el comprador ya no tiene que
-      pedir el enlace a mano desde `/entrar`; le llega al pagar. ⚠️ Requiere la **misma config**
-      del punto 7 (agregar `/nueva-clave/` a Redirect URLs en Supabase) y, opcional, personalizar
-      la plantilla del correo en **Authentication → Email Templates → Reset Password** para que
-      diga "¡Bienvenido! Crea tu contraseña" en vez de "restablecer".
+      pedir el enlace a mano desde `/entrar`; le llega al pagar.
+      - **8b. Correo de bienvenida BILINGÜE (ES/EN) según el idioma en que se pagó** (extra que
+        sumó Emi): el checkout guarda el idioma en la metadata de la suscripción (`lang`); el
+        webhook lo lee y envía el correo en ES o EN, con el enlace al destino correcto
+        (**`/nueva-clave/`** o **`/nueva-clave/en/`** — la página de crear contraseña ahora es
+        **bilingüe**, componente `NuevaClave.astro`). El correo se manda **por Resend** (API
+        directa, `src/lib/email.ts`) con el copy de Emi (hoy hay un **copy provisional** en la voz
+        de Emi, listo para reemplazar): se genera el enlace de un solo uso sin enviar
+        (`generatePasswordSetupLink` → `admin.generateLink({type:'recovery'})`) y se envía con la
+        plantilla del idioma. **Si falta `RESEND_API_KEY`, cae al correo estándar de Supabase**
+        (plantilla única) con el enlace igual en el idioma correcto. ⚠️ **Config nueva:** agregar
+        `RESEND_API_KEY` (y opcional `RESEND_FROM`) en Vercel para que salga el correo bilingüe con
+        el copy propio; y agregar **`/nueva-clave/en/`** además de `/nueva-clave/` a los Redirect
+        URLs de Supabase. Con Resend configurado ya NO hace falta tocar la plantilla de Supabase.
 - [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
       spam/promociones (lo que ya decimos) y **sumar el link a `/entrar`**.
 - [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo
@@ -129,7 +141,7 @@ control de DNS y no depender de él.
 - `/` y `/en` — landing de ventas (bilingüe)
 - `/aula` (+ `/aula/en`) — área de miembros (datos reales)
 - `/panel` — panel de Emi (admin, auth real)
-- `/entrar` — login (correo + contraseña) · `/nueva-clave` — crear/restablecer contraseña · `/salir` — logout
+- `/entrar` — login (correo + contraseña) · `/nueva-clave` (+ `/nueva-clave/en/`) — crear/restablecer contraseña (bilingüe) · `/salir` — logout
 
 ## Estado
 

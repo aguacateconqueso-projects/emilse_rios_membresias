@@ -24,8 +24,10 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     line_items: [{ price, quantity: 1 }],
-    metadata: { tier },
-    subscription_data: { metadata: { tier } },
+    // Guardamos el idioma en el que pagó para enviar el correo de bienvenida
+    // (y el enlace de crear contraseña) en ES o EN según corresponda.
+    metadata: { tier, lang },
+    subscription_data: { metadata: { tier, lang } },
     // Idioma de la página de pago de Stripe (no hacen falta precios por idioma).
     locale: lang,
     allow_promotion_codes: true,

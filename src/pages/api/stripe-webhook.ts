@@ -2,8 +2,9 @@ import type { APIRoute } from 'astro';
 import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { stripe, siteOrigin } from '../../lib/stripe';
-import { supabaseAdmin, sendPasswordSetupEmail } from '../../lib/supabase-admin';
+import { supabaseAdmin, sendPasswordSetupEmail, generatePasswordSetupLink } from '../../lib/supabase-admin';
 import { writeSubscriptionRow } from '../../lib/stripe-sync';
+import { isResendConfigured, sendEmail, welcomeEmailContent } from '../../lib/email';
 
 // Webhook de Stripe (función serverless). Escucha los eventos y mantiene la tabla
 // `subscriptions` de Supabase como espejo del estado de Stripe. Flujo 2a: el
@@ -101,10 +102,11 @@ async function upsertSub(
       await stripe.customers.update(customerId, { metadata: { supabase_user_id: userId } }).catch(() => {});
     }
     // Cuenta NUEVA creada al pagar: envía el correo de bienvenida con el enlace
-    // para crear su contraseña (→ /nueva-clave/). Solo en el alta real, para no
-    // reenviarlo en cada evento posterior. No es fatal si falla.
+    // para crear su contraseña, en el idioma en el que pagó. Solo en el alta real,
+    // para no reenviarlo en cada evento posterior. No es fatal si falla.
     if (found.created && email) {
-      await sendWelcomeEmail(email, origin);
+      const lang = sub.metadata?.lang === 'en' ? 'en' : 'es';
+      await sendWelcomeEmail(email, lang, origin);
     }
   }
   if (!userId) {
@@ -115,14 +117,33 @@ async function upsertSub(
   await writeSubscriptionRow(admin, sub, userId);
 }
 
-// Correo de bienvenida al alta: enlace de un solo uso para crear la contraseña.
-// Reutiliza el flujo de recuperación (→ /nueva-clave/), el mismo que /entrar.
-async function sendWelcomeEmail(email: string, origin?: string) {
+// Correo de bienvenida al alta: enlace de un solo uso para crear la contraseña,
+// en el idioma en el que se pagó. El destino es /nueva-clave/ (es) o
+// /nueva-clave/en/ (en). Camino preferido: generamos el enlace y lo enviamos por
+// Resend con el copy ES/EN de Emi. Si Resend no está configurado, caemos al
+// correo estándar de Supabase (plantilla única) con el mismo enlace por idioma.
+async function sendWelcomeEmail(email: string, lang: 'es' | 'en', origin?: string) {
   try {
     const base = (origin || process.env.PUBLIC_SITE_URL || import.meta.env.PUBLIC_SITE_URL || '').replace(/\/+$/, '');
     if (!base) { console.error('[stripe-webhook] sin origin para el correo de bienvenida'); return; }
-    const { error } = await sendPasswordSetupEmail(email.trim().toLowerCase(), `${base}/nueva-clave/`);
-    if (error) console.error('[stripe-webhook] no se pudo enviar la bienvenida a', email, error.message || error);
+    const lower = email.trim().toLowerCase();
+    const redirectTo = `${base}${lang === 'en' ? '/nueva-clave/en/' : '/nueva-clave/'}`;
+
+    if (isResendConfigured) {
+      const { link, error: linkErr } = await generatePasswordSetupLink(lower, redirectTo);
+      if (link) {
+        const { subject, html, text } = welcomeEmailContent(lang, link);
+        const { error: mailErr } = await sendEmail({ to: lower, subject, html, text });
+        if (!mailErr) return; // enviado por Resend en el idioma correcto
+        console.error('[stripe-webhook] Resend falló, uso Supabase:', mailErr.message || mailErr);
+      } else {
+        console.error('[stripe-webhook] no se pudo generar el enlace, uso Supabase:', linkErr?.message || linkErr);
+      }
+    }
+
+    // Respaldo: correo estándar de Supabase (misma URL de destino por idioma).
+    const { error } = await sendPasswordSetupEmail(lower, redirectTo);
+    if (error) console.error('[stripe-webhook] no se pudo enviar la bienvenida a', lower, error.message || error);
   } catch (err) {
     console.error('[stripe-webhook] error enviando la bienvenida', err);
   }
