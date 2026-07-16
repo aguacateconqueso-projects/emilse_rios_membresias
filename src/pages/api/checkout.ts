@@ -32,9 +32,10 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     locale: lang,
     allow_promotion_codes: true,
     billing_address_collection: 'auto',
-    // Tras pagar, el comprador aún no tiene sesión: lo mandamos a /entrar a pedir
-    // el enlace mágico con el MISMO correo con el que pagó.
-    success_url: `${origin}/entrar/?pago=ok`,
+    // Tras pagar, el comprador aún no tiene sesión: lo mandamos a la página de
+    // agradecimiento (bilingüe) a pedir su acceso con el MISMO correo con el que
+    // pagó (punto 9 del checklist).
+    success_url: `${origin}/gracias/${lang === 'en' ? 'en/' : ''}`,
     cancel_url: `${origin}/${lang === 'en' ? 'en/' : ''}`,
   });
 

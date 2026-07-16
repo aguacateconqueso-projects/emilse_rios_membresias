@@ -7,12 +7,13 @@
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
 > viaja en el mismo PR de cada punto.
 > **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27), puntos **3 + 4 + 12
-> (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30) y punto **7**
+> (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30), punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
-> `/nueva-clave/`, PR #31) y punto **8** (el webhook envía el correo de bienvenida al pagar,
-> PR #32). **En este PR:** **8b** — el correo de bienvenida ahora es **bilingüe (ES/EN)** según
-> el idioma en que se pagó, se envía **por Resend** con copy propio, y la página de crear
-> contraseña se hizo bilingüe (`/nueva-clave/` + `/nueva-clave/en/`).
+> `/nueva-clave/`, PR #31), punto **8** (el webhook envía el correo de bienvenida al pagar,
+> PR #32) y **8b** (correo de bienvenida **bilingüe ES/EN** por Resend + `/nueva-clave/en/`,
+> PR #33). **En este PR:** punto **9** — nueva **página de agradecimiento** bilingüe
+> (`/gracias/` + `/gracias/en/`) con el copy definitivo de Emi; el `success_url` del checkout
+> apunta ahí en vez de a `/entrar/?pago=ok`.
 > Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
 > destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
 
@@ -106,8 +107,17 @@
         salga el correo bilingüe con el copy de Emi; y agregar **`/nueva-clave/en/`** además de
         `/nueva-clave/` a los Redirect URLs de Supabase. Con Resend configurado ya NO hace falta
         tocar la plantilla de Supabase.
-- [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
-      spam/promociones (lo que ya decimos) y **sumar el link a `/entrar`**.
+- [x] **9. Rediseñar la página de agradecimiento del pago.** ✅ Hecho (CÓDIGO). Nueva **página
+      dedicada y bilingüe** (componente `Gracias.astro`, rutas `/gracias/` y `/gracias/en/`) con el
+      copy DEFINITIVO de Emi: eyebrow "No cierres esta pestaña", título "Gracias por unirte. Ya casi
+      estamos dentro.", un campo de correo + botón **"Enviarme mi acceso"** (mismo flujo que «Crea o
+      restablece tu contraseña» de `/entrar`: `resetPasswordForEmail` → `/nueva-clave/` o
+      `/nueva-clave/en/`), el aviso de revisar **spam/promociones** con el asunto exacto del correo
+      («Tu acceso a la membresía»), **el link a `/entrar`** como acceso directo, y el cierre pidiendo
+      no cerrar la pestaña + contacto a `info@emilserios.com`. `success_url` del checkout
+      (`src/pages/api/checkout.ts`) ahora apunta aquí (antes `/entrar/?pago=ok`) según el idioma en
+      que se pagó. Se quitó el banner viejo de `?pago=ok` en `/entrar/index.astro` (superado por esta
+      página). Verificado con `npm run build` + capturas headless de ambos idiomas.
 - [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo
       se programa; agregar publicación inmediata en `/panel`.
 - [ ] **11. Selector de destino del video en `/panel`.** Al publicar, elegir a dónde va el video:
@@ -450,13 +460,16 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Todo mergeado a `main`.** No hay trabajo en vuelo. El siguiente cambio arranca de `main`
-fresco (`git fetch origin main` → rama nueva).
+**En vuelo:** rama `claude/post-payment-screen-copy-kn5ozx` (punto 9, página de agradecimiento
+del pago), arrancada desde `main` ya al día (incluye hasta PR #33). Falta abrir/mergear su PR.
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
 semana con el foro adentro · Concepto Base · Bonus Material; las dos últimas son maquetas de
-diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11).
+diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11), **#30** identidad
+visual de la carta en aula/panel/entrar (punto 5), **#31** ingreso con correo + contraseña
+(punto 7, `/nueva-clave/`), **#32** correo de bienvenida automático al pagar (punto 8), **#33**
+correo de bienvenida bilingüe por Resend (punto 8b).
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
@@ -467,7 +480,8 @@ relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitác
 **#23** enlace "Entrar" en la carta para miembros que vuelven, **#24** bucle de pago arreglado +
 red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam en `/entrar`),
 **#27** checklist 16 jul + saludo del aula sin nombre, **#28** pestañas del aula (semana+foro /
-Concepto Base / Bonus Material, maquetas).
+Concepto Base / Bonus Material, maquetas), **#30** identidad visual compartida, **#31** login
+correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bienvenida bilingüe.
 
 ### ⚠️ Lo más urgente para la próxima sesión
 El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el

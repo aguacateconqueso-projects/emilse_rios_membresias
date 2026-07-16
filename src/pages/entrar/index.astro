@@ -61,8 +61,6 @@
     <h1 class="display">Entrar</h1>
     <p class="sub">Entra con tu correo y tu contraseña.</p>
 
-    <p class="msg ok" id="payNote" hidden></p>
-
     <form id="loginForm">
       <div class="field">
         <label for="email">Tu correo</label>
@@ -130,18 +128,6 @@
       ? 'Ese enlace ya caducó o ya se usó (es de un solo uso). Usa «Crea o restablece tu contraseña» para pedir uno nuevo.'
       : 'No se pudo continuar: ' + (hashParams.get('error_description') || hashParams.get('error_code') || hashParams.get('error'));
     msgErr.hidden = false;
-    history.replaceState(null, '', window.location.pathname);
-  }
-
-  // Al volver de Stripe (?pago=ok): el pago se recibió pero la cuenta aún no tiene
-  // contraseña. Le pedimos crearla con el MISMO correo con el que pagó.
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('pago') === 'ok') {
-    const payNote = document.getElementById('payNote');
-    if (payNote) {
-      payNote.textContent = '¡Pago recibido! Si es tu primera vez, escribe abajo el mismo correo con el que pagaste y pulsa «Crea o restablece tu contraseña»: te enviamos un enlace para crearla. Ojo: suele llegar a la carpeta de spam o promociones.';
-      payNote.hidden = false;
-    }
     history.replaceState(null, '', window.location.pathname);
   }
 
