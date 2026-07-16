@@ -103,6 +103,7 @@
   .form h3 { font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-xl);
              letter-spacing: -0.02em; margin-bottom: var(--space-5); }
   .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4) var(--space-5); }
+  .grid2[hidden] { display: none; }
   .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
   .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
   .field .help { font-size: var(--text-xs); color: var(--color-text-soft); }
@@ -125,6 +126,9 @@
                font-weight: var(--weight-semibold); letter-spacing: 0.1em; text-transform: uppercase;
                margin-bottom: var(--space-4); }
   .lcol .field:last-child { margin-bottom: 0; }
+  .dest-filter { margin-bottom: var(--space-5); }
+  .dest-picker { margin: 4px 0 0; }
+  .dest-picker .tab[aria-checked="true"] { background: var(--ink); color: #fff; }
   .qlang { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: var(--radius-full);
            border: 1px solid var(--ink); font-size: 11px; font-weight: var(--weight-semibold);
            letter-spacing: 0.1em; text-transform: uppercase; margin-left: auto; }
@@ -244,18 +248,37 @@
 
         <div class="sec-head">
           <h2>Ejercicios</h2>
-          <button class="btn btn--solid" id="newBtn" type="button">+ Nuevo ejercicio</button>
+          <button class="btn btn--solid" id="newBtn" type="button">+ Nuevo</button>
+        </div>
+
+        <!-- filtro por destino: qué pestaña del aula se está mirando -->
+        <div class="tabs dest-filter" role="tablist" aria-label="Filtrar por destino">
+          <button class="tab" type="button" role="tab" aria-selected="true" data-kind="semana">Ejercicio de la semana</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-kind="base">Concepto Base</button>
+          <button class="tab" type="button" role="tab" aria-selected="false" data-kind="bonus">Bonus Material</button>
         </div>
 
         <!-- formulario nuevo/editar ejercicio -->
         <form class="form" id="newForm" hidden>
           <h3 id="formTitle">Nuevo ejercicio</h3>
           <input type="hidden" id="f-id" />
+
+          <div class="field">
+            <label>Destino</label>
+            <div class="tabs dest-picker" role="radiogroup" aria-label="Destino del contenido">
+              <button class="tab" type="button" role="radio" aria-checked="true" data-kind="semana">Ejercicio de la semana</button>
+              <button class="tab" type="button" role="radio" aria-checked="false" data-kind="base">Concepto Base</button>
+              <button class="tab" type="button" role="radio" aria-checked="false" data-kind="bonus">Bonus Material</button>
+            </div>
+            <span class="help">A dónde va el video al guardar: la pestaña correspondiente del aula.</span>
+          </div>
+          <input type="hidden" id="f-kind" value="semana" />
+
           <div class="grid2">
             <div class="field">
-              <label for="f-week">Etiqueta de semana</label>
+              <label for="f-week" id="f-week-label">Etiqueta de semana</label>
               <input id="f-week" type="text" placeholder="Ej. Semana 24" />
-              <span class="help">Texto corto que el miembro ve junto al título.</span>
+              <span class="help" id="f-week-help">Texto corto que el miembro ve junto al título.</span>
             </div>
           </div>
 
@@ -305,18 +328,19 @@
             </div>
           </div>
 
-          <div class="grid2">
+          <div class="grid2" id="f-dates">
             <div class="field">
-              <label for="f-up">Se publica</label>
+              <label for="f-up" id="f-up-label">Se publica</label>
               <input id="f-up" type="datetime-local" />
-              <span class="help">Por defecto: próximo jueves 00:01 (hora local).</span>
+              <span class="help" id="f-up-help">Por defecto: próximo jueves 00:01 (hora local).</span>
             </div>
             <div class="field">
-              <label for="f-down">Se cierra</label>
+              <label for="f-down" id="f-down-label">Se cierra</label>
               <input id="f-down" type="datetime-local" />
-              <span class="help">Por defecto: jueves siguiente 00:00 (hora local).</span>
+              <span class="help" id="f-down-help">Por defecto: jueves siguiente 00:00 (hora local).</span>
             </div>
           </div>
+          <p class="lang-note" id="f-bonus-note" hidden>📌 El Bonus Material se publica de inmediato al guardar y queda en la grilla sin fecha de cierre.</p>
           <div class="form__actions">
             <button class="btn btn--solid" type="submit">Guardar y programar</button>
             <button class="btn btn--ghost" type="button" id="cancelBtn">Cancelar</button>
@@ -373,7 +397,10 @@
 <script is:inline>
   (function () {
     /* ---- tabs ---- */
-    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+    // Solo las pestañas de sección (Ejercicios/Miembros/Foro, con aria-controls):
+    // el filtro por destino y el selector del formulario también usan .tab pero
+    // no controlan un <section>, así que quedan fuera de este selector.
+    var tabs = Array.prototype.slice.call(document.querySelectorAll('.tab[aria-controls]'));
     tabs.forEach(function (tab) {
       tab.addEventListener('click', function () {
         tabs.forEach(function (t) {
@@ -485,11 +512,93 @@
 
   // ---------- EJERCICIOS ----------
   let exList = [], exMap = {};
+  let currentFilterKind = 'semana';
+
+  // Texto/labels por destino (selector del formulario + filtro de la tabla).
+  const KIND_META = {
+    semana: {
+      weekLabel: 'Etiqueta de semana', weekHelp: 'Texto corto que el miembro ve junto al título.',
+      weekPh: 'Ej. Semana 24',
+      upLabel: 'Se publica', upHelp: 'Por defecto: próximo jueves 00:01 (hora local).',
+      downLabel: 'Se cierra', downHelp: 'Por defecto: jueves siguiente 00:00 (hora local).',
+      formNew: 'Nuevo ejercicio de la semana', formEdit: 'Editar ejercicio de la semana',
+      empty: 'Aún no hay ejercicios. Crea el primero con “+ Nuevo”.',
+    },
+    base: {
+      weekLabel: 'Etiqueta del mes', weekHelp: 'Texto corto que el miembro ve junto al título (ej. el mes).',
+      weekPh: 'Ej. Julio',
+      upLabel: 'Se publica', upHelp: 'Por defecto: ahora.',
+      downLabel: 'Se cierra', downHelp: 'Por defecto: dentro de un mes.',
+      formNew: 'Nuevo Concepto Base', formEdit: 'Editar Concepto Base',
+      empty: 'Aún no hay ningún Concepto Base. Crea el primero con “+ Nuevo”.',
+    },
+    bonus: {
+      weekLabel: 'Etiqueta', weekHelp: 'Texto corto sobre la tarjeta (ej. “Bienvenida”, “Montaje”).',
+      weekPh: 'Ej. Bienvenida',
+      upLabel: 'Se publica', upHelp: '',
+      downLabel: 'Se cierra', downHelp: '',
+      formNew: 'Nuevo Bonus Material', formEdit: 'Editar Bonus Material',
+      empty: 'Aún no hay material bonus. Agrega el primero con “+ Nuevo”.',
+    },
+  };
+
+  function computeDefaultDates(kind) {
+    if (kind === 'base') {
+      const pub = new Date(); pub.setSeconds(0, 0);
+      const unp = new Date(pub); unp.setMonth(unp.getMonth() + 1);
+      return { pub, unp };
+    }
+    if (kind === 'bonus') {
+      const pub = new Date(); pub.setSeconds(0, 0);
+      const unp = new Date(pub); unp.setFullYear(unp.getFullYear() + 100);
+      return { pub, unp };
+    }
+    const pub = nextThursday(new Date()); pub.setHours(0, 1, 0, 0);
+    const unp = new Date(pub); unp.setDate(unp.getDate() + 7); unp.setHours(0, 0, 0, 0);
+    return { pub, unp };
+  }
+
+  // Ajusta labels/ayuda y muestra u oculta las fechas según el destino elegido.
+  function applyKindUI(kind) {
+    const meta = KIND_META[kind] || KIND_META.semana;
+    $('f-week-label').textContent = meta.weekLabel;
+    $('f-week-help').textContent = meta.weekHelp;
+    $('f-week').placeholder = meta.weekPh;
+    $('f-up-label').textContent = meta.upLabel; $('f-up-help').textContent = meta.upHelp;
+    $('f-down-label').textContent = meta.downLabel; $('f-down-help').textContent = meta.downHelp;
+    $('f-dates').hidden = kind === 'bonus';
+    $('f-bonus-note').hidden = kind !== 'bonus';
+    document.querySelectorAll('.dest-picker .tab').forEach((b) => b.setAttribute('aria-checked', b.dataset.kind === kind ? 'true' : 'false'));
+    $('f-kind').value = kind;
+  }
+  document.querySelectorAll('.dest-picker .tab').forEach((b) => {
+    b.addEventListener('click', () => {
+      const kind = b.dataset.kind;
+      applyKindUI(kind);
+      const editing = !!$('f-id').value;
+      $('formTitle').textContent = editing ? KIND_META[kind].formEdit : KIND_META[kind].formNew;
+      if (!editing) {
+        const { pub, unp } = computeDefaultDates(kind);
+        $('f-up').value = toLocalInput(pub); $('f-down').value = toLocalInput(unp);
+      }
+    });
+  });
+
+  // Filtro de la tabla por destino (qué pestaña del aula se está mirando).
+  document.querySelectorAll('.dest-filter .tab').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.dest-filter .tab').forEach((x) => x.setAttribute('aria-selected', x === b ? 'true' : 'false'));
+      currentFilterKind = b.dataset.kind;
+      renderExTable();
+      newForm.hidden = true; resetForm();
+    });
+  });
 
   function renderWeekStrip(exs) {
     const strip = $('weekStrip'); strip.innerHTML = '';
-    const live = exs.filter((e) => exStatus(e).key === 'live');
-    const next = exs.filter((e) => exStatus(e).key === 'sched')
+    const weekly = exs.filter((e) => (e.kind || 'semana') === 'semana');
+    const live = weekly.filter((e) => exStatus(e).key === 'live');
+    const next = weekly.filter((e) => exStatus(e).key === 'sched')
       .sort((a, b) => new Date(a.publish_at) - new Date(b.publish_at))[0];
     if (!live.length && !next) { strip.hidden = true; return; }
     strip.hidden = false;
@@ -511,11 +620,20 @@
     td1.appendChild(title);
     const td3 = document.createElement('td');
     const st = exStatus(e); const pill = document.createElement('span'); pill.className = 'pill ' + st.cls; pill.textContent = st.label; td3.appendChild(pill);
-    const td4 = document.createElement('td'); td4.className = 'sub'; td4.textContent = fmtRange(e.publish_at, e.unpublish_at);
+    const td4 = document.createElement('td'); td4.className = 'sub';
+    td4.textContent = e.kind === 'bonus' ? 'Publicado ' + fmtDate(e.publish_at) : fmtRange(e.publish_at, e.unpublish_at);
     const td5 = document.createElement('td');
     const btn = document.createElement('button'); btn.className = 'btn btn--ghost btn--sm'; btn.type = 'button'; btn.textContent = 'Editar';
     btn.addEventListener('click', () => openEdit(e)); td5.appendChild(btn);
     tr.append(td1, td3, td4, td5); return tr;
+  }
+
+  function renderExTable() {
+    const tb = $('exRows');
+    tb.innerHTML = '';
+    const rows = exList.filter((e) => (e.kind || 'semana') === currentFilterKind);
+    if (!rows.length) { tb.appendChild(emptyRow(4, KIND_META[currentFilterKind].empty)); return; }
+    rows.forEach((e) => tb.appendChild(renderExRow(e)));
   }
 
   async function loadExercises() {
@@ -524,9 +642,7 @@
     if (error) { tb.innerHTML = ''; tb.appendChild(emptyRow(4, 'No se pudo cargar: ' + error.message)); return; }
     exList = data || []; exMap = {}; exList.forEach((e) => { exMap[e.id] = e; });
     renderWeekStrip(exList);
-    tb.innerHTML = '';
-    if (!exList.length) { tb.appendChild(emptyRow(4, 'Aún no hay ejercicios. Crea el primero con “+ Nuevo ejercicio”.')); return; }
-    exList.forEach((e) => tb.appendChild(renderExRow(e)));
+    renderExTable();
   }
 
   // --- formulario ---
@@ -535,24 +651,28 @@
     $('f-id').value = '';
     ['f-week', 'f-title-es', 'f-title-en', 'f-desc-es', 'f-desc-en', 'f-vimeo-es', 'f-vimeo-en', 'f-up', 'f-down', 'f-pdf-es', 'f-pdf-en']
       .forEach((id) => { const el = $(id); if (el) el.value = ''; });
-    $('formErr').hidden = true; $('formTitle').textContent = 'Nuevo ejercicio';
+    $('formErr').hidden = true;
+    applyKindUI('semana');
   }
-  function openCreate() {
+  function openCreate(kind) {
     resetForm();
-    const pub = nextThursday(new Date()); pub.setHours(0, 1, 0, 0);
-    const unp = new Date(pub); unp.setDate(unp.getDate() + 7); unp.setHours(0, 0, 0, 0);
+    applyKindUI(kind);
+    const { pub, unp } = computeDefaultDates(kind);
     $('f-up').value = toLocalInput(pub); $('f-down').value = toLocalInput(unp);
+    $('formTitle').textContent = KIND_META[kind].formNew;
     newForm.hidden = false; newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
   function openEdit(e) {
     resetForm();
+    const kind = e.kind || 'semana';
     $('f-id').value = e.id;
+    applyKindUI(kind);
     $('f-week').value = e.week_label || '';
     $('f-title-es').value = e.title_es || ''; $('f-title-en').value = e.title_en || '';
     $('f-desc-es').value = e.desc_es || ''; $('f-desc-en').value = e.desc_en || '';
     $('f-vimeo-es').value = e.vimeo_url_es || ''; $('f-vimeo-en').value = e.vimeo_url_en || '';
     $('f-up').value = isoToLocalInput(e.publish_at); $('f-down').value = isoToLocalInput(e.unpublish_at);
-    $('formTitle').textContent = 'Editar ejercicio';
+    $('formTitle').textContent = KIND_META[kind].formEdit;
     newForm.hidden = false; newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
@@ -588,31 +708,49 @@
   }
 
   $('newBtn')?.addEventListener('click', () => {
-    if (newForm.hidden) openCreate(); else { newForm.hidden = true; resetForm(); }
+    if (newForm.hidden) openCreate(currentFilterKind); else { newForm.hidden = true; resetForm(); }
   });
   $('cancelBtn')?.addEventListener('click', () => { newForm.hidden = true; resetForm(); });
 
   newForm?.addEventListener('submit', async (ev) => {
     ev.preventDefault();
     const errEl = $('formErr'); errEl.hidden = true;
+    const kind = $('f-kind').value || 'semana';
     const title_es = $('f-title-es').value.trim(), title_en = $('f-title-en').value.trim();
-    const upVal = $('f-up').value, downVal = $('f-down').value;
     if (!title_es || !title_en) { errEl.textContent = 'Faltan los títulos (ES y EN).'; errEl.hidden = false; return; }
-    if (!upVal || !downVal) { errEl.textContent = 'Faltan las fechas de publicación y cierre.'; errEl.hidden = false; return; }
-    if (new Date(downVal) <= new Date(upVal)) { errEl.textContent = 'La fecha de cierre debe ser posterior a la de publicación.'; errEl.hidden = false; return; }
+
+    // Bonus se publica de inmediato y no expira: las fechas no las controla Emi.
+    // Si ya existía como bonus, se conserva su fecha real de publicación (no se
+    // "re-publica" cada vez que Emi solo corrige el texto).
+    const editId = $('f-id').value || null;
+    const original = editId ? exMap[editId] : null;
+    let pubISO, unpISO;
+    if (kind === 'bonus') {
+      if (original && original.kind === 'bonus') {
+        pubISO = original.publish_at; unpISO = original.unpublish_at;
+      } else {
+        const { pub, unp } = computeDefaultDates('bonus');
+        pubISO = pub.toISOString(); unpISO = unp.toISOString();
+      }
+    } else {
+      const upVal = $('f-up').value, downVal = $('f-down').value;
+      if (!upVal || !downVal) { errEl.textContent = 'Faltan las fechas de publicación y cierre.'; errEl.hidden = false; return; }
+      if (new Date(downVal) <= new Date(upVal)) { errEl.textContent = 'La fecha de cierre debe ser posterior a la de publicación.'; errEl.hidden = false; return; }
+      pubISO = new Date(upVal).toISOString(); unpISO = new Date(downVal).toISOString();
+    }
 
     const saveBtn = newForm.querySelector('button[type="submit"]'); const lbl = saveBtn.textContent;
     saveBtn.disabled = true; saveBtn.textContent = 'Guardando…';
     try {
-      const editId = $('f-id').value || null;
       const pdfEs = await uploadPdf($('f-pdf-es'));
       const pdfEn = await uploadPdf($('f-pdf-en'));
       const payload = {
+        kind,
         week_label: $('f-week').value.trim() || null,
         title_es, title_en,
         desc_es: $('f-desc-es').value.trim() || null, desc_en: $('f-desc-en').value.trim() || null,
         vimeo_url_es: normalizeVimeo($('f-vimeo-es').value), vimeo_url_en: normalizeVimeo($('f-vimeo-en').value),
-        publish_at: new Date(upVal).toISOString(), unpublish_at: new Date(downVal).toISOString(),
+        publish_at: pubISO, unpublish_at: unpISO,
       };
       if (pdfEs !== undefined) payload.pdf_path_es = pdfEs;
       if (pdfEn !== undefined) payload.pdf_path_en = pdfEn;
@@ -620,8 +758,10 @@
         ? await supabase.from('exercises').update(payload).eq('id', editId)
         : await supabase.from('exercises').insert(payload);
       if (resp.error) throw new Error(resp.error.message);
-      newForm.hidden = true; resetForm(); await loadExercises();
-      toast(editId ? 'Ejercicio actualizado' : 'Ejercicio creado');
+      newForm.hidden = true; resetForm(); currentFilterKind = kind;
+      document.querySelectorAll('.dest-filter .tab').forEach((x) => x.setAttribute('aria-selected', x.dataset.kind === kind ? 'true' : 'false'));
+      await loadExercises();
+      toast(editId ? 'Contenido actualizado' : 'Contenido creado');
     } catch (err) {
       errEl.textContent = 'No se pudo guardar: ' + err.message; errEl.hidden = false;
     } finally {

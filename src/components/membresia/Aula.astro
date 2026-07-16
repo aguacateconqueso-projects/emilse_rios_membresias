@@ -61,13 +61,7 @@ const t = isEN ? {
     eyebrow: 'Extras',
     title: 'Bonus material',
     lead: 'Extra material Emilse adds over time — outside the weekly rhythm.',
-    items: [
-      { tag: 'Welcome', title: 'Welcome video', desc: 'Emilse welcomes you and explains how to get the most out of the membership.', langs: 'ES · EN' },
-      { tag: 'Setup', title: 'Tuning & setup', desc: 'A short guide to tuning and getting your instrument ready before you play.', langs: 'ES · EN' },
-      { tag: 'Warm-up', title: 'Warm-up routine', desc: 'A five-minute routine to loosen the arm before each session.', langs: 'ES · EN' },
-    ],
   },
-  demoNote: 'Sample content — the real material gets connected later.',
 } : {
   htmlLang: 'es',
   metaTitle: 'Aula — Estudiemos Juntos · Emilse Rios',
@@ -119,13 +113,7 @@ const t = isEN ? {
     eyebrow: 'Extras',
     title: 'Bonus Material',
     lead: 'Material adicional que Emilse va sumando — fuera del ritmo semanal.',
-    items: [
-      { tag: 'Bienvenida', title: 'Video de bienvenida', desc: 'Emi te da la bienvenida y explica cómo aprovechar al máximo la membresía.', langs: 'ES · EN' },
-      { tag: 'Montaje', title: 'Afinación y montaje', desc: 'Una guía corta para afinar y dejar el instrumento listo antes de tocar.', langs: 'ES · EN' },
-      { tag: 'Calentamiento', title: 'Rutina de calentamiento', desc: 'Una rutina de cinco minutos para soltar el brazo antes de cada sesión.', langs: 'ES · EN' },
-    ],
   },
-  demoNote: 'Contenido de muestra — el material real se conecta luego.',
 };
 const altHref = isEN ? '/aula/' : '/aula/en/';
 ---
@@ -417,30 +405,29 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 
       </div>
 
-      <!-- ===== Pestaña: Concepto Base (MAQUETA — contenido de muestra) ===== -->
+      <!-- ===== Pestaña: Concepto Base (datos reales — ver <script>) ===== -->
       <div class="tabpanel" id="panel-base" role="tabpanel" aria-labelledby="tab-base" tabindex="0" hidden>
-        <p class="demo-note">{t.demoNote}</p>
 
         <section class="lead reveal">
           <div class="ovl">{t.base.eyebrow}</div>
-          <h1 class="lead__title display">{t.base.title}</h1>
-          <div class="lead__meta"><span>{t.base.meta}</span></div>
+          <h1 class="lead__title display" id="baseTitle">{t.base.title}</h1>
+          <div class="lead__meta"><span id="baseMeta">{t.base.meta}</span></div>
         </section>
 
         <section aria-label="Video">
           <div class="vtabs" role="tablist" aria-label="Video language">
-            <button class="vtab" type="button" aria-selected={(!isEN).toString()}>{t.videoEs}</button>
-            <button class="vtab" type="button" aria-selected={isEN.toString()}>{t.videoEn}</button>
+            <button class="vtab" type="button" aria-selected={(!isEN).toString()} data-vlang="es">{t.videoEs}</button>
+            <button class="vtab" type="button" aria-selected={isEN.toString()} data-vlang="en">{t.videoEn}</button>
           </div>
-          <div class="player">
+          <div class="player" id="basePlayer">
             <span class="player__hint">{t.base.playerHint}</span>
             <span class="player__play" aria-hidden="true"></span>
-            <span class="player__label">{t.playerLabel}</span>
+            <span class="player__label" id="baseVlabel">{t.playerLabel} · {isEN ? t.videoEn : t.videoEs}</span>
           </div>
         </section>
 
         <section class="ex">
-          <div class="ex__desc">
+          <div class="ex__desc" id="baseDesc">
             {t.base.desc.map((p) => (<p set:html={p} />))}
           </div>
           <aside class="ex__side">
@@ -448,6 +435,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
             <ul class="ex__points">
               {t.base.points.map((p) => (<li><span class="tick">→</span> {p}</li>))}
             </ul>
+            <a class="btn btn--ghost btn--block" id="basePdfBtn" href="#">{t.pdf}</a>
           </aside>
         </section>
 
@@ -456,9 +444,8 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
         </section>
       </div>
 
-      <!-- ===== Pestaña: Bonus Material (MAQUETA — contenido de muestra) ===== -->
+      <!-- ===== Pestaña: Bonus Material (datos reales — ver <script>) ===== -->
       <div class="tabpanel" id="panel-bonus" role="tabpanel" aria-labelledby="tab-bonus" tabindex="0" hidden>
-        <p class="demo-note">{t.demoNote}</p>
 
         <section class="lead reveal">
           <div class="ovl">{t.bonus.eyebrow}</div>
@@ -466,20 +453,8 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
           <div class="lead__meta"><span>{t.bonus.lead}</span></div>
         </section>
 
-        <section class="bonus-grid" aria-label={t.bonus.title}>
-          {t.bonus.items.map((it) => (
-            <article class="bonus-card reveal">
-              <div class="bonus-card__media">
-                <span class="player__play" aria-hidden="true"></span>
-              </div>
-              <div class="bonus-card__body">
-                <span class="ovl">{it.tag}</span>
-                <h3 class="bonus-card__title">{it.title}</h3>
-                <p class="bonus-card__desc">{it.desc}</p>
-                <span class="bonus-card__langs">{it.langs}</span>
-              </div>
-            </article>
-          ))}
+        <section class="bonus-grid" id="bonusGrid" aria-label={t.bonus.title}>
+          <p class="demo-note" id="bonusEmpty">{isEN ? 'Loading…' : 'Cargando…'}</p>
         </section>
       </div>
 
@@ -547,6 +522,12 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     forumError: EN ? 'Couldn’t load the forum.' : 'No se pudo cargar el foro.',
     postError: EN ? 'Couldn’t post your question. Try again.' : 'No se pudo publicar tu pregunta. Inténtalo de nuevo.',
     sending: EN ? 'Posting…' : 'Publicando…',
+    baseLocked: EN ? 'No core concept available yet.' : 'Aún no hay Concepto Base disponible.',
+    bonusEmpty: EN ? 'No bonus material yet.' : 'Aún no hay Bonus Material.',
+    bonusLoadError: EN ? 'Couldn’t load the bonus material.' : 'No se pudo cargar el Bonus Material.',
+    videoUnavailable: EN
+      ? 'This video could not be loaded. Check the Vimeo link in the panel.'
+      : 'No se pudo cargar el video. Revisa el enlace de Vimeo en el panel.',
   };
 
   // Nombre a mostrar: "Nombre Inicial." (sin correo). Si no hay nombre, parte del correo.
@@ -594,6 +575,137 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     if (qi !== -1) return base + s.slice(qi);
     const ph = s.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
     return base + (ph ? '?h=' + ph[1] : '');
+  }
+
+  // Pinta un iframe de Vimeo dentro de `player` (o un aviso si la URL no se pudo
+  // interpretar). Compartido por Ejercicio de la semana, Concepto Base y las
+  // tarjetas de Bonus Material.
+  function embedPlayer(player, url) {
+    if (!player) return;
+    const embed = vimeoEmbed(url);
+    if (embed) {
+      const iframe = document.createElement('iframe');
+      iframe.src = embed;
+      iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
+      iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share');
+      // Vimeo valida el dominio permitido por el origen (referrer). Sin esto, un
+      // video restringido por dominio se bloquea aunque el dominio esté en la lista.
+      iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
+      iframe.allowFullscreen = true;
+      player.replaceChildren(iframe);
+    } else if (url) {
+      // Hay URL pero no se pudo interpretar: no dejar un botón de play muerto.
+      const msg = document.createElement('div');
+      msg.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-size:13px;line-height:1.5';
+      msg.textContent = T.videoUnavailable;
+      player.replaceChildren(msg);
+    }
+    // Si no hay URL para ese idioma, se deja el placeholder tal cual.
+  }
+
+  // Botón de PDF (Supabase Storage); se oculta si no hay archivo para ese idioma.
+  function wirePdfButton(btn, path) {
+    if (!btn) return;
+    if (path) {
+      const { data } = supabase.storage.from('pdfs').getPublicUrl(path);
+      btn.href = data.publicUrl; btn.target = '_blank'; btn.rel = 'noopener'; btn.style.display = '';
+    } else {
+      btn.style.display = 'none';
+    }
+  }
+
+  // Con suscripción (o admin) pero sin Concepto Base vigente: mensaje en su pestaña.
+  function showBaseLocked() {
+    const title = $('baseTitle'); if (title) title.textContent = T.baseLocked;
+    const descEl = $('baseDesc'); if (descEl) descEl.innerHTML = '';
+    document.querySelectorAll('#panel-base section[aria-label="Video"], #panel-base .ex, #panel-base .note-strip')
+      .forEach((s) => { s.style.display = 'none'; });
+  }
+
+  // Concepto Base: el que está "vigente" (mismo mecanismo de ventana que la
+  // semana, pero pensado para un rango mensual). No bloquea el resto del aula.
+  async function loadBaseConcept() {
+    const nowISO = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('exercises').select('*')
+      .eq('kind', 'base')
+      .lte('publish_at', nowISO)
+      .gt('unpublish_at', nowISO)
+      .order('publish_at', { ascending: false })
+      .limit(1);
+    if (error) { console.error('[aula] base error:', error); return; }
+    const b = data && data[0];
+    if (!b) { showBaseLocked(); return; }
+
+    $('baseTitle').textContent = EN ? b.title_en : b.title_es;
+    if ($('baseMeta')) $('baseMeta').textContent = b.week_label || '';
+    const desc = (EN ? b.desc_en : b.desc_es) || '';
+    const descEl = $('baseDesc');
+    if (descEl) {
+      descEl.innerHTML = '';
+      desc.split(/\n\s*\n|\n/).filter((p) => p.trim()).forEach((p) => {
+        const el = document.createElement('p'); el.textContent = p.trim(); descEl.appendChild(el);
+      });
+    }
+
+    const renderBaseVideo = (which) => embedPlayer($('basePlayer'), which === 'en' ? b.vimeo_url_en : b.vimeo_url_es);
+    renderBaseVideo(pageLang);
+    document.querySelectorAll('#panel-base .vtab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('#panel-base .vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
+        renderBaseVideo(tab.dataset.vlang);
+      });
+    });
+
+    wirePdfButton($('basePdfBtn'), EN ? b.pdf_path_en : b.pdf_path_es);
+  }
+
+  function bonusMsg(text) {
+    const p = document.createElement('p'); p.className = 'demo-note'; p.textContent = text; return p;
+  }
+
+  // Una tarjeta de Bonus Material: el video se carga recién al hacer clic (son
+  // varias tarjetas en la grilla, no tiene sentido pintar N iframes de una).
+  function renderBonusCard(b) {
+    const art = document.createElement('article'); art.className = 'bonus-card reveal';
+    const media = document.createElement('div'); media.className = 'bonus-card__media';
+    const play = document.createElement('span'); play.className = 'player__play'; play.setAttribute('aria-hidden', 'true');
+    media.appendChild(play);
+
+    const url = EN ? b.vimeo_url_en : b.vimeo_url_es;
+    if (vimeoEmbed(url)) {
+      media.setAttribute('role', 'button'); media.tabIndex = 0; media.setAttribute('aria-label', 'Play');
+      const load = () => embedPlayer(media, url);
+      media.addEventListener('click', load);
+      media.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); load(); } });
+    }
+
+    const body = document.createElement('div'); body.className = 'bonus-card__body';
+    const tag = document.createElement('span'); tag.className = 'ovl'; tag.textContent = b.week_label || '';
+    const h3 = document.createElement('h3'); h3.className = 'bonus-card__title'; h3.textContent = EN ? b.title_en : b.title_es;
+    const desc = document.createElement('p'); desc.className = 'bonus-card__desc'; desc.textContent = (EN ? b.desc_en : b.desc_es) || '';
+    const langs = document.createElement('span'); langs.className = 'bonus-card__langs'; langs.textContent = 'ES · EN';
+    body.append(tag, h3, desc, langs);
+
+    art.append(media, body);
+    return art;
+  }
+
+  // Bonus Material: se acumula, no expira una vez publicado. Orden: el más
+  // viejo primero (el video de bienvenida, si existe, queda arriba).
+  async function loadBonusMaterial() {
+    const grid = $('bonusGrid');
+    if (!grid) return;
+    const nowISO = new Date().toISOString();
+    const { data, error } = await supabase
+      .from('exercises').select('*')
+      .eq('kind', 'bonus')
+      .lte('publish_at', nowISO)
+      .order('publish_at', { ascending: true });
+    if (error) { console.error('[aula] bonus error:', error); grid.replaceChildren(bonusMsg(T.bonusLoadError)); return; }
+    const items = data || [];
+    if (!items.length) { grid.replaceChildren(bonusMsg(T.bonusEmpty)); return; }
+    grid.replaceChildren(...items.map(renderBonusCard));
   }
 
   // Con suscripción (o admin) pero sin ejercicio en ventana: la pestaña "Ejercicio
@@ -721,12 +833,21 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       });
     }
 
-    // Ejercicio vigente (uno solo, global). La RLS de miembro ya solo deja ver el
-    // que está en ventana; aun así filtramos por vigencia para que el admin (que ve
-    // TODOS por su política) también vea aquí el que está en vivo, no uno programado.
+    // Concepto Base y Bonus Material son independientes del ejercicio semanal
+    // (pestañas propias, sin bloquearse entre sí): se cargan en paralelo, sin
+    // esperar a que resuelva el bloque de abajo.
+    loadBaseConcept();
+    loadBonusMaterial();
+
+    // Ejercicio vigente (uno solo, global, kind='semana'). La RLS de miembro ya
+    // solo deja ver el que está en ventana; aun así filtramos por vigencia para
+    // que el admin (que ve TODOS por su política) también vea aquí el que está
+    // en vivo, no uno programado — y por kind, para no mezclar con Concepto
+    // Base/Bonus, que ahora viven en la misma tabla.
     const nowISO = new Date().toISOString();
     const { data: rows, error } = await supabase
       .from('exercises').select('*')
+      .eq('kind', 'semana')
       .lte('publish_at', nowISO)
       .gt('unpublish_at', nowISO)
       .order('publish_at', { ascending: false })
@@ -754,32 +875,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     }
 
     // Video con selector ES/EN
-    function renderVideo(which) {
-      const url = which === 'en' ? ex.vimeo_url_en : ex.vimeo_url_es;
-      const embed = vimeoEmbed(url);
-      const player = $('player');
-      if (!player) return;
-      if (embed) {
-        const iframe = document.createElement('iframe');
-        iframe.src = embed;
-        iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
-        iframe.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share');
-        // Vimeo valida el dominio permitido por el origen (referrer). Sin esto, un
-        // video restringido por dominio se bloquea aunque el dominio esté en la lista.
-        iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
-        iframe.allowFullscreen = true;
-        player.replaceChildren(iframe);
-      } else if (url) {
-        // Hay URL pero no se pudo interpretar: no dejar un botón de play muerto.
-        const msg = document.createElement('div');
-        msg.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-size:13px;line-height:1.5';
-        msg.textContent = EN
-          ? 'This video could not be loaded. Check the Vimeo link in the panel.'
-          : 'No se pudo cargar el video. Revisa el enlace de Vimeo en el panel.';
-        player.replaceChildren(msg);
-      }
-      // Si no hay URL para ese idioma, se deja el placeholder tal cual.
-    }
+    const renderVideo = (which) => embedPlayer($('player'), which === 'en' ? ex.vimeo_url_en : ex.vimeo_url_es);
     renderVideo(pageLang);
     document.querySelectorAll('#panel-semana .vtab').forEach((tab) => {
       tab.addEventListener('click', () => {
@@ -788,17 +884,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       });
     });
 
-    // PDF (Supabase Storage; se oculta si no hay)
-    const pdfPath = EN ? ex.pdf_path_en : ex.pdf_path_es;
-    const pdfBtn = $('pdfBtn');
-    if (pdfBtn) {
-      if (pdfPath) {
-        const { data } = supabase.storage.from('pdfs').getPublicUrl(pdfPath);
-        pdfBtn.href = data.publicUrl; pdfBtn.target = '_blank'; pdfBtn.rel = 'noopener';
-      } else {
-        pdfBtn.style.display = 'none';
-      }
-    }
+    wirePdfButton($('pdfBtn'), EN ? ex.pdf_path_en : ex.pdf_path_es);
 
     // Marcar completado (real)
     const doneBtn = $('doneBtn');
