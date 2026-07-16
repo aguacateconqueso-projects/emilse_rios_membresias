@@ -35,7 +35,8 @@ const t = isEN ? {
   storyBody1: [
     'That year we played all of Mahler’s symphonies. At the Walt Disney Concert Hall, with the Simón Bolívar Symphony Orchestra and the Los Angeles Philharmonic together on stage, conducted by Gustavo Dudamel.',
     'A full month in California. A five-star hotel with such special treatment that one of the gifts they gave us was taking the whole orchestra to Disneyland — without a doubt the most fun day off of that tour — I felt like we were all ten years old again. For about four more years, my life looked more or less like that.',
-    'And in 2016 I emigrated. I had to leave my country. I arrived in Argentina. And while I waited for my papers, I couldn’t audition, or play, or teach anywhere. I ended up working twelve hours a day in an ice cream shop.',
+    { bold: true, text: 'And in 2016 I emigrated. I had to leave my country.' },
+    'I arrived in Argentina. And while I waited for my papers, I couldn’t audition, or play, or teach anywhere. I ended up working twelve hours a day in an ice cream shop.',
     'I shared a flat with friends, so the only moment I had to practice was before seven in the morning. And the only place where I wouldn’t bother anyone was the rooftop of the building.',
     'So there I was, carrying a double bass up the stairs to a rooftop in Buenos Aires. Some days I made it. Half an hour, an hour if I got up earlier. Other days exhaustion won.',
   ],
@@ -46,8 +47,8 @@ const t = isEN ? {
     { t: 'The third:', p: 'There are plenty of exercises floating around the internet, but finding and organizing them takes longer than actually practicing them. The way I see it, YouTube often steals more practice time than it gives back.' },
   ],
   storyBody2: [
-    'Having a goal makes us move — it makes us carve out space in the calendar, it trains our consistency. That’s my advice to you: write it down. It can be a piece you always wanted to play, or getting to know the high register of the instrument. Whatever it is, write it down. Build a plan to reach it.',
-    'This membership is about doing just enough — sustaining your consistency week after week, improving without piling up exercises you’ll never watch or practice (that’s what YouTube is for).',
+    { bold: true, text: 'Having a goal makes us move — it makes us carve out space in the calendar, it trains our consistency. That’s my advice to you: write it down. It can be a piece you always wanted to play, or getting to know the high register of the instrument. Whatever it is, write it down. Build a plan to reach it.' },
+    { bold: true, text: 'This membership is about doing just enough — sustaining your consistency week after week, improving without piling up exercises you’ll never watch or practice (that’s what YouTube is for).' },
     'Every Thursday, when the new exercise comes in, the previous one disappears. Yes, you read that right. I delete the previous content.',
     'Why would I do that?',
     'Because libraries overwhelm. Having fifty exercises archived “for later” ends up in doing none of them. And not just that — with the guilt of not doing anything.',
@@ -75,7 +76,8 @@ const t = isEN ? {
   priceLabel: 'Founder price',
   priceAmount: '$57',
   pricePer: '/mo',
-  priceInBox: 'The membership opens at founder price: $57/month, only from July 16 to 23. That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
+  priceInBoxLead: 'The membership opens at founder price: $57/month, only from July 16 to 23.',
+  priceInBoxRest: 'That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
   priceFeatures: [
     'A new exercise every Thursday on the platform, based on a core concept.',
     'Every month I explain one topic — a core technical concept — so you understand where the movements, coordination, and sound come from. Just one concept. Simple.',
@@ -104,7 +106,8 @@ const t = isEN ? {
     { q: 'I have a question that isn’t listed here:', a1: 'Write to me and I’ll answer you personally at ', email: 'info@emilserios.com' },
   ],
 
-  finalMsg: 'A lot for a lot of you. A gift for anyone who wants to learn the technical concepts that help you improve your double bass playing exponentially, and enjoy the sound of your instrument. Simple as that. Let’s study together!',
+  finalMsgLead: 'A lot for a lot of you.',
+  finalMsgRest: 'A gift for anyone who wants to learn the technical concepts that help you improve your double bass playing exponentially, and enjoy the sound of your instrument. Simple as that. Let’s study together!',
   newsPre: 'Not subscribed to the newsletter yet?',
   newsLink: 'Subscribe here',
 
@@ -126,7 +129,8 @@ const t = isEN ? {
   storyBody1: [
     'Ese año tocamos todas las sinfonías de Mahler. En el Walt Disney Concert Hall, con la orquesta sinfónica Simón Bolívar y la Filarmónica de Los Ángeles juntas en el escenario, dirigidas por Gustavo Dudamel.',
     'Un mes completo en California. Hotel cinco estrellas con un trato especial, tan especial, que uno de los regalos que nos dieron fue llevar a toda la orquesta a Disney, el día libre más divertido de ese tour sin duda, sentí que todos volvimos a tener 10 años. Durante unos cuatro años más, mi vida fue más o menos así.',
-    'Y en 2016 emigré. Tuve que dejar mi país. Llegué a Argentina. Y mientras esperaba el trámite para tener documentos, no podía audicionar, ni tocar ni dar clases en ningún lado. Me tocó trabajar doce horas al día en una heladería.',
+    { bold: true, text: 'Y en 2016 emigré. Tuve que dejar mi país.' },
+    'Llegué a Argentina. Y mientras esperaba el trámite para tener documentos, no podía audicionar, ni tocar ni dar clases en ningún lado. Me tocó trabajar doce horas al día en una heladería.',
     'Vivía en un departamento compartido con amigos, así que el único momento que tenía para estudiar era antes de las siete de la mañana. Y el único lugar donde no molestaba a nadie era la azotea del edificio.',
     'Ahí estaba yo ahora subiendo un contrabajo por las escaleras de una azotea en Buenos Aires. Algunos días lo lograba. Media hora, una hora si me levantaba más temprano. Otros días el cansancio me ganaba.',
   ],
@@ -137,8 +141,8 @@ const t = isEN ? {
     { t: 'La tercera:', p: 'Si bien hay muchos ejercicios dando vueltas en internet, te toma más tiempo encontrarlos y organizarlos que estudiarlos, como lo veo, YouTube muchas veces más que aportar se convierte en un ladrón del tiempo de estudio.' },
   ],
   storyBody2: [
-    'Tener una meta nos hace movernos, nos hace abrir espacio en la agenda, nos entrena la constancia. Es mi consejo para ti, anótala, puede ser una obra que siempre quisiste tocar, o conocer la región aguda del instrumento. Lo que sea, anótala. Ármate un plan para llegar a ella.',
-    'Esta es una membresía para hacer lo justo, para sostener tu constancia semana a semana, para mejorar sin acumular ejercicios que nunca vas a ver ni a practicar (ya para eso está YouTube).',
+    { bold: true, text: 'Tener una meta nos hace movernos, nos hace abrir espacio en la agenda, nos entrena la constancia. Es mi consejo para ti, anótala, puede ser una obra que siempre quisiste tocar, o conocer la región aguda del instrumento. Lo que sea, anótala. Ármate un plan para llegar a ella.' },
+    { bold: true, text: 'Esta es una membresía para hacer lo justo, para sostener tu constancia semana a semana, para mejorar sin acumular ejercicios que nunca vas a ver ni a practicar (ya para eso está YouTube).' },
     'Cada jueves, cuando entra el ejercicio nuevo, el anterior desaparece. Sí, leíste bien. Yo borro el contenido anterior.',
     '¿Por qué haría eso?',
     'Porque las bibliotecas abruman. Tener cincuenta ejercicios archivados “para después” termina en no hacer ninguno. Y no solo eso, sino con la culpa de que no estás haciendo nada.',
@@ -166,7 +170,8 @@ const t = isEN ? {
   priceLabel: 'Precio de fundador',
   priceAmount: '$57',
   pricePer: '/mes',
-  priceInBox: 'La membresía abre con precio de fundador: $57 al mes, solo del 16 al 23 de julio. Ese precio se congela para ti: aunque suba (y va a subir), tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
+  priceInBoxLead: 'La membresía abre con precio de fundador: $57 al mes, solo del 16 al 23 de julio.',
+  priceInBoxRest: 'Ese precio se congela para ti: aunque suba (y va a subir), tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
   priceFeatures: [
     'Cada jueves un ejercicio nuevo en la plataforma basado en un concepto base.',
     'Cada mes te explico un tema, un concepto base técnico, para que entiendas de dónde vienen los movimientos, la coordinación, el sonido, solo un concepto. Simple.',
@@ -195,7 +200,8 @@ const t = isEN ? {
     { q: 'Tengo una pregunta que no aparece acá:', a1: 'Escríbeme y te la contesto personalmente ', email: 'info@emilserios.com' },
   ],
 
-  finalMsg: 'Mucho para muchos. Un regalo para el que quiera aprender esos conceptos técnicos que te ayudan a mejorar exponencialmente tu nivel de contrabajo, y poder disfrutar del sonido de tu instrumento. Así de simple. ¡Estudiemos juntos!',
+  finalMsgLead: 'Mucho para muchos.',
+  finalMsgRest: 'Un regalo para el que quiera aprender esos conceptos técnicos que te ayudan a mejorar exponencialmente tu nivel de contrabajo, y poder disfrutar del sonido de tu instrumento. Así de simple. ¡Estudiemos juntos!',
   newsPre: '¿Aún no estás suscrito al newsletter?',
   newsLink: 'Acá te suscribes',
 
@@ -357,6 +363,7 @@ const t = isEN ? {
 
   .body2 { margin-top: clamp(30px, 6vw, 44px); }
   .body2 p:last-child { margin-bottom: 0; }
+  .community { font-style: italic; text-align: center; }
 
   /* 5 · «¿Necesitas ayuda para llegar?» — centrada, protagónica */
   .needhelp { text-align: center; font-weight: 700; font-style: italic; font-size: clamp(1.3rem, 4vw, 1.7rem);
@@ -498,6 +505,8 @@ const t = isEN ? {
               line-height: 1.14; letter-spacing: -0.02em; margin: clamp(36px, 7vw, 52px) 0 0; text-wrap: balance;
               transition: color 0.4s ease; }
   .finalmsg:hover { color: var(--wood); }
+  .finalmsg__a, .finalmsg__b { display: block; }
+  .finalmsg__b { margin-top: 0.28em; }
 
   /* Referidos — texto suave centrado */
   .referral { margin-top: clamp(24px, 5vw, 34px); text-align: center; font-size: 0.94em; color: var(--soft); text-wrap: pretty; }
@@ -557,7 +566,9 @@ const t = isEN ? {
 
     <div class="body reveal">
       <p>{t.storyLead}</p>
-      {t.storyBody1.map((p) => (<p>{p}</p>))}
+      {t.storyBody1.map((p) => (
+        typeof p === 'string' ? <p>{p}</p> : <p><strong>{p.text}</strong></p>
+      ))}
     </div>
 
     <div class="disc reveal">
@@ -571,7 +582,9 @@ const t = isEN ? {
     </div>
 
     <div class="body2 reveal">
-      {t.storyBody2.map((p) => (<p>{p}</p>))}
+      {t.storyBody2.map((p) => (
+        typeof p === 'string' ? <p>{p}</p> : <p><strong>{p.text}</strong></p>
+      ))}
     </div>
 
     <p class="needhelp reveal">{t.needHelp}</p>
@@ -588,7 +601,7 @@ const t = isEN ? {
     </div>
 
     <div class="body2 reveal">
-      <p>{t.community}</p>
+      <p class="community">{t.community}</p>
     </div>
 
     <div class="plan reveal">
@@ -597,7 +610,7 @@ const t = isEN ? {
           <p class="pricecard__name">{t.title} <span class="echo">{t.titleEcho}</span></p>
           <p class="pricecard__plan">{t.priceLabel}</p>
           <p class="pricecard__price"><span class="num">{t.priceAmount}</span><span class="per">{t.pricePer}</span></p>
-          <p class="pricecard__note">{t.priceInBox}</p>
+          <p class="pricecard__note"><strong>{t.priceInBoxLead}</strong> {t.priceInBoxRest}</p>
         </div>
         <div class="pricecard__right">
           <ul class="pricecard__feat">{t.priceFeatures.map((f) => (<li>{f}</li>))}</ul>
@@ -612,6 +625,19 @@ const t = isEN ? {
         </div>
         <p class="pricecard__foot">{t.priceBelow}</p>
       </div>
+    </div>
+
+    <p class="finalmsg reveal">
+      <span class="finalmsg__a">{t.finalMsgLead}</span>
+      <span class="finalmsg__b">{t.finalMsgRest}</span>
+    </p>
+
+    <div class="cta reveal">
+      <a class="btn" href={t.payHref}>
+        <span class="btn__fill" aria-hidden="true"></span>
+        <span class="btn__label">{t.pay}</span>
+        <span class="btn__ar" aria-hidden="true">→</span>
+      </a>
     </div>
 
     <div class="pd reveal">
@@ -637,8 +663,6 @@ const t = isEN ? {
         <span class="btn__ar" aria-hidden="true">→</span>
       </a>
     </div>
-
-    <p class="finalmsg reveal">{t.finalMsg}</p>
 
     <div class="news reveal">
       <p class="news__pre">{t.newsPre}</p>
