@@ -4,9 +4,12 @@
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
 ## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
-> Rama: `claude/aula-sales-updates-pk2875`. Adrián irá pasando el detalle de cada punto;
-> por ahora solo queda **registrada la lista** (nada implementado todavía). Probable que
-> se modifique. Un cambio por rama/PR según el flujo con Adrián.
+> Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
+> viaja en el mismo PR de cada punto.
+> **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27) y puntos **3 + 4 + 12
+> (pestañas)** (PR #28). Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es
+> seguir con el **punto 11** (selector de destino del video en `/panel`) para que las pestañas
+> Concepto Base y Bonus Material dejen de ser maqueta y muestren contenido real de la BD.
 
 - [ ] **1. Corregir el copy de la página de ventas.** No se copió textual: la *estructura*
       está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
@@ -378,6 +381,11 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 **Todo mergeado a `main`.** No hay trabajo en vuelo. El siguiente cambio arranca de `main`
 fresco (`git fetch origin main` → rama nueva).
 
+Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
+aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
+semana con el foro adentro · Concepto Base · Bonus Material; las dos últimas son maquetas de
+diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11).
+
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
 **#16/#17/#18** rediseño fluido/pro de la carta (logo+foto reales, tarjeta de precio, botones con
@@ -385,7 +393,9 @@ relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitác
 **#20** ajuste del hero (foto equidistante, B&W→color al hover, drop shadow), **#21/#22** Stripe
 (checkout + webhook + portal, pago anónimo + enlace por email; URLs de retorno desde el dominio real),
 **#23** enlace "Entrar" en la carta para miembros que vuelven, **#24** bucle de pago arreglado +
-red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam en `/entrar`).
+red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam en `/entrar`),
+**#27** checklist 16 jul + saludo del aula sin nombre, **#28** pestañas del aula (semana+foro /
+Concepto Base / Bonus Material, maquetas).
 
 ### ⚠️ Lo más urgente para la próxima sesión
 El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el
