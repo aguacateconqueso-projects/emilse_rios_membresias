@@ -3,6 +3,49 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
+> Rama: `claude/aula-sales-updates-pk2875`. Adrián irá pasando el detalle de cada punto;
+> por ahora solo queda **registrada la lista** (nada implementado todavía). Probable que
+> se modifique. Un cambio por rama/PR según el flujo con Adrián.
+
+- [ ] **1. Corregir el copy de la página de ventas.** No se copió textual: la *estructura*
+      está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
+      pasará el texto correcto más tarde para reemplazar frase por frase (sin tocar la
+      estructura).
+- [ ] **2. Quitar la personalización del nombre en `/aula`.** El saludo "Hola, Adrián M ·"
+      no va; dejar solo "Tu ejercicio de esta semana".
+- [ ] **3. Nuevo modelo de contenido: "Concepto/Ejercicio Base" mensual.** La dinámica de Emi
+      cambia: 5 videos mensuales (10 con ES/EN); **1 de ellos es el "Video/Ejercicio Base" (¿Core
+      Exercise?)** que muestra las bases de los ejercicios del mes. Se resuelve con el sistema de
+      pestañas del punto 12 (el Concepto Base es una pestaña propia). *(Fusionado con el punto 12.)*
+- [ ] **4. Apartado "Bonus Material" en el aula.** Pestaña aparte o sección abajo (por definir
+      cuál funciona mejor). Ahí irá, por ejemplo, el **video de bienvenida** que ya grabó Emi
+      (uno en inglés y otro en español).
+- [ ] **5. Unificar el diseño de la página de ventas con aula y panel** (estilo de botones, etc.).
+      *En veremos — Adrián lo confirma con Emi.*
+- [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
+      de fin, no borrarlos; hay 3 de prueba ocupando espacio. Agregar borrado real.
+- [ ] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** Se **elimina el
+      enlace mágico** por completo; el acceso será **solo con usuario y contraseña**. Sumar
+      opción de **"mantener sesión iniciada"** (recordar sesión). Toca login (`/entrar`), alta,
+      y el mail de bienvenida (punto 8).
+- [ ] **8. Mail de bienvenida con link para entrar al aula.** Al alta/bienvenida, enviar un
+      correo con el enlace de acceso, que apunta a **`/entrar`**.
+- [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
+      spam/promociones (lo que ya decimos) y **sumar el link a `/entrar`**.
+- [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo
+      se programa; agregar publicación inmediata en `/panel`.
+- [ ] **11. Selector de destino del video en `/panel`.** Al publicar, elegir a dónde va el video:
+      **Ejercicio de la semana**, **Bonus Material** o **Ejercicio/Concepto Base**. Requiere
+      **diseñar las dos subpáginas** (Bonus Material y Concepto Base) — se conecta con los
+      puntos 3 y 4.
+- [ ] **12. Sistema de pestañas del aula + tour paso a paso.** Estructura final en **pestañas**:
+      **Ejercicio de la semana**, **Bonus Material** y **Concepto Base**. **El foro NO es una
+      pestaña**: vive dentro del "Ejercicio de la semana" — el miembro ve el video y, haciendo
+      scroll down, deja su consulta ahí mismo. Sumar un **tour/onboarding guiado** que resalte
+      cada parte al entrar por primera vez. *(Absorbe la propuesta original del punto 3.)*
+
+
 ## Qué es
 Membresía de pago recurrente para contrabajistas de Emilse Rios, **separada** del
 WordPress + Tutor LMS actual (eso no se toca). App propia. Bilingüe ES/EN.
