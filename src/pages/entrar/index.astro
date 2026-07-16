@@ -239,8 +239,11 @@
 
   // Crear / restablecer contraseña: envía un correo con un enlace de un solo uso a
   // /nueva-clave/. Sirve para la PRIMERA vez (cuenta creada al pagar, sin clave) y
-  // para recuperar el acceso. Por privacidad, Supabase responde igual exista o no
-  // el correo, así que mostramos el mismo aviso siempre.
+  // para recuperar el acceso. Por privacidad, respondemos igual exista o no el
+  // correo, así que mostramos el mismo aviso siempre. Pasa por el endpoint del
+  // servidor (no resetPasswordForEmail directo) para que el correo salga por
+  // Resend con el copy bilingüe de Emi, igual que la bienvenida automática, en
+  // vez de la plantilla nativa de Supabase.
   async function sendReset() {
     const mail = email.value.trim();
     msgOk.hidden = true; msgErr.hidden = true;
@@ -250,16 +253,14 @@
     }
     resetLink.textContent = 'Enviando…';
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(mail, {
-        redirectTo: window.location.origin + '/nueva-clave/',
+      const res = await fetch('/api/send-access-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: mail, lang: 'es' }),
       });
-      if (error) {
-        msgErr.textContent = 'No se pudo enviar el correo: ' + describeError(error);
-        msgErr.hidden = false;
-      } else {
-        msgOk.textContent = 'Listo. Te enviamos un correo con un enlace para crear tu contraseña. Si no lo ves en unos minutos, mira en spam o promociones (a veces llega ahí).';
-        msgOk.hidden = false;
-      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      msgOk.textContent = 'Listo. Te enviamos un correo con un enlace para crear tu contraseña. Si no lo ves en unos minutos, mira en spam o promociones (a veces llega ahí).';
+      msgOk.hidden = false;
     } catch (err) {
       msgErr.textContent = 'No se pudo enviar el correo: ' + describeError(err);
       msgErr.hidden = false;

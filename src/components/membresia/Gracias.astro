@@ -126,8 +126,6 @@ const t = isEN ? {
   </div>
 
 <script>
-  import { supabase, isSupabaseConfigured } from '../../lib/supabase';
-
   const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
   const EN = pageLang === 'en';
   const $ = (id: string) => document.getElementById(id) as HTMLElement;
@@ -144,17 +142,7 @@ const t = isEN ? {
     submit: EN ? 'Send me my access' : 'Enviarme mi acceso',
     sent: EN ? 'Done! Check your inbox — it should arrive in a moment.' : '¡Listo! Revisa tu bandeja, llega en un momento.',
     sendError: EN ? 'Could not send it: ' : 'No se pudo enviar: ',
-    noConfig: EN
-      ? 'Supabase is not configured (PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are missing).'
-      : 'Falta configurar el archivo .env (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY).',
-    redirectTo: EN ? '/nueva-clave/en/' : '/nueva-clave/',
   };
-
-  if (!isSupabaseConfigured) {
-    msgErr.textContent = T.noConfig;
-    msgErr.hidden = false;
-    btn.disabled = true;
-  }
 
   function describeError(err: any): string {
     if (!err) return 'error desconocido';
@@ -172,7 +160,10 @@ const t = isEN ? {
 
   // Mismo flujo que /entrar → «Crea o restablece tu contraseña»: al pagar la
   // cuenta ya existe (creada por el webhook) pero sin clave, así que este enlace
-  // de un solo uso sirve igual para fijarla por primera vez.
+  // de un solo uso sirve igual para fijarla por primera vez. Pasa por el
+  // endpoint del servidor (no resetPasswordForEmail directo) para que el correo
+  // salga por Resend con el copy bilingüe de Emi, igual que la bienvenida
+  // automática, en vez de la plantilla nativa de Supabase.
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     msgOk.hidden = true; msgErr.hidden = true;
@@ -180,16 +171,14 @@ const t = isEN ? {
     if (!mail) return;
     btn.disabled = true; setBtnLabel(T.sending);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(mail, {
-        redirectTo: window.location.origin + T.redirectTo,
+      const res = await fetch('/api/send-access-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: mail, lang: pageLang }),
       });
-      if (error) {
-        msgErr.textContent = T.sendError + describeError(error);
-        msgErr.hidden = false;
-      } else {
-        msgOk.textContent = T.sent;
-        msgOk.hidden = false;
-      }
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      msgOk.textContent = T.sent;
+      msgOk.hidden = false;
     } catch (err) {
       msgErr.textContent = T.sendError + describeError(err);
       msgErr.hidden = false;
