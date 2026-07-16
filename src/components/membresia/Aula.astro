@@ -15,7 +15,7 @@ const t = isEN ? {
   metaTitle: 'Classroom — Let’s Study Together · Emilse Rios',
   brandSmall: 'Classroom', account: 'My account',
   home: '/aula/en/',
-  eyebrow: 'Hi, María · Your exercise this week',
+  eyebrow: 'Your exercise this week',
   title: 'Controlled détaché: weight and contact point',
   meta: 'Week 24 · June 12–19', tag: 'Available until Thursday',
   videoEs: 'Spanish', videoEn: 'English', nowPlaying: 'Now playing',
@@ -48,7 +48,7 @@ const t = isEN ? {
   metaTitle: 'Aula — Estudiemos Juntos · Emilse Rios',
   brandSmall: 'Aula', account: 'Mi cuenta',
   home: '/aula/',
-  eyebrow: 'Hola, María · Tu ejercicio de esta semana',
+  eyebrow: 'Tu ejercicio de esta semana',
   title: 'Détaché controlado: peso y punto de contacto',
   meta: 'Semana 24 · del 12 al 19 de junio', tag: 'Disponible hasta el jueves',
   videoEs: 'Español', videoEn: 'English', nowPlaying: 'Reproduciendo',
@@ -345,7 +345,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     locked: EN
       ? 'No exercise available. Your subscription may be inactive.'
       : 'No hay ejercicio disponible. Puede que tu suscripción no esté activa.',
-    greeting: (n) => EN ? `Hi, ${n} · Your exercise this week` : `Hola, ${n} · Tu ejercicio de esta semana`,
+    greeting: EN ? 'Your exercise this week' : 'Tu ejercicio de esta semana',
     doneTxt: EN ? 'Mark as completed' : 'Marcar como completado',
     doneOk: EN ? '✓ Completed' : '✓ Completado',
     answerRole: EN ? 'Answer' : 'Respuesta',
@@ -457,8 +457,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 
     const { data: profile } = await supabase
       .from('profiles').select('full_name, email, role').eq('id', session.user.id).single();
-    const name = (profile && (profile.full_name || (profile.email || '').split('@')[0])) || '';
-    $('greeting').textContent = T.greeting(name);
+    $('greeting').textContent = T.greeting;
 
     // Solo Emi (admin) ve el enlace de regreso al panel. Los miembros no tienen
     // panel ni "cuenta": entran directo al aula y solo pueden salir.
