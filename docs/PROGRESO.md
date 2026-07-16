@@ -10,17 +10,59 @@
 > (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30), punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
 > `/nueva-clave/`, PR #31), punto **8** (el webhook envía el correo de bienvenida al pagar,
-> PR #32) y **8b** (correo de bienvenida **bilingüe ES/EN** por Resend + `/nueva-clave/en/`,
-> PR #33). **En este PR:** punto **9** — nueva **página de agradecimiento** bilingüe
-> (`/gracias/` + `/gracias/en/`) con el copy definitivo de Emi; el `success_url` del checkout
-> apunta ahí en vez de a `/entrar/?pago=ok`.
+> PR #32), **8b** (correo de bienvenida **bilingüe ES/EN** por Resend + `/nueva-clave/en/`,
+> PR #33) y punto **9** (página de agradecimiento bilingüe, PR #34). **En este PR:** punto
+> **1** — copy definitivo de la página de ventas (texto exacto que pasó Adrián), ver detalle
+> abajo.
 > Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
 > destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
 
-- [ ] **1. Corregir el copy de la página de ventas.** No se copió textual: la *estructura*
-      está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
-      pasará el texto correcto más tarde para reemplazar frase por frase (sin tocar la
-      estructura).
+- [x] **1. Corregir el copy de la página de ventas.** ✅ Hecho. Adrián pasó el texto exacto y
+      se reemplazó frase por frase en `Landing.astro` (ES, con la traducción EN actualizada en
+      paralelo para mantener paridad). No fue solo redactar: el texto nuevo trae cambios
+      **estructurales** de contenido (mismo sistema visual, sin tocar CSS):
+      - **Apertura** ("El problema no es que te falte tiempo **para estudiar**...").
+      - **"Descubrí 3 cosas"** en vez de 2: el tercer descubrimiento absorbe lo que antes era
+        el párrafo aparte sobre YouTube.
+      - **3 párrafos nuevos** que no existían en el copy anterior: "Esta es una membresía para
+        hacer lo justo...", "Cada jueves... yo borro el contenido anterior" y "¿Por qué haría
+        eso? Porque las bibliotecas abruman..." (van en el mismo bloque de texto corrido que
+        ya existía, sin nuevos componentes visuales).
+      - **Lista "para ti"**: baja de 7 a 6 puntos (se quitó "quieres pertenecer a una comunidad
+        con un reto semanal", que no estaba en el texto de Adrián).
+      - **Párrafo nuevo de comunidad** ("Los cursos se terminan, pero esta membresía siempre
+        está contigo...") entre la lista "para ti / no es para ti" y el cuadro de precio.
+      - **Cuadro de precio**: bullets bajan de 5 a 4 (reescritos); **fecha del precio de
+        fundador cambia de "1–10 de julio" a "16–23 de julio"** (ver ⚠️ abajo, afecta
+        `STRIPE_FOUNDER_UNTIL`); el texto de facturación de abajo del cuadro se reescribió
+        (ya no menciona el precio de $77 porque el texto de Adrián no lo menciona). El texto
+        chico "Cancela cuando quieras" bajo el botón se dejó igual (decisión de Adrián, aunque
+        repite parte de la idea del párrafo de abajo).
+      - **P.D.**: se agregó la frase de cierre "Si alguna vez has sentido que no sabes por
+        dónde comenzar o qué estudiar, entonces también es para ti."
+      - **FAQ**: pasa de 8 a 9 preguntas (se agregó "Tengo una pregunta que no aparece acá" con
+        el correo `info@emilserios.com` como link `mailto:` real — cambio mínimo de plantilla
+        para soportar el link dentro de la respuesta).
+      - **Mensaje final**: se amplió con "Mucho para muchos. Un regalo para el que quiera
+        aprender esos conceptos técnicos..." antes de "¡Estudiemos juntos!".
+      - **Se eliminó la línea de "referidos"** ("¿Conoces a alguien que necesita un
+        impulso...?"): no estaba en el texto real de Emi, era una línea inventada de una sesión
+        anterior (ver nota en el historial de "Rediseño carta editorial").
+      - **El botón del newsletter se dejó donde estaba** (al final, antes del footer): el texto
+        de Adrián no menciona el newsletter, así que no se tocó su posición ni su link.
+      - **Botones**: se mantuvo la estructura de botones tal cual estaba (uno dentro del cuadro
+        de precio + uno standalone después del FAQ) — decisión explícita de Adrián de no
+        agregar ni quitar botones, aunque el texto pegado mostraba un botón extra antes del P.D.
+      - **Erratas**: se corrigieron solo tildes/espacios evidentes del texto pegado (p. ej.
+        "estés donde estés", "está disponible", "en qué horarios", "escríbeme", "por dónde
+        comenzar", "qué estudiar", "has sentido" en vez de "haz sentido") — decisión explícita
+        de Adrián, sin tocar ninguna palabra ni el orden del texto.
+      - Verificado con `npm run build` + volcado de texto renderizado (ES y EN) comparado
+        línea por línea contra el texto que pasó Adrián.
+      ⚠️ **Pendiente de infraestructura (no es este PR):** el precio de fundador ahora corre
+      **16–23 de julio** en el copy; hay que confirmar que `STRIPE_FOUNDER_UNTIL` en Vercel (y
+      los Price IDs de Stripe) reflejen esta ventana, si no el copy y el cobro real quedarían
+      desalineados.
 - [x] **2. Quitar la personalización del nombre en `/aula`.** ✅ Hecho. El saludo ya no dice
       "Hola, {nombre} ·"; ahora es solo "Tu ejercicio de esta semana" / "Your exercise this week".
       Se quitó el nombre del `eyebrow` estático (ES/EN) y del `greeting` de JS en `Aula.astro`
@@ -460,8 +502,9 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**En vuelo:** rama `claude/post-payment-screen-copy-kn5ozx` (punto 9, página de agradecimiento
-del pago), arrancada desde `main` ya al día (incluye hasta PR #33). Falta abrir/mergear su PR.
+**En vuelo:** rama `claude/sales-page-update-gk8ldr` (punto 1, copy exacto de la página de
+ventas), arrancada desde `main` ya al día (incluye hasta PR #34, mergeado). Falta abrir/mergear
+su PR.
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
@@ -469,7 +512,9 @@ semana con el foro adentro · Concepto Base · Bonus Material; las dos últimas 
 diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11), **#30** identidad
 visual de la carta en aula/panel/entrar (punto 5), **#31** ingreso con correo + contraseña
 (punto 7, `/nueva-clave/`), **#32** correo de bienvenida automático al pagar (punto 8), **#33**
-correo de bienvenida bilingüe por Resend (punto 8b).
+correo de bienvenida bilingüe por Resend (punto 8b), **#34** página de agradecimiento bilingüe
+(punto 9). **En curso:** punto **1**, copy exacto de la página de ventas (texto de Adrián, ver
+detalle arriba).
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
