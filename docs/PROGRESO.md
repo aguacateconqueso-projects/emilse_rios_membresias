@@ -7,9 +7,12 @@
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
 > viaja en el mismo PR de cada punto.
 > **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27) y puntos **3 + 4 + 12
-> (pestañas)** (PR #28). Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es
-> seguir con el **punto 11** (selector de destino del video en `/panel`) para que las pestañas
-> Concepto Base y Bonus Material dejen de ser maqueta y muestren contenido real de la BD.
+> (pestañas)** (PR #28). **En este PR:** punto **5** — se llevó la identidad visual de la carta
+> de ventas al **aula, panel y `/entrar`** (capa compartida `membresia-ui.css/.js`: crema+tinta
+> cálida, logo, botón editorial con relleno desde el cursor + notas + cursor de clave de fa).
+> Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es seguir con el **punto 11**
+> (selector de destino del video en `/panel`) para que las pestañas Concepto Base y Bonus
+> Material dejen de ser maqueta y muestren contenido real de la BD.
 
 - [ ] **1. Corregir el copy de la página de ventas.** No se copió textual: la *estructura*
       está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
@@ -26,8 +29,23 @@
 - [x] **4. Apartado "Bonus Material" en el aula.** ✅ Diseño hecho (maqueta). Es una **pestaña**
       con grilla de tarjetas (media + título + descripción + ES·EN). La primera tarjeta es el
       **video de bienvenida** de Emi. ⬜ Falta conectarlo a la BD (junto al punto 11).
-- [ ] **5. Unificar el diseño de la página de ventas con aula y panel** (estilo de botones, etc.).
-      *En veremos — Adrián lo confirma con Emi.*
+- [x] **5. Unificar el diseño de la página de ventas con aula y panel** (estilo de botones, etc.).
+      ✅ Hecho. Se creó una **capa de diseño compartida** (`public/membresia-ui.css` +
+      `public/membresia-ui.js`) con la identidad de la CARTA de ventas y se aplicó a **aula,
+      panel y `/entrar`**: lienzo **crema** (`#faf7f1`) + tinta cálida (`#17140f`) en vez de
+      blanco/negro puro; **una sola tipografía** (Hanken Grotesk — los `.display`/`h1..h5` que
+      usaban Space Grotesk ahora apuntan a Hanken como la carta); **logo caligráfico**
+      (`logo_emi_alpha.png`) reemplaza el «Emilse Rios» en texto de las barras/gate (con
+      fallback a texto si el PNG no carga); **botones editoriales cuadrados** con relleno de
+      tinta que crece **desde la posición del cursor** + notas musicales de colores al hover +
+      magnético (los mismos de la carta); **cursor de clave de fa** (con versión clara sobre
+      fondos oscuros: reproductor, respuestas de Emi, botón sólido); barras superiores en vidrio
+      esmerilado crema; y **fundido al entrar** (reveal) en los encabezados/tarjetas del aula.
+      El JS compartido "mejora" también los botones **creados dinámicamente** (tabla del panel,
+      foro) y re-inyecta el relleno cuando un botón cambia su texto en caliente
+      (`btn.textContent`), vía un MutationObserver. Verificado con `npm run build` y capturas
+      headless de `/entrar` y el gate del panel. Las páginas ya no definen su propia paleta ni
+      sus botones: los toman de la capa compartida para no volver a desalinearse.
 - [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
       de fin, no borrarlos; hay 3 de prueba ocupando espacio. Agregar borrado real.
 - [ ] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** Se **elimina el

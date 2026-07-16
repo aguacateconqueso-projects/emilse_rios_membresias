@@ -12,36 +12,28 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
 <link rel="stylesheet" href="/colors_and_type.css" />
+<link rel="stylesheet" href="/membresia-ui.css" />
 <style is:inline>
+  /* Paleta, cursor y botones vienen de /membresia-ui.css (identidad de la carta). */
   :root {
-    --ink:        #0c0c0c;
-    --paper:      #ffffff;
-    --color-text: #0c0c0c;
-    --color-border:    #e4e2dd;
-    --color-text-soft: #71706b;
-    --surface:    #faf9f7;
     --edge: clamp(20px, 5vw, 64px);
     --wrap: 1140px;
   }
-  body { background: var(--paper); color: var(--ink); overflow-x: hidden; }
-  ::selection { background: #0c0c0c; color: #fff; }
+  body { overflow-x: hidden; }
   a { color: inherit; }
   img { display: block; max-width: 100%; }
-  .display { font-family: var(--font-display); font-weight: var(--weight-medium);
-             letter-spacing: -0.035em; line-height: 0.95; text-wrap: balance; }
+  .display { font-family: var(--font-display); font-weight: var(--weight-semibold);
+             letter-spacing: -0.03em; line-height: 0.98; text-wrap: balance; }
   .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
          letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
   .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: var(--edge); }
 
   /* ---------- APP BAR ---------- */
-  .bar { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.86);
-         backdrop-filter: saturate(140%) blur(10px); border-bottom: 1px solid var(--color-border); }
-  .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 14px var(--edge);
+  .bar { position: sticky; top: 0; z-index: 50; background: rgba(250,247,241,0.82);
+         -webkit-backdrop-filter: saturate(140%) blur(12px); backdrop-filter: saturate(140%) blur(12px);
+         border-bottom: 1px solid var(--color-border); }
+  .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 12px var(--edge);
              display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
-  .brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
-           letter-spacing: -0.02em; text-decoration: none; display: inline-flex; align-items: baseline; gap: 0.5em; }
-  .brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
-                 letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
   .bar__right { display: flex; align-items: center; gap: clamp(12px, 2vw, 20px); }
   .acct { text-decoration: none; font-size: var(--text-sm); font-weight: var(--weight-semibold);
           color: var(--color-text-soft); transition: color var(--duration) var(--ease); white-space: nowrap; }
@@ -71,16 +63,7 @@
   .panel[hidden] { display: none; }
 
   /* ---------- BUTTONS ---------- */
-  .btn { appearance: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 9px;
-         padding: 12px 20px; border-radius: var(--radius-full); font-family: var(--font-display);
-         font-weight: var(--weight-medium); font-size: var(--text-base); letter-spacing: -0.01em;
-         text-decoration: none; border: 1.5px solid var(--ink); transition: all 280ms var(--ease); white-space: nowrap; }
-  .btn--solid { background: var(--ink); color: var(--paper); }
-  .btn--solid:hover { transform: translateY(-1px); }
-  .btn--ghost { background: transparent; color: var(--ink); }
-  .btn--ghost:hover { background: var(--ink); color: var(--paper); }
-  .btn--sm { padding: 8px 14px; font-size: var(--text-sm); border-width: 1px; }
-  .btn[disabled] { opacity: 0.55; cursor: default; transform: none; }
+  /* .btn / --solid / --ghost / --sm / [disabled]: definidos en /membresia-ui.css. */
 
   /* ---------- STATUS STRIP (esta semana) ---------- */
   .week { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); margin-bottom: var(--space-6); }
@@ -191,10 +174,7 @@
           display: grid; place-items: center; padding: var(--edge); }
   .gate[hidden] { display: none; }
   .gate__card { width: 100%; max-width: 380px; }
-  .gate__brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
-                 letter-spacing: -0.02em; display: inline-flex; align-items: baseline; gap: 0.5em; margin-bottom: var(--space-6); }
-  .gate__brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
-                       letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .gate__brand { margin-bottom: var(--space-6); }
   .gate h1 { font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-2xl);
              letter-spacing: -0.03em; line-height: 1; margin: var(--space-3) 0 var(--space-2); }
   .gate__sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); }
@@ -208,7 +188,12 @@
   <!-- ============ ACCESS GATE (auth real de Supabase) ============ -->
   <div class="gate" id="gate" aria-label="Acceso al panel">
     <div class="gate__card">
-      <span class="gate__brand">Emilse Rios <small>Panel</small></span>
+      <span class="brand-logo gate__brand">
+        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+             onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+        <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+        <small>Panel</small>
+      </span>
       <span class="ovl">Acceso privado</span>
       <h1 class="display" id="gateTitle">Verificando acceso…</h1>
       <p class="gate__sub" id="gateMsg">Un momento.</p>
@@ -222,7 +207,12 @@
   <!-- ============ APP BAR ============ -->
   <header class="bar">
     <div class="bar__in">
-      <a class="brand" href="/panel/">Emilse Rios <small>Panel</small></a>
+      <a class="brand-logo" href="/panel/">
+        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+             onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+        <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+        <small>Panel</small>
+      </a>
       <div class="bar__right">
         <span class="pill"><span class="dot"></span> Vista de Emi · Admin</span>
         <a class="acct" href="/aula/">Ver el aula →</a>
@@ -744,5 +734,6 @@
     await Promise.all([loadExercises(), loadMembers(), loadForum(session.user.id)]);
   })();
 </script>
+<script src="/membresia-ui.js" defer></script>
 </body>
 </html>

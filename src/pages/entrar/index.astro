@@ -11,24 +11,16 @@
 <meta name="robots" content="noindex" />
 <link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
 <link rel="stylesheet" href="/colors_and_type.css" />
+<link rel="stylesheet" href="/membresia-ui.css" />
 <style is:inline>
-  :root {
-    --ink: #0c0c0c; --paper: #ffffff; --color-text: #0c0c0c;
-    --color-border: #e4e2dd; --color-text-soft: #71706b; --surface: #faf9f7;
-    --edge: clamp(20px, 5vw, 64px);
-  }
-  body { background: var(--paper); color: var(--ink); min-height: 100svh;
-         display: grid; place-items: center; padding: var(--edge); }
-  ::selection { background: #0c0c0c; color: #fff; }
-  .display { font-family: var(--font-display); font-weight: var(--weight-medium);
-             letter-spacing: -0.035em; line-height: 1; }
+  /* Paleta, cursor y botones vienen de /membresia-ui.css (identidad de la carta). */
+  :root { --edge: clamp(20px, 5vw, 64px); }
+  body { min-height: 100svh; display: grid; place-items: center; padding: var(--edge); }
+  .display { font-family: var(--font-display); font-weight: var(--weight-semibold);
+             letter-spacing: -0.03em; line-height: 1; }
   .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
          letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
   .card { width: 100%; max-width: 400px; }
-  .brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
-           letter-spacing: -0.02em; display: inline-flex; align-items: baseline; gap: 0.5em; margin-bottom: var(--space-7); }
-  .brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
-                 letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
   h1 { font-size: var(--text-3xl); margin: var(--space-3) 0 var(--space-2); }
   .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.5; }
   .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
@@ -36,12 +28,7 @@
   .field input { font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
                  padding: 13px 15px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
   .field input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
-  .btn { appearance: none; cursor: pointer; width: 100%; display: inline-flex; align-items: center; justify-content: center;
-         gap: 9px; padding: 14px 22px; border-radius: var(--radius-full); font-family: var(--font-display);
-         font-weight: var(--weight-medium); font-size: var(--text-base); border: 1.5px solid var(--ink);
-         background: var(--ink); color: var(--paper); transition: transform 200ms var(--ease); }
-  .btn:hover { transform: translateY(-1px); }
-  .btn[disabled] { opacity: 0.55; cursor: default; transform: none; }
+  .brand-logo { margin-bottom: var(--space-7); }
   .msg { margin-top: var(--space-4); font-size: var(--text-base); line-height: 1.5; }
   .msg.ok { color: var(--ink); }
   .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
@@ -53,7 +40,12 @@
 </head>
 <body>
   <div class="card">
-    <span class="brand">Emilse Rios <small>Membresía</small></span>
+    <a class="brand-logo" href="/">
+      <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+           onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+      <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+      <small>Membresía</small>
+    </a>
     <span class="ovl">Acceso de miembros</span>
     <h1 class="display">Entrar</h1>
     <p class="sub">Escribe tu correo y te enviamos un enlace para entrar. Sin contraseñas.</p>
@@ -66,7 +58,10 @@
         <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
                spellcheck="false" placeholder="tucorreo@email.com" required />
       </div>
-      <button class="btn" type="submit" id="submitBtn">Enviar enlace</button>
+      <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
+        <span class="btn__label" id="submitLabel">Enviar enlace</span>
+        <span class="btn__ar" aria-hidden="true">→</span>
+      </button>
     </form>
 
     <p class="msg ok" id="msgOk" hidden></p>
@@ -82,6 +77,9 @@
   const form = document.getElementById('loginForm');
   const email = document.getElementById('email');
   const btn = document.getElementById('submitBtn');
+  const submitLabel = document.getElementById('submitLabel');
+  // Cambia solo el texto del botón sin borrar el relleno/flecha (spans inyectados).
+  const setBtnLabel = (txt) => { if (submitLabel) submitLabel.textContent = txt; else btn.textContent = txt; };
   const msgOk = document.getElementById('msgOk');
   const msgErr = document.getElementById('msgErr');
   const sessionNote = document.getElementById('sessionNote');
@@ -186,13 +184,13 @@
     catch (_) { console.error('[login] error:', err); }
     msgErr.textContent = 'No se pudo enviar el enlace: ' + describeError(err);
     msgErr.hidden = false;
-    btn.disabled = false; btn.textContent = 'Enviar enlace';
+    btn.disabled = false; setBtnLabel('Enviar enlace');
   }
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     msgOk.hidden = true; msgErr.hidden = true;
-    btn.disabled = true; btn.textContent = 'Enviando…';
+    btn.disabled = true; setBtnLabel('Enviando…');
     try {
       const { error } = await supabase.auth.signInWithOtp({
         email: email.value.trim(),
@@ -203,12 +201,13 @@
       } else {
         msgOk.textContent = 'Listo. Revisa tu correo y abre el enlace para entrar. Si no lo ves en unos minutos, mira en la carpeta de spam o promociones (a veces llega ahí).';
         msgOk.hidden = false;
-        btn.textContent = 'Enlace enviado';
+        setBtnLabel('Enlace enviado');
       }
     } catch (err) {
       showError(err);
     }
   });
 </script>
+<script src="/membresia-ui.js" defer></script>
 </body>
 </html>
