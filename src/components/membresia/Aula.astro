@@ -160,6 +160,12 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
           color: var(--color-text-soft); transition: color var(--duration) var(--ease); white-space: nowrap; }
   .acct:hover { color: var(--ink); }
 
+  /* Logo del aula: más presencia que el resto (override local de la capa
+     compartida). El texto "Aula" queda al lado en escritorio y se oculta en móvil. */
+  .bar .brand-logo__img { height: clamp(30px, 4.6vw, 44px); }
+  .bar .brand-logo { gap: 0.6em; }
+  @media (max-width: 560px) { .bar .brand-logo small { display: none; } }
+
   /* Menú de cuenta (engranaje): soporte / darse de baja. */
   .gearmenu { position: relative; display: flex; }
   .gearmenu__btn { appearance: none; background: transparent; border: 0; cursor: pointer;
@@ -219,6 +225,15 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   /* .btn / --solid / --ghost / --block: definidos en /membresia-ui.css (botón editorial). */
   /* Estado "completado": vuelve al reposo claro (texto tinta sobre papel). */
   .btn--solid.is-done { --fg: var(--ink); background: var(--paper); color: var(--ink); border-color: var(--ink); }
+
+  /* Ejercicio sin el cuadro lateral: descripción a ancho completo + botón de PDF. */
+  .ex--single { display: block; }
+  .ex__pdf { margin-top: clamp(20px, 3vh, 32px); }
+  /* Botón de PDF deshabilitado: gris, sin relleno animado, no clicable (cuando el
+     ejercicio no trae PDF). El .btn__fill que inyecta membresia-ui.js queda oculto. */
+  .btn.is-nopdf { color: var(--color-text-soft); border-color: var(--color-border);
+                  background: var(--surface); pointer-events: none; cursor: default; }
+  .btn.is-nopdf .btn__fill { display: none; }
 
   .forum { border-top: 1px solid var(--ink); padding: clamp(40px, 7vh, 72px) 0 clamp(56px, 9vh, 96px); }
   .forum__head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4);
@@ -291,6 +306,29 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   .bonus-card__desc { color: #3a3a38; font-size: var(--text-base); line-height: 1.5; }
   .bonus-card__langs { margin-top: 4px; font-size: var(--text-sm); font-weight: var(--weight-semibold);
                        color: var(--color-text-soft); letter-spacing: 0.08em; }
+  .bonus-card__media[role="button"] { cursor: pointer; }
+
+  /* --- Lightbox de video (Bonus Material) --- */
+  .vmodal { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center;
+            padding: clamp(16px, 4vw, 48px); }
+  .vmodal[hidden] { display: none; }
+  .vmodal__backdrop { position: absolute; inset: 0; background: rgba(12, 11, 9, 0.74);
+                      -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+                      animation: vmodal-fade 240ms var(--ease); }
+  .vmodal__dialog { position: relative; width: min(960px, 100%);
+                    animation: vmodal-pop 320ms var(--ease); }
+  .vmodal__frame { position: relative; aspect-ratio: 16/9; width: 100%; background: #0c0c0c;
+                   border-radius: var(--radius-lg); overflow: hidden;
+                   box-shadow: 0 30px 90px -24px rgba(0, 0, 0, 0.7); }
+  .vmodal__close { position: absolute; top: -18px; right: -18px; width: 42px; height: 42px;
+                   border-radius: 50%; border: 0; background: #faf7f1; color: var(--ink);
+                   font-size: 26px; line-height: 1; cursor: pointer; display: grid; place-items: center;
+                   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35); transition: transform 200ms var(--ease); }
+  .vmodal__close:hover { transform: scale(1.08); }
+  @media (max-width: 640px) { .vmodal__close { top: 8px; right: 8px; } }
+  @keyframes vmodal-fade { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes vmodal-pop { from { opacity: 0; transform: translateY(14px) scale(0.96); }
+                          to { opacity: 1; transform: none; } }
 
   @media (max-width: 860px) {
     .ex { grid-template-columns: 1fr; }
@@ -384,18 +422,13 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
           </div>
         </section>
 
-        <section class="ex">
+        <section class="ex ex--single">
           <div class="ex__desc" id="exDesc">
             {t.desc.map((p) => (<p set:html={p} />))}
           </div>
-          <aside class="ex__side">
-            <h3>{t.sideH}</h3>
-            <ul class="ex__points">
-              {t.points.map((p) => (<li><span class="tick">→</span> {p}</li>))}
-            </ul>
-            <a class="btn btn--ghost btn--block" id="pdfBtn" href="#">{t.pdf}</a>
-            <button class="btn btn--solid btn--block" id="doneBtn" type="button" data-done={t.done} data-doneok={t.doneOk}>{t.done}</button>
-          </aside>
+          <div class="ex__pdf">
+            <a class="btn btn--ghost" id="pdfBtn" href="#" data-pdflabel={t.pdf}>{t.pdf}</a>
+          </div>
         </section>
 
         <!-- El foro vive DENTRO del ejercicio de la semana (no es pestaña aparte). -->
@@ -405,7 +438,6 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
               <span class="ovl">{t.forumEyebrow}</span>
               <h2>{t.forumH2}</h2>
             </div>
-            <p class="forum__note">{t.forumNote}</p>
           </div>
 
           <form class="compose" id="composeForm">
@@ -459,7 +491,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
             <ul class="ex__points">
               {t.base.points.map((p) => (<li><span class="tick">→</span> {p}</li>))}
             </ul>
-            <a class="btn btn--ghost btn--block" id="basePdfBtn" href="#">{t.pdf}</a>
+            <a class="btn btn--ghost btn--block" id="basePdfBtn" href="#" data-pdflabel={t.pdf}>{t.pdf}</a>
           </aside>
         </section>
 
@@ -484,6 +516,17 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 
     </div>
   </main>
+
+  <!-- Lightbox de video (Bonus Material): el video del panel se ve pequeño dentro de
+       la tarjeta; al hacer clic se abre aquí a tamaño grande, con una X arriba a la
+       derecha para salir. Se cierra con la X, clic en el fondo o Escape. -->
+  <div class="vmodal" id="vmodal" role="dialog" aria-modal="true" aria-label={t.bonus.title} hidden>
+    <div class="vmodal__backdrop" data-vclose></div>
+    <div class="vmodal__dialog">
+      <button class="vmodal__close" id="vmodalClose" type="button" aria-label={isEN ? 'Close' : 'Cerrar'}>&times;</button>
+      <div class="vmodal__frame" id="vmodalFrame"></div>
+    </div>
+  </div>
 
 <!-- Datos reales: login + ejercicio vigente + foro, desde Supabase -->
 <script>
@@ -540,7 +583,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     doneTxt: EN ? 'Mark as completed' : 'Marcar como completado',
     doneOk: EN ? '✓ Completed' : '✓ Completado',
     answerRole: EN ? 'Answer' : 'Respuesta',
-    pending: EN ? 'Emilse answers on Friday.' : 'Emilse responde el viernes.',
+    pending: EN ? 'Emilse will reply soon.' : 'Emilse responderá pronto.',
     you: EN ? 'you' : 'tú',
     emptyForum: EN ? 'No questions yet. Be the first to ask.' : 'Aún no hay preguntas. Sé el primero en preguntar.',
     forumError: EN ? 'Couldn’t load the forum.' : 'No se pudo cargar el foro.',
@@ -552,6 +595,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     videoUnavailable: EN
       ? 'This video could not be loaded. Check the Vimeo link in the panel.'
       : 'No se pudo cargar el video. Revisa el enlace de Vimeo en el panel.',
+    noPdf: EN ? 'No PDF for this exercise' : 'Sin PDF para este ejercicio',
   };
 
   // Nombre a mostrar: "Nombre Inicial." (sin correo). Si no hay nombre, parte del correo.
@@ -627,14 +671,21 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     // Si no hay URL para ese idioma, se deja el placeholder tal cual.
   }
 
-  // Botón de PDF (Supabase Storage); se oculta si no hay archivo para ese idioma.
+  // Botón de PDF (Supabase Storage). Con archivo: enlace de descarga real. Sin
+  // archivo: botón gris deshabilitado "Sin PDF para este ejercicio" (no se oculta,
+  // así el miembro sabe que este ejercicio simplemente no trae PDF).
   function wirePdfButton(btn, path) {
     if (!btn) return;
+    const label = btn.dataset.pdflabel || btn.textContent;
     if (path) {
       const { data } = supabase.storage.from('pdfs').getPublicUrl(path);
-      btn.href = data.publicUrl; btn.target = '_blank'; btn.rel = 'noopener'; btn.style.display = '';
+      btn.href = data.publicUrl; btn.target = '_blank'; btn.rel = 'noopener';
+      btn.classList.remove('is-nopdf'); btn.removeAttribute('aria-disabled');
+      btn.textContent = label;
     } else {
-      btn.style.display = 'none';
+      btn.removeAttribute('href'); btn.removeAttribute('target'); btn.removeAttribute('rel');
+      btn.classList.add('is-nopdf'); btn.setAttribute('aria-disabled', 'true');
+      btn.textContent = T.noPdf;
     }
   }
 
@@ -688,6 +739,34 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     const p = document.createElement('p'); p.className = 'demo-note'; p.textContent = text; return p;
   }
 
+  // Lightbox de video (Bonus Material): abre el video en grande sobre un fondo
+  // oscuro con una X para salir. Reusa embedPlayer (mismo iframe de Vimeo).
+  let lastFocused = null;
+  function openVideoModal(url) {
+    const modal = $('vmodal'), frame = $('vmodalFrame');
+    if (!modal || !frame) return;
+    lastFocused = document.activeElement;
+    embedPlayer(frame, url);
+    modal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    const close = $('vmodalClose'); if (close) close.focus();
+  }
+  function closeVideoModal() {
+    const modal = $('vmodal'), frame = $('vmodalFrame');
+    if (!modal || modal.hidden) return;
+    modal.hidden = true;
+    if (frame) frame.replaceChildren();   // detiene la reproducción
+    document.body.style.overflow = '';
+    if (lastFocused && lastFocused.focus) lastFocused.focus();
+  }
+  (function wireVideoModal() {
+    const modal = $('vmodal'), close = $('vmodalClose');
+    if (!modal) return;
+    if (close) close.addEventListener('click', closeVideoModal);
+    modal.addEventListener('click', (e) => { if (e.target.hasAttribute('data-vclose')) closeVideoModal(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeVideoModal(); });
+  })();
+
   // Una tarjeta de Bonus Material: el video se carga recién al hacer clic (son
   // varias tarjetas en la grilla, no tiene sentido pintar N iframes de una).
   function renderBonusCard(b) {
@@ -699,9 +778,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     const url = EN ? b.vimeo_url_en : b.vimeo_url_es;
     if (vimeoEmbed(url)) {
       media.setAttribute('role', 'button'); media.tabIndex = 0; media.setAttribute('aria-label', 'Play');
-      const load = () => embedPlayer(media, url);
-      media.addEventListener('click', load);
-      media.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); load(); } });
+      const open = () => openVideoModal(url);
+      media.addEventListener('click', open);
+      media.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
     }
 
     const body = document.createElement('div'); body.className = 'bonus-card__body';
@@ -909,28 +988,6 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     });
 
     wirePdfButton($('pdfBtn'), EN ? ex.pdf_path_en : ex.pdf_path_es);
-
-    // Marcar completado (real)
-    const doneBtn = $('doneBtn');
-    let done = false;
-    const applyDone = () => {
-      doneBtn.classList.toggle('is-done', done);
-      doneBtn.textContent = done ? T.doneOk : T.doneTxt;
-    };
-    const { data: comp } = await supabase
-      .from('completions').select('exercise_id').eq('user_id', session.user.id).eq('exercise_id', ex.id).maybeSingle();
-    done = !!comp; applyDone();
-    if (doneBtn) doneBtn.addEventListener('click', async () => {
-      doneBtn.disabled = true;
-      if (!done) {
-        await supabase.from('completions').upsert({ user_id: session.user.id, exercise_id: ex.id });
-        done = true;
-      } else {
-        await supabase.from('completions').delete().eq('user_id', session.user.id).eq('exercise_id', ex.id);
-        done = false;
-      }
-      applyDone(); doneBtn.disabled = false;
-    });
 
     // ----- FORO real (questions + answers de Emi) -----
     const threadEl = $('thread');
