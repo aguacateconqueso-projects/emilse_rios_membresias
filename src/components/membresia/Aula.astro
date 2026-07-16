@@ -43,6 +43,31 @@ const t = isEN ? {
       a: null },
   ],
   noteHtml: '<b>No library.</b> On Thursday at 00:00 this exercise closes and the new one comes in. We work the present: only this week’s.',
+  tabs: { semana: 'This week’s exercise', base: 'Core concept', bonus: 'Bonus material' },
+  base: {
+    eyebrow: 'Concept of the month',
+    title: 'July · The foundation of legato',
+    meta: 'Active all month',
+    playerHint: 'Core concept',
+    desc: [
+      'Every month starts here. The <strong>core concept</strong> is the idea the four weekly exercises are built on — this month, a legato that stays even from the weight of the arm.',
+      'Watch this first, and come back to it whenever a weekly exercise feels disconnected. The weeks are variations; this is the ground they stand on.',
+    ],
+    sideH: 'What it covers',
+    points: ['The month’s guiding idea', 'How the weekly exercises connect', 'Watch before week 1'],
+    note: '<b>One per month.</b> The core concept changes each month; the weekly exercises lean on it.',
+  },
+  bonus: {
+    eyebrow: 'Extras',
+    title: 'Bonus material',
+    lead: 'Extra material Emilse adds over time — outside the weekly rhythm.',
+    items: [
+      { tag: 'Welcome', title: 'Welcome video', desc: 'Emilse welcomes you and explains how to get the most out of the membership.', langs: 'ES · EN' },
+      { tag: 'Setup', title: 'Tuning & setup', desc: 'A short guide to tuning and getting your instrument ready before you play.', langs: 'ES · EN' },
+      { tag: 'Warm-up', title: 'Warm-up routine', desc: 'A five-minute routine to loosen the arm before each session.', langs: 'ES · EN' },
+    ],
+  },
+  demoNote: 'Sample content — the real material gets connected later.',
 } : {
   htmlLang: 'es',
   metaTitle: 'Aula — Estudiemos Juntos · Emilse Rios',
@@ -76,6 +101,31 @@ const t = isEN ? {
       a: null },
   ],
   noteHtml: '<b>Sin biblioteca.</b> El jueves a las 00:00 este ejercicio se cierra y entra el nuevo. Trabajamos el presente: solo lo de esta semana.',
+  tabs: { semana: 'Ejercicio de la semana', base: 'Concepto Base', bonus: 'Bonus Material' },
+  base: {
+    eyebrow: 'Concepto del mes',
+    title: 'Julio · La base del legato',
+    meta: 'Vigente todo el mes',
+    playerHint: 'Concepto Base',
+    desc: [
+      'Cada mes empieza aquí. El <strong>Concepto Base</strong> es la idea sobre la que se construyen los cuatro ejercicios de la semana — este mes, un legato que se mantiene parejo desde el peso del brazo.',
+      'Míralo primero y vuelve a él cuando un ejercicio semanal se sienta desconectado. Las semanas son variaciones; esto es el piso sobre el que se apoyan.',
+    ],
+    sideH: 'De qué va',
+    points: ['La idea que guía el mes', 'Cómo se conectan los ejercicios semanales', 'Míralo antes de la semana 1'],
+    note: '<b>Uno por mes.</b> El Concepto Base cambia cada mes; los ejercicios de la semana se apoyan en él.',
+  },
+  bonus: {
+    eyebrow: 'Extras',
+    title: 'Bonus Material',
+    lead: 'Material adicional que Emilse va sumando — fuera del ritmo semanal.',
+    items: [
+      { tag: 'Bienvenida', title: 'Video de bienvenida', desc: 'Emi te da la bienvenida y explica cómo aprovechar al máximo la membresía.', langs: 'ES · EN' },
+      { tag: 'Montaje', title: 'Afinación y montaje', desc: 'Una guía corta para afinar y dejar el instrumento listo antes de tocar.', langs: 'ES · EN' },
+      { tag: 'Calentamiento', title: 'Rutina de calentamiento', desc: 'Una rutina de cinco minutos para soltar el brazo antes de cada sesión.', langs: 'ES · EN' },
+    ],
+  },
+  demoNote: 'Contenido de muestra — el material real se conecta luego.',
 };
 const altHref = isEN ? '/aula/' : '/aula/en/';
 ---
@@ -220,6 +270,38 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   .note-strip p { color: var(--color-text-soft); font-size: var(--text-base); max-width: 60ch; }
   .note-strip b { color: var(--ink); font-weight: var(--weight-semibold); }
 
+  /* --- Pestañas del aula: Ejercicio de la semana / Concepto Base / Bonus --- */
+  .tabs { display: flex; gap: clamp(16px, 3vw, 34px); border-bottom: 1px solid var(--color-border);
+          margin-top: clamp(18px, 3.5vh, 34px); overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { appearance: none; border: 0; background: transparent; cursor: pointer; white-space: nowrap;
+         font-family: var(--font-display); font-weight: var(--weight-medium);
+         font-size: clamp(1rem, 2.1vw, 1.2rem); letter-spacing: -0.015em; color: var(--color-text-soft);
+         padding: 4px 0 15px; position: relative; transition: color 220ms var(--ease); }
+  .tab:hover { color: var(--ink); }
+  .tab[aria-selected="true"] { color: var(--ink); }
+  .tab::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: var(--ink);
+                transform: scaleX(0); transform-origin: left; transition: transform 280ms var(--ease); }
+  .tab[aria-selected="true"]::after { transform: scaleX(1); }
+  .tabpanel[hidden] { display: none; }
+
+  .demo-note { margin-top: var(--space-4); display: inline-block; color: var(--color-text-soft);
+               font-size: var(--text-sm); border: 1px dashed var(--color-border); border-radius: var(--radius-full);
+               padding: 6px 14px; }
+
+  .bonus-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: clamp(18px, 2.4vw, 28px);
+                padding: clamp(8px, 2vh, 20px) 0 clamp(40px, 7vh, 80px); }
+  .bonus-card { border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; background: var(--paper);
+                display: flex; flex-direction: column; transition: transform 320ms var(--ease), box-shadow 320ms var(--ease); }
+  .bonus-card:hover { transform: translateY(-3px); box-shadow: 0 18px 40px -28px rgba(0,0,0,0.4); }
+  .bonus-card__media { position: relative; aspect-ratio: 16/9; background: #0c0c0c; display: grid; place-items: center; }
+  .bonus-card__media .player__play { width: 52px; }
+  .bonus-card__body { padding: clamp(16px, 1.8vw, 22px); display: flex; flex-direction: column; gap: 8px; }
+  .bonus-card__title { font-family: var(--font-display); font-weight: var(--weight-medium); font-size: var(--text-lg); letter-spacing: -0.02em; }
+  .bonus-card__desc { color: #3a3a38; font-size: var(--text-base); line-height: 1.5; }
+  .bonus-card__langs { margin-top: 4px; font-size: var(--text-sm); font-weight: var(--weight-semibold);
+                       color: var(--color-text-soft); letter-spacing: 0.08em; }
+
   @media (max-width: 860px) {
     .ex { grid-template-columns: 1fr; }
     .ex__side { position: static; }
@@ -255,43 +337,8 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   <main>
     <div class="wrap">
 
-      <section class="lead">
-        <div class="ovl" id="greeting">{t.eyebrow}</div>
-        <h1 class="lead__title display" id="exTitle">{t.title}</h1>
-        <div class="lead__meta">
-          <span id="exMeta">{t.meta}</span>
-          <span class="tag"><span class="blink"></span> {t.tag}</span>
-        </div>
-      </section>
-
-      <section aria-label="Video">
-        <div class="vtabs" role="tablist" aria-label="Video language">
-          <button class="vtab" type="button" aria-selected={(!isEN).toString()} data-vlang="es">{t.videoEs}</button>
-          <button class="vtab" type="button" aria-selected={isEN.toString()} data-vlang="en">{t.videoEn}</button>
-        </div>
-        <div class="player" id="player" role="button" tabindex="0" aria-label="Play">
-          <span class="player__hint">{t.playerHint}</span>
-          <span class="player__play" aria-hidden="true"></span>
-          <span class="player__label" id="vlabel">{t.playerLabel} · {isEN ? t.videoEn : t.videoEs}</span>
-        </div>
-      </section>
-
-      <section class="ex">
-        <div class="ex__desc" id="exDesc">
-          {t.desc.map((p) => (<p set:html={p} />))}
-        </div>
-        <aside class="ex__side">
-          <h3>{t.sideH}</h3>
-          <ul class="ex__points">
-            {t.points.map((p) => (<li><span class="tick">→</span> {p}</li>))}
-          </ul>
-          <a class="btn btn--ghost btn--block" id="pdfBtn" href="#">{t.pdf}</a>
-          <button class="btn btn--solid btn--block" id="doneBtn" type="button" data-done={t.done} data-doneok={t.doneOk}>{t.done}</button>
-        </aside>
-      </section>
-
-      <!-- Puerta de suscripción: la revela el script si el miembro no tiene una
-           suscripción activa (p. ej. llegó al aula sin haber pagado). -->
+      <!-- Puerta de suscripción: fuera de las pestañas. El script oculta pestañas +
+           paneles y muestra esto solo si el miembro no tiene suscripción activa. -->
       <section class="subgate" id="subGate" hidden>
         <h2 class="subgate__h">{isEN ? 'Complete your subscription' : 'Completa tu suscripción'}</h2>
         <p class="subgate__p">{isEN
@@ -302,33 +349,147 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
         </a>
       </section>
 
-      <section class="forum" id="foro">
-        <div class="forum__head">
-          <div>
-            <span class="ovl">{t.forumEyebrow}</span>
-            <h2>{t.forumH2}</h2>
+      <!-- Barra de pestañas del aula -->
+      <nav class="tabs" id="tabs" role="tablist" aria-label={isEN ? 'Classroom sections' : 'Secciones del aula'}>
+        <button class="tab" type="button" id="tab-semana" role="tab" aria-controls="panel-semana" aria-selected="true" data-tab="semana">{t.tabs.semana}</button>
+        <button class="tab" type="button" id="tab-base" role="tab" aria-controls="panel-base" aria-selected="false" tabindex="-1" data-tab="base">{t.tabs.base}</button>
+        <button class="tab" type="button" id="tab-bonus" role="tab" aria-controls="panel-bonus" aria-selected="false" tabindex="-1" data-tab="bonus">{t.tabs.bonus}</button>
+      </nav>
+
+      <!-- ===== Pestaña: Ejercicio de la semana (datos reales + foro adentro) ===== -->
+      <div class="tabpanel" id="panel-semana" role="tabpanel" aria-labelledby="tab-semana" tabindex="0">
+
+        <section class="lead">
+          <div class="ovl" id="greeting">{t.eyebrow}</div>
+          <h1 class="lead__title display" id="exTitle">{t.title}</h1>
+          <div class="lead__meta">
+            <span id="exMeta">{t.meta}</span>
+            <span class="tag"><span class="blink"></span> {t.tag}</span>
           </div>
-          <p class="forum__note">{t.forumNote}</p>
-        </div>
+        </section>
 
-        <form class="compose" id="composeForm">
-          <textarea id="composeText" placeholder={t.composePlaceholder} aria-label="Q"></textarea>
-          <div class="compose__row">
-            <span class="compose__hint">{t.composeHint}</span>
-            <button class="btn btn--solid" type="submit">{t.composeBtn}</button>
+        <section aria-label="Video">
+          <div class="vtabs" role="tablist" aria-label="Video language">
+            <button class="vtab" type="button" aria-selected={(!isEN).toString()} data-vlang="es">{t.videoEs}</button>
+            <button class="vtab" type="button" aria-selected={isEN.toString()} data-vlang="en">{t.videoEn}</button>
           </div>
-        </form>
+          <div class="player" id="player" role="button" tabindex="0" aria-label="Play">
+            <span class="player__hint">{t.playerHint}</span>
+            <span class="player__play" aria-hidden="true"></span>
+            <span class="player__label" id="vlabel">{t.playerLabel} · {isEN ? t.videoEn : t.videoEs}</span>
+          </div>
+        </section>
 
-        <ul class="thread" id="thread">
-          <li class="q" data-empty>
-            <p class="q__body">{isEN ? 'Loading questions…' : 'Cargando preguntas…'}</p>
-          </li>
-        </ul>
-      </section>
+        <section class="ex">
+          <div class="ex__desc" id="exDesc">
+            {t.desc.map((p) => (<p set:html={p} />))}
+          </div>
+          <aside class="ex__side">
+            <h3>{t.sideH}</h3>
+            <ul class="ex__points">
+              {t.points.map((p) => (<li><span class="tick">→</span> {p}</li>))}
+            </ul>
+            <a class="btn btn--ghost btn--block" id="pdfBtn" href="#">{t.pdf}</a>
+            <button class="btn btn--solid btn--block" id="doneBtn" type="button" data-done={t.done} data-doneok={t.doneOk}>{t.done}</button>
+          </aside>
+        </section>
 
-      <section class="note-strip">
-        <p set:html={t.noteHtml} />
-      </section>
+        <!-- El foro vive DENTRO del ejercicio de la semana (no es pestaña aparte). -->
+        <section class="forum" id="foro">
+          <div class="forum__head">
+            <div>
+              <span class="ovl">{t.forumEyebrow}</span>
+              <h2>{t.forumH2}</h2>
+            </div>
+            <p class="forum__note">{t.forumNote}</p>
+          </div>
+
+          <form class="compose" id="composeForm">
+            <textarea id="composeText" placeholder={t.composePlaceholder} aria-label="Q"></textarea>
+            <div class="compose__row">
+              <span class="compose__hint">{t.composeHint}</span>
+              <button class="btn btn--solid" type="submit">{t.composeBtn}</button>
+            </div>
+          </form>
+
+          <ul class="thread" id="thread">
+            <li class="q" data-empty>
+              <p class="q__body">{isEN ? 'Loading questions…' : 'Cargando preguntas…'}</p>
+            </li>
+          </ul>
+        </section>
+
+        <section class="note-strip">
+          <p set:html={t.noteHtml} />
+        </section>
+
+      </div>
+
+      <!-- ===== Pestaña: Concepto Base (MAQUETA — contenido de muestra) ===== -->
+      <div class="tabpanel" id="panel-base" role="tabpanel" aria-labelledby="tab-base" tabindex="0" hidden>
+        <p class="demo-note">{t.demoNote}</p>
+
+        <section class="lead">
+          <div class="ovl">{t.base.eyebrow}</div>
+          <h1 class="lead__title display">{t.base.title}</h1>
+          <div class="lead__meta"><span>{t.base.meta}</span></div>
+        </section>
+
+        <section aria-label="Video">
+          <div class="vtabs" role="tablist" aria-label="Video language">
+            <button class="vtab" type="button" aria-selected={(!isEN).toString()}>{t.videoEs}</button>
+            <button class="vtab" type="button" aria-selected={isEN.toString()}>{t.videoEn}</button>
+          </div>
+          <div class="player">
+            <span class="player__hint">{t.base.playerHint}</span>
+            <span class="player__play" aria-hidden="true"></span>
+            <span class="player__label">{t.playerLabel}</span>
+          </div>
+        </section>
+
+        <section class="ex">
+          <div class="ex__desc">
+            {t.base.desc.map((p) => (<p set:html={p} />))}
+          </div>
+          <aside class="ex__side">
+            <h3>{t.base.sideH}</h3>
+            <ul class="ex__points">
+              {t.base.points.map((p) => (<li><span class="tick">→</span> {p}</li>))}
+            </ul>
+          </aside>
+        </section>
+
+        <section class="note-strip">
+          <p set:html={t.base.note} />
+        </section>
+      </div>
+
+      <!-- ===== Pestaña: Bonus Material (MAQUETA — contenido de muestra) ===== -->
+      <div class="tabpanel" id="panel-bonus" role="tabpanel" aria-labelledby="tab-bonus" tabindex="0" hidden>
+        <p class="demo-note">{t.demoNote}</p>
+
+        <section class="lead">
+          <div class="ovl">{t.bonus.eyebrow}</div>
+          <h1 class="lead__title display">{t.bonus.title}</h1>
+          <div class="lead__meta"><span>{t.bonus.lead}</span></div>
+        </section>
+
+        <section class="bonus-grid" aria-label={t.bonus.title}>
+          {t.bonus.items.map((it) => (
+            <article class="bonus-card">
+              <div class="bonus-card__media">
+                <span class="player__play" aria-hidden="true"></span>
+              </div>
+              <div class="bonus-card__body">
+                <span class="ovl">{it.tag}</span>
+                <h3 class="bonus-card__title">{it.title}</h3>
+                <p class="bonus-card__desc">{it.desc}</p>
+                <span class="bonus-card__langs">{it.langs}</span>
+              </div>
+            </article>
+          ))}
+        </section>
+      </div>
 
     </div>
   </main>
@@ -340,6 +501,45 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
   const EN = pageLang === 'en';
   const $ = (id) => document.getElementById(id);
+
+  // --- Pestañas del aula (Ejercicio de la semana / Concepto Base / Bonus) ---
+  // Puro UI: funciona aunque el resto (datos reales) aún esté cargando.
+  (function tabsInit() {
+    const tablist = $('tabs');
+    if (!tablist) return;
+    const tabs = Array.from(tablist.querySelectorAll('.tab'));
+    const panelOf = (name) => $('panel-' + name);
+    function select(name, focus) {
+      tabs.forEach((tab) => {
+        const on = tab.dataset.tab === name;
+        tab.setAttribute('aria-selected', on ? 'true' : 'false');
+        tab.tabIndex = on ? 0 : -1;
+        const p = panelOf(tab.dataset.tab);
+        if (p) p.hidden = !on;
+        if (on && focus) tab.focus();
+      });
+      if (history.replaceState) history.replaceState(null, '', '#' + name);
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+    tabs.forEach((tab) => tab.addEventListener('click', () => select(tab.dataset.tab)));
+    tablist.addEventListener('keydown', (e) => {
+      const i = tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true');
+      if (e.key === 'ArrowRight') { e.preventDefault(); select(tabs[(i + 1) % tabs.length].dataset.tab, true); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); select(tabs[(i - 1 + tabs.length) % tabs.length].dataset.tab, true); }
+    });
+    // Deep-link por hash (#base / #bonus) al cargar.
+    const initial = (location.hash || '').replace('#', '');
+    if (initial && initial !== 'semana' && panelOf(initial)) select(initial);
+  })();
+
+  // Toggles ES/EN de las maquetas (Base/Bonus): solo visual, sin cargar video.
+  document.querySelectorAll('.tabpanel:not(#panel-semana) .vtabs').forEach((group) => {
+    group.querySelectorAll('.vtab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        group.querySelectorAll('.vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
+      });
+    });
+  });
 
   const T = {
     locked: EN
@@ -404,20 +604,20 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     return base + (ph ? '?h=' + ph[1] : '');
   }
 
+  // Con suscripción (o admin) pero sin ejercicio en ventana: la pestaña "Ejercicio
+  // de la semana" muestra el aviso, pero las demás pestañas siguen accesibles.
   function showLocked() {
     $('exTitle').textContent = T.locked;
     ['exDesc'].forEach((id) => { const el = $(id); if (el) el.innerHTML = ''; });
-    document.querySelectorAll('section[aria-label="Video"], .ex, .forum, .note-strip')
+    document.querySelectorAll('#panel-semana section[aria-label="Video"], #panel-semana .ex, #panel-semana .forum, #panel-semana .note-strip')
       .forEach((s) => { s.style.display = 'none'; });
   }
 
-  // Miembro sin suscripción activa: oculta el contenido y muestra la puerta de pago.
+  // Miembro sin suscripción activa: sin acceso a nada. Oculta pestañas + paneles y
+  // muestra solo la puerta de pago.
   function showSubscribeGate() {
-    document.querySelectorAll('section[aria-label="Video"], .ex, .forum, .note-strip')
-      .forEach((s) => { s.style.display = 'none'; });
-    $('exTitle').textContent = EN ? 'Complete your subscription' : 'Completa tu suscripción';
-    const d = $('exDesc'); if (d) d.innerHTML = '';
-    if ($('exMeta')) $('exMeta').textContent = '';
+    const tabs = $('tabs'); if (tabs) tabs.style.display = 'none';
+    document.querySelectorAll('.tabpanel').forEach((p) => { p.hidden = true; });
     const g = $('subGate'); if (g) g.hidden = false;
   }
 
@@ -589,9 +789,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       // Si no hay URL para ese idioma, se deja el placeholder tal cual.
     }
     renderVideo(pageLang);
-    document.querySelectorAll('.vtab').forEach((tab) => {
+    document.querySelectorAll('#panel-semana .vtab').forEach((tab) => {
       tab.addEventListener('click', () => {
-        document.querySelectorAll('.vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
+        document.querySelectorAll('#panel-semana .vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
         renderVideo(tab.dataset.vlang);
       });
     });
