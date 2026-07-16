@@ -15,7 +15,8 @@ const t = isEN ? {
   metaTitle: 'Thank you — Let’s Study Together · Emilse Rios',
   brandSmall: 'Membership',
   warn: 'Don’t close this tab',
-  h1: 'Thank you for joining. We’re almost in.',
+  h1a: 'Thank you for joining',
+  h1b: 'We’re almost in.',
   sub: 'Type the email you used for your payment and the link to the platform will arrive there. This tab will go away, but you can always come back to your email — it will stay saved there.',
   label: 'Your email', ph: 'youremail@email.com',
   submit: 'Send me my access', sending: 'Sending…',
@@ -33,7 +34,8 @@ const t = isEN ? {
   metaTitle: 'Gracias — Estudiemos Juntos · Emilse Rios',
   brandSmall: 'Membresía',
   warn: 'No cierres esta pestaña',
-  h1: 'Gracias por unirte. Ya casi estamos dentro.',
+  h1a: 'Gracias por unirte.',
+  h1b: 'Ya casi estamos dentro.',
   sub: 'Escribe el correo con el que realizaste tu pago y te llegará el link de acceso a la plataforma. Esta pestaña se va, pero a tu correo puedes volver siempre — ahí quedará guardado.',
   label: 'Tu correo', ph: 'tucorreo@email.com',
   submit: 'Enviarme mi acceso', sending: 'Enviando…',
@@ -70,9 +72,16 @@ const t = isEN ? {
                 margin: 0 auto var(--space-5); }
   .brand-logo__img { height: auto; width: clamp(190px, 58vw, 300px); }
   .brand-logo small { font-size: 13px; }
-  .warn { display: block; font-size: clamp(1.05rem, 3.6vw, 1.3rem); font-weight: var(--weight-bold, 700);
-          color: #e0242f; text-shadow: 0 0 10px rgba(224, 36, 47, 0.65), 0 0 26px rgba(224, 36, 47, 0.45);
-          margin: 0 0 var(--space-4); }
+  .warn { display: block; font-size: clamp(1.4rem, 5.2vw, 1.9rem); font-weight: var(--weight-bold, 700);
+          color: #ff2d3a;
+          text-shadow: 0 0 12px rgba(255, 45, 58, 0.85), 0 0 30px rgba(255, 45, 58, 0.65),
+                       0 0 60px rgba(255, 45, 58, 0.4);
+          margin: 0 0 var(--space-4); animation: warn-glow 1.8s ease-in-out infinite; }
+  @keyframes warn-glow {
+    0%, 100% { text-shadow: 0 0 12px rgba(255, 45, 58, 0.85), 0 0 30px rgba(255, 45, 58, 0.65), 0 0 60px rgba(255, 45, 58, 0.4); }
+    50% { text-shadow: 0 0 20px rgba(255, 45, 58, 1), 0 0 46px rgba(255, 45, 58, 0.85), 0 0 90px rgba(255, 45, 58, 0.55); }
+  }
+  @media (prefers-reduced-motion: reduce) { .warn { animation: none; } }
   h1 { font-size: var(--text-2xl); margin: 0; text-align: center; }
   .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.55; }
   .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
@@ -104,7 +113,7 @@ const t = isEN ? {
       </a>
 
       <span class="warn">{t.warn}</span>
-      <h1 class="display">{t.h1}</h1>
+      <h1 class="display">{t.h1a}<br />{t.h1b}</h1>
     </div>
 
     <p class="sub">{t.sub}</p>
