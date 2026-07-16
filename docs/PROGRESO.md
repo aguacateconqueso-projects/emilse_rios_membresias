@@ -10,10 +10,9 @@
 > (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30), punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
 > `/nueva-clave/`, PR #31), punto **8** (el webhook envía el correo de bienvenida al pagar,
-> PR #32) y **8b** (correo de bienvenida **bilingüe ES/EN** por Resend + `/nueva-clave/en/`,
-> PR #33). **En este PR:** punto **9** — nueva **página de agradecimiento** bilingüe
-> (`/gracias/` + `/gracias/en/`) con el copy definitivo de Emi; el `success_url` del checkout
-> apunta ahí en vez de a `/entrar/?pago=ok`.
+> PR #32), **8b** (correo de bienvenida **bilingüe ES/EN** por Resend + `/nueva-clave/en/`,
+> PR #33) y punto **9** (página de agradecimiento bilingüe `/gracias/` + `/gracias/en/`, el
+> `success_url` del checkout ya apunta ahí en vez de a `/entrar/?pago=ok`, PR #34).
 > Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
 > destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
 
@@ -460,8 +459,8 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**En vuelo:** rama `claude/post-payment-screen-copy-kn5ozx` (punto 9, página de agradecimiento
-del pago), arrancada desde `main` ya al día (incluye hasta PR #33). Falta abrir/mergear su PR.
+**Todo mergeado a `main`.** No hay trabajo en vuelo. El siguiente cambio arranca de `main`
+fresco (`git fetch origin main` → rama nueva).
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
@@ -469,7 +468,8 @@ semana con el foro adentro · Concepto Base · Bonus Material; las dos últimas 
 diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11), **#30** identidad
 visual de la carta en aula/panel/entrar (punto 5), **#31** ingreso con correo + contraseña
 (punto 7, `/nueva-clave/`), **#32** correo de bienvenida automático al pagar (punto 8), **#33**
-correo de bienvenida bilingüe por Resend (punto 8b).
+correo de bienvenida bilingüe por Resend (punto 8b), **#34** página de agradecimiento del pago
+(punto 9, `/gracias/` + `/gracias/en/`).
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
@@ -481,7 +481,8 @@ relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitác
 red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam en `/entrar`),
 **#27** checklist 16 jul + saludo del aula sin nombre, **#28** pestañas del aula (semana+foro /
 Concepto Base / Bonus Material, maquetas), **#30** identidad visual compartida, **#31** login
-correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bienvenida bilingüe.
+correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bienvenida bilingüe,
+**#34** página de agradecimiento del pago.
 
 ### ⚠️ Lo más urgente para la próxima sesión
 El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el
