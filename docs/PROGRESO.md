@@ -173,11 +173,30 @@
         salga el correo bilingüe con el copy de Emi; y agregar **`/nueva-clave/en/`** además de
         `/nueva-clave/` a los Redirect URLs de Supabase. Con Resend configurado ya NO hace falta
         tocar la plantilla de Supabase.
+      - **8c. Arreglo: seguía llegando el correo nativo de Supabase ("Reset your password")
+        con `RESEND_API_KEY` ya puesta en Vercel** (sesión 16 jul, rama
+        `claude/welcome-email-localization-ahs4tm`). Adrián confirmó la key configurada y
+        mergeada y aun así veía la plantilla default. Causa real: **existían dos botones más**
+        que pedían el enlace de acceso y **ninguno pasaba por Resend** —
+        `/gracias` → «Enviarme mi acceso» (la página a la que Stripe redirige al pagar,
+        `success_url`) y `/entrar` → «Crea o restablece tu contraseña» — ambos llamaban
+        `supabase.auth.resetPasswordForEmail(...)` **directo desde el navegador** (cliente
+        anon), que dispara SIEMPRE la plantilla nativa de Supabase sin importar si Resend está
+        configurado; solo el correo automático del webhook (alta nueva al pagar) pasaba por
+        Resend. Como `/gracias` es justo la página donde el comprador reclama su acceso después
+        de pagar, era el camino más probable para toparse con el correo nativo. Arreglo: se
+        extrajo la lógica de envío (Resend con el copy bilingüe → si falla o falta la key, cae a
+        Supabase) a un helper compartido `src/lib/welcome-email.ts` (`sendAccessEmail`) y se creó
+        `POST /api/send-access-email` (nuevo endpoint servidor, `{ email, lang }`, no revela si
+        el correo existe). El webhook, `/entrar` y `/gracias` ahora llaman al mismo camino, así
+        que las **tres vías mandan el mismo correo** con el copy de Emi por Resend. Verificado
+        con `npm run build`.
 - [x] **9. Rediseñar la página de agradecimiento del pago.** ✅ Hecho (CÓDIGO). Nueva **página
       dedicada y bilingüe** (componente `Gracias.astro`, rutas `/gracias/` y `/gracias/en/`) con el
       copy DEFINITIVO de Emi: eyebrow "No cierres esta pestaña", título "Gracias por unirte. Ya casi
       estamos dentro.", un campo de correo + botón **"Enviarme mi acceso"** (mismo flujo que «Crea o
-      restablece tu contraseña» de `/entrar`: `resetPasswordForEmail` → `/nueva-clave/` o
+      restablece tu contraseña» de `/entrar`, ahora vía `POST /api/send-access-email` — ver 8c —
+      con destino `/nueva-clave/` o
       `/nueva-clave/en/`), el aviso de revisar **spam/promociones** con el asunto exacto del correo
       («Tu acceso a la membresía»), **el link a `/entrar`** como acceso directo, y el cierre pidiendo
       no cerrar la pestaña + contacto a `info@emilserios.com`. `success_url` del checkout
@@ -526,10 +545,10 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Sin PR abierto ahora mismo.** El punto 1 quedó cerrado (PR #35 + PR #36, ambos mergeados a
-`main`). La rama local `claude/sales-page-update-gk8ldr` está reiniciada sobre `origin/main` al
-día (incluye hasta PR #36) — la próxima sesión debe arrancar una rama nueva desde ahí para el
-siguiente punto del checklist (ver "Próxima sesión" arriba: punto 11).
+**En vuelo:** rama `claude/welcome-email-localization-ahs4tm` (arreglo 8c: el correo de acceso de
+`/entrar` y `/gracias` ahora pasa por Resend igual que el automático — ver detalle arriba, PR #38),
+arrancada desde `main` ya al día (incluye hasta PR #37, mergeado — punto 1 cerrado con PR #35 +
+PR #36). Falta mergear el PR #38.
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
@@ -540,7 +559,8 @@ visual de la carta en aula/panel/entrar (punto 5), **#31** ingreso con correo + 
 correo de bienvenida bilingüe por Resend (punto 8b), **#34** página de agradecimiento bilingüe
 (punto 9), **#35** copy exacto de la página de ventas (punto 1, texto de Adrián) y **#36**
 ajustes de énfasis y orden sobre ese mismo copy (bold/itálica, mensaje final debajo del cuadro
-de precio + tercer botón). Con esto el punto **1 queda cerrado**.
+de precio + tercer botón). Con esto el punto **1 queda cerrado**. **En curso:** punto **8c**,
+arreglo de las vías de correo de acceso que no pasaban por Resend (ver detalle arriba, PR #38).
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
