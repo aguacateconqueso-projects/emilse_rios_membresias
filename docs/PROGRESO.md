@@ -26,6 +26,22 @@
       *En veremos — Adrián lo confirma con Emi.*
 - [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
       de fin, no borrarlos; hay 3 de prueba ocupando espacio. Agregar borrado real.
+- [ ] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** Se abandona (o se
+      suma a) el enlace mágico; ahora el acceso será con **usuario y contraseña**.
+- [ ] **8. Mail de bienvenida con link para entrar al aula.** Al alta/bienvenida, enviar un
+      correo con el enlace de acceso, que apunta a **`/entrar`**.
+- [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
+      spam/promociones (lo que ya decimos) y **sumar el link a `/entrar`**.
+- [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo
+      se programa; agregar publicación inmediata en `/panel`.
+- [ ] **11. Selector de destino del video en `/panel`.** Al publicar, elegir a dónde va el video:
+      **Ejercicio de la semana**, **Bonus Material** o **Ejercicio/Concepto Base**. Requiere
+      **diseñar las dos subpáginas** (Bonus Material y Concepto Base) — se conecta con los
+      puntos 3 y 4.
+- [ ] **12. Tour del aula paso a paso.** Onboarding guiado que resalte lo que mostramos; al
+      final la estructura serán **pestañas**: **Video de la semana**, **Foro**, **Bonus Material**
+      y **Concepto Base**. *(Ojo: esto redefine la propuesta del punto 3 — de "pestaña que abre/
+      cierra debajo del foro" a un sistema de pestañas para todo.)*
 
 
 ## Qué es
