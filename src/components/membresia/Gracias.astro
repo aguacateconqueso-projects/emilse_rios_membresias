@@ -65,12 +65,15 @@ const t = isEN ? {
   .display { font-family: var(--font-display); font-weight: var(--weight-semibold);
              letter-spacing: -0.03em; line-height: 1.15; }
   .card { width: 100%; max-width: 440px; }
-  .brand-logo { margin-bottom: var(--space-6); }
-  .warn { display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm);
-          font-weight: var(--weight-semibold); color: var(--accent); border: 1px solid var(--accent);
-          border-radius: var(--radius-full); padding: 7px 16px; margin-bottom: var(--space-4); }
-  .warn::before { content: '●'; font-size: 0.55em; }
-  h1 { font-size: var(--text-2xl); margin: 0 0 var(--space-3); }
+  .header { text-align: center; margin: 0 0 var(--space-6); }
+  .brand-logo { display: flex; flex-direction: column; align-items: center; gap: 8px;
+                margin: 0 auto var(--space-5); }
+  .brand-logo__img { height: auto; width: clamp(190px, 58vw, 300px); }
+  .brand-logo small { font-size: 13px; }
+  .warn { display: block; font-size: clamp(1.05rem, 3.6vw, 1.3rem); font-weight: var(--weight-bold, 700);
+          color: #e0242f; text-shadow: 0 0 10px rgba(224, 36, 47, 0.65), 0 0 26px rgba(224, 36, 47, 0.45);
+          margin: 0 0 var(--space-4); }
+  h1 { font-size: var(--text-2xl); margin: 0; text-align: center; }
   .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.55; }
   .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
   .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
@@ -92,15 +95,18 @@ const t = isEN ? {
 </head>
 <body data-page-lang={lang}>
   <div class="card">
-    <a class="brand-logo" href="/">
-      <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
-           onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
-      <span class="brand-logo__fallback" hidden>Emilse Rios</span>
-      <small>{t.brandSmall}</small>
-    </a>
+    <div class="header">
+      <a class="brand-logo" href="/">
+        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+             onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+        <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+        <small>{t.brandSmall}</small>
+      </a>
 
-    <span class="warn">{t.warn}</span>
-    <h1 class="display">{t.h1}</h1>
+      <span class="warn">{t.warn}</span>
+      <h1 class="display">{t.h1}</h1>
+    </div>
+
     <p class="sub">{t.sub}</p>
 
     <form id="accessForm">
