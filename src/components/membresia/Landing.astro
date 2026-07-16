@@ -114,6 +114,7 @@ const t = isEN ? {
   footPrivacy: 'Privacy policy', footTerms: 'Terms',
   footLegal: '© 2026 Emilse Rios',
   enter: 'Log in',
+  more: 'More options', support: 'Support', unsubscribe: 'Cancel subscription',
 } : {
   htmlLang: 'es',
   metaTitle: 'Estudiemos Juntos — Membresía de Emilse Rios',
@@ -208,6 +209,7 @@ const t = isEN ? {
   footPrivacy: 'Política de privacidad', footTerms: 'Términos',
   footLegal: '© 2026 Emilse Rios',
   enter: 'Entrar',
+  more: 'Más opciones', support: 'Soporte', unsubscribe: 'Darse de baja',
 };
 ---
 <!DOCTYPE html>
@@ -302,6 +304,26 @@ const t = isEN ? {
   .langpill__enter { color: var(--ink) !important; }
   .langpill__enter:hover { background: rgba(23, 20, 15, 0.06); }
   .langpill a[aria-current="true"] { color: var(--ink); background: rgba(23, 20, 15, 0.06); }
+
+  /* Menú "más opciones" (soporte / darse de baja) — mismo engranaje de siempre,
+     dentro de la píldora de idioma. Independiente del portal de Stripe dentro
+     del aula (ese requiere sesión); este es un acceso público, sirve incluso
+     si alguien no puede entrar a su cuenta. */
+  .langpill__more { position: relative; display: flex; }
+  .langpill__gear { appearance: none; background: transparent; border: 0; cursor: pointer;
+                     color: var(--soft); font-size: 0.95rem; line-height: 1; padding: 6px 10px;
+                     border-radius: 999px; transition: color 200ms ease, background 200ms ease; }
+  .langpill__gear:hover, .langpill__gear[aria-expanded="true"] { color: var(--ink); background: rgba(23, 20, 15, 0.06); }
+  .langpill__dropdown { position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+                         display: flex; flex-direction: column; min-width: 200px;
+                         background: rgba(250, 247, 241, 0.96);
+                         -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
+                         border: 1px solid rgba(23, 20, 15, 0.10); border-radius: 14px; padding: 6px;
+                         box-shadow: 0 10px 30px rgba(23, 20, 15, 0.14); }
+  .langpill__dropdown[hidden] { display: none; }
+  .langpill__dropdown a { text-decoration: none; color: var(--ink); font-size: 0.86rem; font-weight: 600;
+                           letter-spacing: 0.01em; padding: 10px 12px; border-radius: 9px; text-align: left; }
+  .langpill__dropdown a:hover { background: rgba(23, 20, 15, 0.06); }
 
   /* Fundido del texto al cambiar de idioma */
   .page.is-leaving { opacity: 0; }
@@ -543,6 +565,14 @@ const t = isEN ? {
     <a href="/en/" aria-current={isEN.toString()} data-lang-switch>EN</a>
     <span class="langpill__sep" aria-hidden="true"></span>
     <a class="langpill__enter" href="/entrar/">{t.enter}</a>
+    <span class="langpill__sep" aria-hidden="true"></span>
+    <div class="langpill__more">
+      <button type="button" class="langpill__gear" id="moreBtn" aria-haspopup="true" aria-expanded="false" aria-label={t.more}>⚙</button>
+      <div class="langpill__dropdown" id="moreMenu" role="menu" hidden>
+        <a role="menuitem" href="mailto:info@emilserios.com">{t.support}</a>
+        <a role="menuitem" href="https://billing.stripe.com/p/login/bJeaEX6V7dRDaUP8Zb73G00" target="_blank" rel="noopener">{t.unsubscribe}</a>
+      </div>
+    </div>
   </nav>
 
   <main class="page">
@@ -752,6 +782,24 @@ const t = isEN ? {
         btn.addEventListener('pointerleave', function () { if (timer) { clearInterval(timer); timer = null; } });
       });
     }
+  })();
+</script>
+<script is:inline>
+  // Menú "más opciones" (soporte / darse de baja) de la píldora de idioma.
+  (function () {
+    var btn = document.getElementById('moreBtn');
+    var menu = document.getElementById('moreMenu');
+    if (!btn || !menu) return;
+    function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+    function open() { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (menu.hidden) open(); else close();
+    });
+    document.addEventListener('click', function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) close();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   })();
 </script>
 <script is:inline>
