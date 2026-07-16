@@ -1,8 +1,8 @@
 import type { APIRoute } from 'astro';
 import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { stripe } from '../../lib/stripe';
-import { supabaseAdmin } from '../../lib/supabase-admin';
+import { stripe, siteOrigin } from '../../lib/stripe';
+import { supabaseAdmin, sendPasswordSetupEmail } from '../../lib/supabase-admin';
 import { writeSubscriptionRow } from '../../lib/stripe-sync';
 
 // Webhook de Stripe (función serverless). Escucha los eventos y mantiene la tabla
@@ -26,6 +26,9 @@ export const POST: APIRoute = async ({ request }) => {
     return new Response('Firma inválida: ' + (err instanceof Error ? err.message : String(err)), { status: 400 });
   }
 
+  // Base para el enlace del correo de bienvenida (→ /nueva-clave/).
+  const origin = siteOrigin(request);
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -33,14 +36,14 @@ export const POST: APIRoute = async ({ request }) => {
         if (session.mode !== 'subscription' || !session.subscription) break;
         const sub = await stripe.subscriptions.retrieve(session.subscription as string);
         const email = session.customer_details?.email || session.customer_email || null;
-        await upsertSub(admin, sub, { email });
+        await upsertSub(admin, sub, { email }, origin);
         break;
       }
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
       case 'customer.subscription.deleted': {
         const sub = event.data.object as Stripe.Subscription;
-        await upsertSub(admin, sub, { userId: sub.metadata?.supabase_user_id });
+        await upsertSub(admin, sub, { userId: sub.metadata?.supabase_user_id }, origin);
         break;
       }
       case 'invoice.paid':
@@ -49,7 +52,7 @@ export const POST: APIRoute = async ({ request }) => {
         const subId = (invoice as any).subscription as string | null;
         if (subId) {
           const sub = await stripe.subscriptions.retrieve(subId);
-          await upsertSub(admin, sub, { userId: sub.metadata?.supabase_user_id });
+          await upsertSub(admin, sub, { userId: sub.metadata?.supabase_user_id }, origin);
         }
         break;
       }
@@ -69,7 +72,8 @@ export const POST: APIRoute = async ({ request }) => {
 async function upsertSub(
   admin: SupabaseClient,
   sub: Stripe.Subscription,
-  hint: { userId?: string | null; email?: string | null } = {}
+  hint: { userId?: string | null; email?: string | null } = {},
+  origin?: string
 ) {
   const customerId = sub.customer as string;
 
@@ -90,10 +94,17 @@ async function upsertSub(
       const cust = await stripe.customers.retrieve(customerId);
       email = cust && !(cust as any).deleted ? (cust as any).email : null;
     }
-    userId = await findOrCreateUser(admin, email);
+    const found = await findOrCreateUser(admin, email);
+    userId = found.userId;
     // Guarda el user_id en el customer para que los próximos eventos lo traigan.
     if (userId && stripe) {
       await stripe.customers.update(customerId, { metadata: { supabase_user_id: userId } }).catch(() => {});
+    }
+    // Cuenta NUEVA creada al pagar: envía el correo de bienvenida con el enlace
+    // para crear su contraseña (→ /nueva-clave/). Solo en el alta real, para no
+    // reenviarlo en cada evento posterior. No es fatal si falla.
+    if (found.created && email) {
+      await sendWelcomeEmail(email, origin);
     }
   }
   if (!userId) {
@@ -104,30 +115,47 @@ async function upsertSub(
   await writeSubscriptionRow(admin, sub, userId);
 }
 
-// Busca el perfil por correo; si no existe, crea el usuario passwordless (el
-// trigger de la BD crea el profile). Así, al pagar, la cuenta ya existe y el
-// comprador solo tiene que pedir su enlace mágico con el mismo correo.
-async function findOrCreateUser(admin: SupabaseClient, email: string | null): Promise<string | null> {
-  if (!email) return null;
+// Correo de bienvenida al alta: enlace de un solo uso para crear la contraseña.
+// Reutiliza el flujo de recuperación (→ /nueva-clave/), el mismo que /entrar.
+async function sendWelcomeEmail(email: string, origin?: string) {
+  try {
+    const base = (origin || process.env.PUBLIC_SITE_URL || import.meta.env.PUBLIC_SITE_URL || '').replace(/\/+$/, '');
+    if (!base) { console.error('[stripe-webhook] sin origin para el correo de bienvenida'); return; }
+    const { error } = await sendPasswordSetupEmail(email.trim().toLowerCase(), `${base}/nueva-clave/`);
+    if (error) console.error('[stripe-webhook] no se pudo enviar la bienvenida a', email, error.message || error);
+  } catch (err) {
+    console.error('[stripe-webhook] error enviando la bienvenida', err);
+  }
+}
+
+// Busca el perfil por correo; si no existe, crea el usuario (sin contraseña; el
+// trigger de la BD crea el profile) y lo marca como recién creado para disparar
+// el correo de bienvenida. Así, al pagar, la cuenta ya existe y el comprador solo
+// tiene que crear su contraseña con el enlace del correo.
+async function findOrCreateUser(
+  admin: SupabaseClient,
+  email: string | null
+): Promise<{ userId: string | null; created: boolean }> {
+  if (!email) return { userId: null, created: false };
   const lower = email.trim().toLowerCase();
 
   // GoTrue guarda los correos en minúsculas y el trigger los copia tal cual al
   // perfil, así que un match exacto (eq) es correcto y evita comodines de LIKE.
   const { data: prof } = await admin.from('profiles').select('id').eq('email', lower).maybeSingle();
-  if (prof?.id) return prof.id;
+  if (prof?.id) return { userId: prof.id, created: false };
 
   const { data: created, error } = await admin.auth.admin.createUser({
     email: lower,
     email_confirm: true,
   });
-  if (created?.user?.id) return created.user.id;
+  if (created?.user?.id) return { userId: created.user.id, created: true };
 
-  // Si ya existía en auth pero sin perfil, ubícalo por correo.
+  // Si ya existía en auth pero sin perfil, ubícalo por correo (no es alta nueva).
   if (error) {
     const { data: list } = await admin.auth.admin.listUsers();
     const u = list?.users?.find((x) => (x.email || '').toLowerCase() === lower);
-    if (u) return u.id;
+    if (u) return { userId: u.id, created: false };
     console.error('[stripe-webhook] no se pudo crear/encontrar usuario para', lower, error.message);
   }
-  return null;
+  return { userId: null, created: false };
 }
