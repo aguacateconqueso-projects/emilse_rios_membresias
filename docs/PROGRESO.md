@@ -12,8 +12,10 @@
       está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
       pasará el texto correcto más tarde para reemplazar frase por frase (sin tocar la
       estructura).
-- [ ] **2. Quitar la personalización del nombre en `/aula`.** El saludo "Hola, Adrián M ·"
-      no va; dejar solo "Tu ejercicio de esta semana".
+- [x] **2. Quitar la personalización del nombre en `/aula`.** ✅ Hecho. El saludo ya no dice
+      "Hola, {nombre} ·"; ahora es solo "Tu ejercicio de esta semana" / "Your exercise this week".
+      Se quitó el nombre del `eyebrow` estático (ES/EN) y del `greeting` de JS en `Aula.astro`
+      (ya no interpola `full_name`/email). Verificado en el build.
 - [ ] **3. Nuevo modelo de contenido: "Concepto/Ejercicio Base" mensual.** La dinámica de Emi
       cambia: 5 videos mensuales (10 con ES/EN); **1 de ellos es el "Video/Ejercicio Base" (¿Core
       Exercise?)** que muestra las bases de los ejercicios del mes. Se resuelve con el sistema de
