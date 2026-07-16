@@ -1,0 +1,144 @@
+/* =============================================================================
+   MEMBRESÍA — Capa de diseño compartida (aula · panel · entrar)
+   Trae la identidad de la CARTA de ventas (Landing.astro) al resto de la app:
+   lienzo crema + tinta cálida, una sola tipografía (Hanken Grotesk), logo en vez
+   de la firma en texto, botones cuadrados con relleno de tinta que crece desde el
+   cursor + notas musicales, y el cursor de clave de fa (clave del contrabajo).
+
+   Se carga DESPUÉS de colors_and_type.css y ANTES del <style is:inline> de cada
+   página; las páginas ya no definen su propia paleta ni sus botones — los toman
+   de aquí para no volver a desalinearse. El comportamiento (relleno desde el
+   cursor, notas, magnético) vive en /membresia-ui.js.
+   ============================================================================= */
+
+:root {
+  /* Paleta de la carta — monocromática, cálida (misma que Landing.astro). */
+  --ink: #17140f;            /* casi negro, cálido — contraste alto */
+  --paper: #faf7f1;          /* crema muy suave — el lienzo */
+  --surface: #fffdf8;        /* tarjetas/inputs: apenas más claro que el papel */
+  --soft: #6f6a61;           /* gris para notas menores */
+  --accent: #a94f2b;         /* terracota (acento puntual) */
+  --accent-strong: #8f4222;
+  --wood: #6b3f2a;           /* marrón del instrumento — hovers de texto */
+
+  /* Realias sobre los tokens que ya usan las páginas (colors_and_type.css). */
+  --color-text: #17140f;
+  --color-text-soft: #6f6a61;
+  --color-border: #e7e0d4;   /* hairline cálido sobre crema */
+
+  /* Como en la carta: una sola familia. Los .display / h1-h5 (que apuntaban a
+     Space Grotesk) pasan a Hanken Grotesk para leerse igual que la carta. */
+  --font-display: 'Hanken Grotesk', system-ui, sans-serif;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  /* Cursor: clave de fa (clave del contrabajo), como en la carta. */
+  cursor: url('/img/clef-cursor.svg') 11 13, auto;
+}
+::selection { background: var(--ink); color: var(--paper); }
+
+/* El cursor de clave se mantiene también sobre enlaces, botones y controles
+   (no vuelve a la manito). */
+a, button, summary, label, input, textarea, select,
+.btn, .tab, .vtab, [role="button"], [role="tab"] {
+  cursor: url('/img/clef-cursor.svg') 11 13, auto;
+}
+/* Sobre fondos oscuros, el cursor cambia a su versión clara para no perderse. */
+.btn--solid, .btn--solid *,
+.player, .player *,
+.answer:not(.answer--pending), .answer:not(.answer--pending) *,
+.wk--live, .wk--live *,
+.pill--live, .pill--live *,
+.lcol__tag,
+.tab[aria-selected="true"], .vtab[aria-selected="true"],
+.toast, .toast * {
+  cursor: url('/img/clef-cursor-light.svg') 11 13, auto;
+}
+
+/* -----------------------------------------------------------------------------
+   Marca — logo caligráfico (reemplaza «Emilse Rios» en texto).
+   Si el PNG no carga, el <small>/fallback de texto queda como respaldo.
+   --------------------------------------------------------------------------- */
+.brand-logo { display: inline-flex; align-items: center; gap: 0.55em; text-decoration: none; color: var(--ink); }
+.brand-logo__img { height: clamp(22px, 3.2vw, 30px); width: auto; display: block; }
+.brand-logo small,
+.brand-logo .brand-logo__tag {
+  font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft);
+}
+.brand-logo__fallback {
+  font-family: var(--font-body); font-weight: var(--weight-semibold);
+  font-size: var(--text-md); letter-spacing: -0.01em; color: var(--ink);
+}
+
+/* -----------------------------------------------------------------------------
+   Botón editorial — cuadrado, monocromático. Al pasar el cursor, un relleno de
+   tinta crece DESDE la posición del cursor (--mx/--my, los setea el JS) y el
+   texto se invierte. Mismo lenguaje que los botones de la carta.
+   El span .btn__fill lo inyecta /membresia-ui.js en cada .btn (incluidos los
+   botones creados dinámicamente en el panel y el foro).
+   --------------------------------------------------------------------------- */
+.btn {
+  --fill: var(--ink); --fg: var(--ink); --fg-hover: var(--paper); --mx: 50%; --my: 50%;
+  position: relative; isolation: isolate; overflow: hidden;
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  background: transparent; color: var(--fg);
+  font-family: var(--font-body); font-weight: var(--weight-semibold);
+  font-size: 0.84rem; letter-spacing: 0.11em; text-transform: uppercase;
+  line-height: 1.2; text-align: center;
+  padding: 15px 30px; border: 1.5px solid currentColor; border-radius: 0;
+  text-decoration: none; cursor: inherit; -webkit-appearance: none; appearance: none;
+  transition: color 360ms cubic-bezier(.22,1,.36,1), border-color 360ms ease,
+              transform 420ms cubic-bezier(.22,1,.36,1);
+  will-change: transform;
+}
+.btn__fill {
+  position: absolute; top: var(--my); left: var(--mx); width: 260%; aspect-ratio: 1; z-index: -1;
+  background: var(--fill); border-radius: 50%; transform: translate(-50%, -50%) scale(0);
+  transition: transform 560ms cubic-bezier(.22,1,.36,1); pointer-events: none;
+}
+.btn__ar { transition: transform 360ms cubic-bezier(.22,1,.36,1); }
+.btn, .btn:hover { text-decoration: none; }
+.btn:hover { color: var(--fg-hover); }
+.btn:hover .btn__fill { transform: translate(-50%, -50%) scale(1); }
+.btn:hover .btn__ar { transform: translateX(5px); }
+.btn:active { transform: translateY(1px) scale(0.99); }
+.btn[disabled], .btn:disabled { opacity: 0.5; cursor: inherit; }
+.btn[disabled] .btn__fill, .btn:disabled .btn__fill { transform: translate(-50%, -50%) scale(0); }
+
+/* Primario: arranca relleno de tinta; al hover crece un círculo crema y el texto
+   se invierte a tinta (mismo gesto que el botón dentro de la tarjeta invertida). */
+.btn--solid { --fill: var(--paper); --fg: var(--paper); --fg-hover: var(--ink);
+              background: var(--ink); color: var(--paper); border-color: var(--ink); }
+/* Secundario/fantasma: transparente, relleno de tinta. */
+.btn--ghost { --fill: var(--ink); --fg: var(--ink); --fg-hover: var(--paper);
+              background: transparent; }
+.btn--block { width: 100%; }
+.btn--sm { padding: 9px 15px; font-size: 0.72rem; letter-spacing: 0.09em; gap: 7px; }
+
+/* -----------------------------------------------------------------------------
+   Notas musicales de colores que flotan al pasar el cursor por los botones.
+   --------------------------------------------------------------------------- */
+.note-pop { position: fixed; z-index: 60; pointer-events: none; font-weight: 700;
+            will-change: transform, opacity; animation: notefloat 1s ease-out forwards; }
+@keyframes notefloat {
+  0%   { opacity: 0; transform: translate(0, 0) scale(0.6) rotate(0deg); }
+  18%  { opacity: 1; }
+  100% { opacity: 0; transform: translate(var(--dx, 0), -60px) scale(1.15) rotate(var(--rot, 0deg)); }
+}
+
+/* -----------------------------------------------------------------------------
+   Fundido al entrar en viewport (reveal), como en la carta. Red de seguridad:
+   el JS revela todo tras un instante aunque falle el IntersectionObserver, y en
+   prefers-reduced-motion no se oculta nada.
+   --------------------------------------------------------------------------- */
+.reveal { opacity: 0; transform: translateY(18px);
+          transition: opacity 0.7s ease, transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1); }
+.reveal.is-visible { opacity: 1; transform: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .btn { transition: color 200ms ease, border-color 200ms ease; }
+}

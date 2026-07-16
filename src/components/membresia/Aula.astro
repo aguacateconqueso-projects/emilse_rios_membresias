@@ -138,31 +138,25 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 <meta name="robots" content="noindex" />
 <link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
 <link rel="stylesheet" href="/colors_and_type.css" />
+<link rel="stylesheet" href="/membresia-ui.css" />
 <style is:inline>
-  :root {
-    --ink:#0c0c0c; --paper:#ffffff; --color-text:#0c0c0c;
-    --color-border:#e4e2dd; --color-text-soft:#71706b; --surface:#faf9f7;
-    --edge: clamp(20px, 5vw, 72px); --wrap: 1080px;
-  }
+  /* Paleta, cursor, botones y notas vienen de /membresia-ui.css (identidad de la carta). */
+  :root { --edge: clamp(20px, 5vw, 72px); --wrap: 1080px; }
   html { scroll-behavior: smooth; }
-  body { background: var(--paper); color: var(--ink); overflow-x: hidden; }
-  ::selection { background: #0c0c0c; color: #fff; }
+  body { overflow-x: hidden; }
   a { color: inherit; }
   img { display: block; max-width: 100%; }
-  .display { font-family: var(--font-display); font-weight: var(--weight-medium);
-             letter-spacing: -0.035em; line-height: 0.95; text-wrap: balance; }
+  .display { font-family: var(--font-display); font-weight: var(--weight-semibold);
+             letter-spacing: -0.03em; line-height: 0.98; text-wrap: balance; }
   .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
          letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
   .wrap { max-width: var(--wrap); margin: 0 auto; padding-inline: var(--edge); }
 
-  .bar { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.86);
-         backdrop-filter: saturate(140%) blur(10px); border-bottom: 1px solid var(--color-border); }
-  .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 14px var(--edge);
+  .bar { position: sticky; top: 0; z-index: 50; background: rgba(250,247,241,0.82);
+         -webkit-backdrop-filter: saturate(140%) blur(12px); backdrop-filter: saturate(140%) blur(12px);
+         border-bottom: 1px solid var(--color-border); }
+  .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 12px var(--edge);
              display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
-  .brand { font-family: var(--font-display); font-weight: var(--weight-semibold); font-size: var(--text-md);
-           letter-spacing: -0.02em; text-decoration: none; display: inline-flex; align-items: baseline; gap: 0.5em; }
-  .brand small { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: 11px;
-                 letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
   .bar__right { display: flex; align-items: center; gap: clamp(10px, 2vw, 18px); }
   .lang { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-body);
           font-size: var(--text-sm); font-weight: var(--weight-semibold); letter-spacing: 0.06em; }
@@ -219,16 +213,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   .ex__points li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; font-size: var(--text-base); line-height: 1.4; color: #3a3a38; }
   .ex__points .tick { font-family: var(--font-display); color: var(--ink); line-height: 1.1; }
 
-  .btn { appearance: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-         padding: 14px 22px; border-radius: var(--radius-full); font-family: var(--font-display);
-         font-weight: var(--weight-medium); font-size: var(--text-base); letter-spacing: -0.01em;
-         text-decoration: none; border: 1.5px solid var(--ink); transition: all 320ms var(--ease); white-space: nowrap; }
-  .btn--solid { background: var(--ink); color: var(--paper); }
-  .btn--solid:hover { transform: translateY(-1px); }
-  .btn--ghost { background: transparent; color: var(--ink); }
-  .btn--ghost:hover { background: var(--ink); color: var(--paper); }
-  .btn--solid.is-done { background: var(--paper); color: var(--ink); }
-  .btn--block { width: 100%; }
+  /* .btn / --solid / --ghost / --block: definidos en /membresia-ui.css (botón editorial). */
+  /* Estado "completado": vuelve al reposo claro (texto tinta sobre papel). */
+  .btn--solid.is-done { --fg: var(--ink); background: var(--paper); color: var(--ink); border-color: var(--ink); }
 
   .forum { border-top: 1px solid var(--ink); padding: clamp(40px, 7vh, 72px) 0 clamp(56px, 9vh, 96px); }
   .forum__head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-4);
@@ -318,7 +305,12 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 
   <header class="bar">
     <div class="bar__in">
-      <a class="brand" href={t.home}>Emilse Rios <small>{t.brandSmall}</small></a>
+      <a class="brand-logo" href={t.home}>
+        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+             onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+        <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+        <small>{t.brandSmall}</small>
+      </a>
       <div class="bar__right">
         <div class="lang" aria-label="Idioma / Language">
           <a href="/aula/" aria-current={(!isEN).toString()}>ES</a>
@@ -359,7 +351,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       <!-- ===== Pestaña: Ejercicio de la semana (datos reales + foro adentro) ===== -->
       <div class="tabpanel" id="panel-semana" role="tabpanel" aria-labelledby="tab-semana" tabindex="0">
 
-        <section class="lead">
+        <section class="lead reveal">
           <div class="ovl" id="greeting">{t.eyebrow}</div>
           <h1 class="lead__title display" id="exTitle">{t.title}</h1>
           <div class="lead__meta">
@@ -429,7 +421,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       <div class="tabpanel" id="panel-base" role="tabpanel" aria-labelledby="tab-base" tabindex="0" hidden>
         <p class="demo-note">{t.demoNote}</p>
 
-        <section class="lead">
+        <section class="lead reveal">
           <div class="ovl">{t.base.eyebrow}</div>
           <h1 class="lead__title display">{t.base.title}</h1>
           <div class="lead__meta"><span>{t.base.meta}</span></div>
@@ -468,7 +460,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       <div class="tabpanel" id="panel-bonus" role="tabpanel" aria-labelledby="tab-bonus" tabindex="0" hidden>
         <p class="demo-note">{t.demoNote}</p>
 
-        <section class="lead">
+        <section class="lead reveal">
           <div class="ovl">{t.bonus.eyebrow}</div>
           <h1 class="lead__title display">{t.bonus.title}</h1>
           <div class="lead__meta"><span>{t.bonus.lead}</span></div>
@@ -476,7 +468,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 
         <section class="bonus-grid" aria-label={t.bonus.title}>
           {t.bonus.items.map((it) => (
-            <article class="bonus-card">
+            <article class="bonus-card reveal">
               <div class="bonus-card__media">
                 <span class="player__play" aria-hidden="true"></span>
               </div>
@@ -919,5 +911,6 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     });
   })();
 </script>
+<script src="/membresia-ui.js" defer></script>
 </body>
 </html>
