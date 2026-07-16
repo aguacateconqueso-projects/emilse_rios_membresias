@@ -625,7 +625,30 @@
     const td5 = document.createElement('td');
     const btn = document.createElement('button'); btn.className = 'btn btn--ghost btn--sm'; btn.type = 'button'; btn.textContent = 'Editar';
     btn.addEventListener('click', () => openEdit(e)); td5.appendChild(btn);
+    const delBtn = document.createElement('button'); delBtn.className = 'btn btn--ghost btn--sm'; delBtn.type = 'button';
+    delBtn.textContent = 'Borrar'; delBtn.style.marginLeft = '8px';
+    delBtn.addEventListener('click', () => deleteExercise(e, delBtn)); td5.appendChild(delBtn);
     tr.append(td1, td3, td4, td5); return tr;
+  }
+
+  // Borra un ejercicio/contenido de verdad (no solo cerrarlo con fecha). Se
+  // lleva por delante sus preguntas y respuestas del foro (on delete cascade
+  // en la BD), así que se avisa antes de confirmar.
+  async function deleteExercise(e, btn) {
+    const label = e.title_es || '(sin título)';
+    const ok = window.confirm(
+      `¿Borrar «${label}» para siempre?\n\nTambién se borran las preguntas y respuestas del foro asociadas a este contenido. No se puede deshacer.`
+    );
+    if (!ok) return;
+    const lbl = btn.textContent; btn.disabled = true; btn.textContent = 'Borrando…';
+    const { error } = await supabase.from('exercises').delete().eq('id', e.id);
+    if (error) {
+      btn.disabled = false; btn.textContent = lbl;
+      toast('No se pudo borrar: ' + error.message);
+      return;
+    }
+    await loadExercises();
+    toast('Borrado');
   }
 
   function renderExTable() {
