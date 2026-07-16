@@ -15,6 +15,31 @@ if (!isSupabaseConfigured) {
   console.error('[supabase] Falta el archivo .env con PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY. Crea .env en la raíz del proyecto y reinicia el servidor.');
 }
 
+// --- "Mantener sesión iniciada" ---------------------------------------------
+// El acceso es con correo + contraseña. La casilla "mantener sesión iniciada" de
+// /entrar/ decide DÓNDE se guarda la sesión:
+//   · recordar (por defecto) → localStorage: sobrevive al cerrar el navegador.
+//   · no recordar            → sessionStorage: se borra al cerrar la pestaña/navegador.
+// /entrar/ escribe la preferencia en `erm_remember` ('0' = no recordar) ANTES de
+// iniciar sesión, para que el token quede en el almacén correcto. Este adaptador
+// lee esa preferencia en cada acceso; al cerrar sesión limpia AMBOS almacenes.
+const REMEMBER_KEY = 'erm_remember';
+function pickStore(): Storage | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return window.localStorage.getItem(REMEMBER_KEY) === '0' ? window.sessionStorage : window.localStorage;
+  } catch {
+    return null;
+  }
+}
+const rememberAwareStorage = {
+  getItem: (k: string) => { try { return pickStore()?.getItem(k) ?? null; } catch { return null; } },
+  setItem: (k: string, v: string) => { try { pickStore()?.setItem(k, v); } catch { /* almacenamiento no disponible */ } },
+  removeItem: (k: string) => {
+    try { window.localStorage.removeItem(k); window.sessionStorage.removeItem(k); } catch { /* ídem */ }
+  },
+};
+
 export const supabase = createClient(
   url || 'https://placeholder.supabase.co',
   anonKey || 'placeholder-anon-key',
@@ -22,6 +47,12 @@ export const supabase = createClient(
     auth: {
       persistSession: true,
       autoRefreshToken: true,
+      // Detecta el token del enlace de "crear/restablecer contraseña" que llega
+      // en la URL (flujo de recuperación) y establece la sesión para poder fijar
+      // la nueva clave en /nueva-clave/.
+      detectSessionInUrl: true,
+      flowType: 'implicit',
+      storage: typeof window !== 'undefined' ? rememberAwareStorage : undefined,
     },
   }
 );

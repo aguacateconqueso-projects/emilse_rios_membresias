@@ -207,7 +207,10 @@ const t = isEN ? {
   // Red de seguridad del enlace mágico: si Supabase reenvía el token al Site URL
   // (la raíz) en vez de a /entrar/, lo recogemos y lo pasamos a /entrar/, que sí
   // sabe consumirlo o mostrar el error.
-  if (location.hash.includes('access_token=') || location.hash.includes('error_code=')) {
+  if (location.hash.includes('type=recovery')) {
+    // Enlace de crear/restablecer contraseña que cayó en el Site URL: a /nueva-clave/.
+    location.replace('/nueva-clave/' + location.hash);
+  } else if (location.hash.includes('access_token=') || location.hash.includes('error_code=')) {
     location.replace('/entrar/' + location.hash);
   }
   // Cambio de idioma sin saltar al inicio: si venimos de un toggle EN/ES,
