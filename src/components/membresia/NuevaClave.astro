@@ -1,0 +1,256 @@
+---
+// Crear / restablecer contraseña — componente bilingüe (prop lang: 'es' | 'en').
+// Rutas: /nueva-clave/ (es) y /nueva-clave/en/ (en).
+// Se llega aquí desde el enlace de un solo uso que se envía por correo (flujo de
+// recuperación): al abrirlo, el token del hash establece una sesión temporal y
+// esta página permite FIJAR la contraseña. Sirve para la PRIMERA vez (cuenta
+// creada al pagar, sin clave) y para recuperar el acceso. Tras guardar, enruta
+// por rol: admin → panel, miembro → aula (en su idioma).
+interface Props { lang?: 'es' | 'en'; }
+const { lang = 'es' } = Astro.props;
+const isEN = lang === 'en';
+
+const t = isEN ? {
+  htmlLang: 'en',
+  metaTitle: 'Create your password — Let’s Study Together · Emilse Rios',
+  brandSmall: 'Membership',
+  ovl: 'Members access',
+  h1: 'Your password',
+  checking: 'Checking your link…',
+  ready: 'Choose a password for your account. You’ll use it to log in from now on.',
+  invalid: 'This link is not valid or has expired. Request a new one from “Log in → Create or reset your password”.',
+  expired: 'That link has expired or was already used. Request a new one from “Log in → Create or reset your password”.',
+  openError: 'The link could not be opened: ',
+  label1: 'New password', ph1: 'At least 8 characters', help1: 'At least 8 characters.',
+  label2: 'Repeat the password', ph2: 'Repeat your password',
+  submit: 'Save and enter', saving: 'Saving…',
+  tooShort: 'The password must be at least 8 characters long.',
+  noMatch: 'The two passwords don’t match.',
+  saveError: 'Could not save: ',
+  saved: 'Password saved! Entering…',
+  back: '← Go to Log in',
+  aula: '/aula/en/',
+} : {
+  htmlLang: 'es',
+  metaTitle: 'Crear contraseña — Estudiemos Juntos · Emilse Rios',
+  brandSmall: 'Membresía',
+  ovl: 'Acceso de miembros',
+  h1: 'Tu contraseña',
+  checking: 'Comprobando tu enlace…',
+  ready: 'Elige una contraseña para tu cuenta. La usarás para entrar de ahora en adelante.',
+  invalid: 'Este enlace no es válido o ya caducó. Pide uno nuevo desde «Entrar → Crea o restablece tu contraseña».',
+  expired: 'Ese enlace ya caducó o ya se usó. Pide uno nuevo desde «Entrar → Crea o restablece tu contraseña».',
+  openError: 'No se pudo abrir el enlace: ',
+  label1: 'Nueva contraseña', ph1: 'Mínimo 8 caracteres', help1: 'Al menos 8 caracteres.',
+  label2: 'Repite la contraseña', ph2: 'Repite tu contraseña',
+  submit: 'Guardar y entrar', saving: 'Guardando…',
+  tooShort: 'La contraseña debe tener al menos 8 caracteres.',
+  noMatch: 'Las dos contraseñas no coinciden.',
+  saveError: 'No se pudo guardar: ',
+  saved: '¡Contraseña guardada! Entrando…',
+  back: '← Ir a Entrar',
+  aula: '/aula/',
+};
+---
+<!DOCTYPE html>
+<html lang={t.htmlLang}>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{t.metaTitle}</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
+<link rel="stylesheet" href="/colors_and_type.css" />
+<link rel="stylesheet" href="/membresia-ui.css" />
+<style is:inline>
+  /* Paleta, cursor y botones vienen de /membresia-ui.css (identidad de la carta). */
+  :root { --edge: clamp(20px, 5vw, 64px); }
+  body { min-height: 100svh; display: grid; place-items: center; padding: var(--edge); }
+  .display { font-family: var(--font-display); font-weight: var(--weight-semibold);
+             letter-spacing: -0.03em; line-height: 1; }
+  .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+         letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .card { width: 100%; max-width: 400px; }
+  .brand-logo { margin-bottom: var(--space-7); }
+  h1 { font-size: var(--text-3xl); margin: var(--space-3) 0 var(--space-2); }
+  .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.5; }
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
+  .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+  .field input { font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
+                 padding: 13px 15px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
+  .field input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
+  .field .help { font-size: var(--text-xs); color: var(--color-text-soft); }
+  .msg { margin-top: var(--space-4); font-size: var(--text-base); line-height: 1.5; }
+  .msg.ok { color: var(--ink); }
+  .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
+  .msg[hidden] { display: none; }
+  [hidden] { display: none; }
+  .back { display: inline-block; margin-top: var(--space-6); color: var(--color-text-soft);
+          font-size: var(--text-sm); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+</style>
+</head>
+<body data-page-lang={lang}>
+  <div class="card">
+    <a class="brand-logo" href="/">
+      <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+           onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+      <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+      <small>{t.brandSmall}</small>
+    </a>
+    <span class="ovl">{t.ovl}</span>
+    <h1 class="display">{t.h1}</h1>
+    <p class="sub" id="sub">{t.checking}</p>
+
+    <form id="pwForm" hidden>
+      <div class="field">
+        <label for="password">{t.label1}</label>
+        <input id="password" type="password" autocomplete="new-password" placeholder={t.ph1} required />
+        <span class="help">{t.help1}</span>
+      </div>
+      <div class="field">
+        <label for="password2">{t.label2}</label>
+        <input id="password2" type="password" autocomplete="new-password" placeholder={t.ph2} required />
+      </div>
+      <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
+        <span class="btn__label" id="submitLabel">{t.submit}</span>
+        <span class="btn__ar" aria-hidden="true">→</span>
+      </button>
+    </form>
+
+    <p class="msg ok" id="msgOk" hidden></p>
+    <p class="msg err" id="msgErr" hidden></p>
+
+    <a class="back" href="/entrar/">{t.back}</a>
+  </div>
+
+<script>
+  import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+
+  const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
+  const EN = pageLang === 'en';
+  const $ = (id) => document.getElementById(id);
+  const sub = $('sub');
+  const form = $('pwForm');
+  const password = $('password');
+  const password2 = $('password2');
+  const btn = $('submitBtn');
+  const submitLabel = $('submitLabel');
+  const setBtnLabel = (txt) => { if (submitLabel) submitLabel.textContent = txt; else btn.textContent = txt; };
+  const msgOk = $('msgOk');
+  const msgErr = $('msgErr');
+
+  const T = {
+    ready: EN ? 'Choose a password for your account. You’ll use it to log in from now on.'
+              : 'Elige una contraseña para tu cuenta. La usarás para entrar de ahora en adelante.',
+    invalid: EN ? 'This link is not valid or has expired. Request a new one from “Log in → Create or reset your password”.'
+                : 'Este enlace no es válido o ya caducó. Pide uno nuevo desde «Entrar → Crea o restablece tu contraseña».',
+    expired: EN ? 'That link has expired or was already used. Request a new one from “Log in → Create or reset your password”.'
+                : 'Ese enlace ya caducó o ya se usó. Pide uno nuevo desde «Entrar → Crea o restablece tu contraseña».',
+    openError: EN ? 'The link could not be opened: ' : 'No se pudo abrir el enlace: ',
+    tooShort: EN ? 'The password must be at least 8 characters long.' : 'La contraseña debe tener al menos 8 caracteres.',
+    noMatch: EN ? 'The two passwords don’t match.' : 'Las dos contraseñas no coinciden.',
+    saveError: EN ? 'Could not save: ' : 'No se pudo guardar: ',
+    saved: EN ? 'Password saved! Entering…' : '¡Contraseña guardada! Entrando…',
+    submit: EN ? 'Save and enter' : 'Guardar y entrar',
+    saving: EN ? 'Saving…' : 'Guardando…',
+    noConfig: EN
+      ? 'Supabase is not configured (PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are missing).'
+      : 'Falta configurar el archivo .env (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY).',
+    aula: EN ? '/aula/en/' : '/aula/',
+  };
+
+  function describeError(err) {
+    if (!err) return 'error desconocido';
+    if (typeof err === 'string') return err;
+    const msg = err.message || err.error_description || err.msg || err.error || err.hint;
+    if (msg) return msg + (err.code || err.error_code ? ' · código ' + (err.code || err.error_code) : '');
+    try {
+      const own = {};
+      for (const k of Object.getOwnPropertyNames(err)) own[k] = err[k];
+      const s = JSON.stringify(own);
+      if (s && s !== '{}') return s;
+    } catch (_) { /* ignore */ }
+    return err.name || String(err) || 'error desconocido';
+  }
+
+  if (!isSupabaseConfigured) {
+    sub.textContent = T.noConfig;
+  }
+
+  // Si el enlace trae un error en el hash (caducado / ya usado), avísalo claro.
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  if (hashParams.get('error_code') || hashParams.get('error')) {
+    sub.textContent = hashParams.get('error_code') === 'otp_expired'
+      ? T.expired
+      : T.openError + (hashParams.get('error_description') || hashParams.get('error_code') || hashParams.get('error'));
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  let ready = false;
+  function enableForm() {
+    if (ready) return;
+    ready = true;
+    sub.textContent = T.ready;
+    form.hidden = false;
+    password.focus();
+  }
+
+  // El token de recuperación del enlace establece una sesión temporal. Puede
+  // llegar como evento PASSWORD_RECOVERY o como una sesión ya presente al cargar.
+  supabase.auth.onAuthStateChange((event, session) => {
+    if ((event === 'PASSWORD_RECOVERY' || event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session) {
+      enableForm();
+    }
+  });
+
+  // Red de seguridad: comprueba la sesión y, si no hay, informa que el enlace no
+  // es válido (sin token no se puede fijar la contraseña).
+  (async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (session) { enableForm(); return; }
+    setTimeout(async () => {
+      if (ready) return;
+      const { data: { session: s2 } } = await supabase.auth.getSession();
+      if (s2) { enableForm(); return; }
+      if (!msgErr.textContent) sub.textContent = T.invalid;
+    }, 2500);
+  })();
+
+  async function routeByRole() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { window.location.href = '/entrar/'; return; }
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', session.user.id).single();
+    window.location.href = profile && profile.role === 'admin' ? '/panel/' : T.aula;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msgOk.hidden = true; msgErr.hidden = true;
+    const p1 = password.value, p2 = password2.value;
+    if (p1.length < 8) { msgErr.textContent = T.tooShort; msgErr.hidden = false; return; }
+    if (p1 !== p2) { msgErr.textContent = T.noMatch; msgErr.hidden = false; return; }
+    btn.disabled = true; setBtnLabel(T.saving);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: p1 });
+      if (error) {
+        msgErr.textContent = T.saveError + describeError(error);
+        msgErr.hidden = false;
+        btn.disabled = false; setBtnLabel(T.submit);
+        return;
+      }
+      msgOk.textContent = T.saved;
+      msgOk.hidden = false;
+      // Ya hay sesión activa: entra directo a su espacio.
+      routeByRole();
+    } catch (err) {
+      msgErr.textContent = T.saveError + describeError(err);
+      msgErr.hidden = false;
+      btn.disabled = false; setBtnLabel(T.submit);
+    }
+  });
+</script>
+<script src="/membresia-ui.js" defer></script>
+</body>
+</html>
