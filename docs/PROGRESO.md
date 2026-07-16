@@ -14,11 +14,10 @@
       estructura).
 - [ ] **2. Quitar la personalización del nombre en `/aula`.** El saludo "Hola, Adrián M ·"
       no va; dejar solo "Tu ejercicio de esta semana".
-- [ ] **3. Nuevo modelo de contenido: "Ejercicio Base" mensual.** La dinámica de Emi cambia:
-      5 videos mensuales (10 con ES/EN); **1 de ellos es el "Video/Ejercicio Base" (¿Core
-      Exercise?)** que muestra las bases de los ejercicios del mes. Modificar el aula para que
-      se entienda: primero SIEMPRE el ejercicio de la semana, y **debajo del foro una pestaña
-      que abre/cierra** con el Ejercicio Base. *(Propuesta a confirmar.)*
+- [ ] **3. Nuevo modelo de contenido: "Concepto/Ejercicio Base" mensual.** La dinámica de Emi
+      cambia: 5 videos mensuales (10 con ES/EN); **1 de ellos es el "Video/Ejercicio Base" (¿Core
+      Exercise?)** que muestra las bases de los ejercicios del mes. Se resuelve con el sistema de
+      pestañas del punto 12 (el Concepto Base es una pestaña propia). *(Fusionado con el punto 12.)*
 - [ ] **4. Apartado "Bonus Material" en el aula.** Pestaña aparte o sección abajo (por definir
       cuál funciona mejor). Ahí irá, por ejemplo, el **video de bienvenida** que ya grabó Emi
       (uno en inglés y otro en español).
@@ -26,8 +25,10 @@
       *En veremos — Adrián lo confirma con Emi.*
 - [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
       de fin, no borrarlos; hay 3 de prueba ocupando espacio. Agregar borrado real.
-- [ ] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** Se abandona (o se
-      suma a) el enlace mágico; ahora el acceso será con **usuario y contraseña**.
+- [ ] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** Se **elimina el
+      enlace mágico** por completo; el acceso será **solo con usuario y contraseña**. Sumar
+      opción de **"mantener sesión iniciada"** (recordar sesión). Toca login (`/entrar`), alta,
+      y el mail de bienvenida (punto 8).
 - [ ] **8. Mail de bienvenida con link para entrar al aula.** Al alta/bienvenida, enviar un
       correo con el enlace de acceso, que apunta a **`/entrar`**.
 - [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
@@ -38,10 +39,11 @@
       **Ejercicio de la semana**, **Bonus Material** o **Ejercicio/Concepto Base**. Requiere
       **diseñar las dos subpáginas** (Bonus Material y Concepto Base) — se conecta con los
       puntos 3 y 4.
-- [ ] **12. Tour del aula paso a paso.** Onboarding guiado que resalte lo que mostramos; al
-      final la estructura serán **pestañas**: **Video de la semana**, **Foro**, **Bonus Material**
-      y **Concepto Base**. *(Ojo: esto redefine la propuesta del punto 3 — de "pestaña que abre/
-      cierra debajo del foro" a un sistema de pestañas para todo.)*
+- [ ] **12. Sistema de pestañas del aula + tour paso a paso.** Estructura final en **pestañas**:
+      **Ejercicio de la semana**, **Bonus Material** y **Concepto Base**. **El foro NO es una
+      pestaña**: vive dentro del "Ejercicio de la semana" — el miembro ve el video y, haciendo
+      scroll down, deja su consulta ahí mismo. Sumar un **tour/onboarding guiado** que resalte
+      cada parte al entrar por primera vez. *(Absorbe la propuesta original del punto 3.)*
 
 
 ## Qué es
