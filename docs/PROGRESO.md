@@ -11,10 +11,12 @@
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
 > `/nueva-clave/`, PR #31), punto **8** (el webhook envía el correo de bienvenida al pagar,
 > PR #32), **8b** (correo de bienvenida **bilingüe ES/EN** por Resend + `/nueva-clave/en/`,
-> PR #33), punto **9** (página de agradecimiento bilingüe, PR #34) y punto **1** — copy
+> PR #33), punto **9** (página de agradecimiento bilingüe, PR #34), punto **1** — copy
 > definitivo de la página de ventas: texto exacto de Adrián (PR #35) + ajustes de énfasis y
 > orden — bold/itálica en varios párrafos, mover "Mucho para muchos" debajo del cuadro de
-> precio con un tercer botón (PR #36). Ver detalle abajo.
+> precio con un tercer botón (PR #36) — y **8c** (arreglo del correo de acceso que no pasaba
+> por Resend en `/entrar` y `/gracias`, PR #38, **confirmado funcionando en producción por
+> Adrián**). Ver detalle abajo.
 > Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
 > destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
 
@@ -190,7 +192,9 @@
         `POST /api/send-access-email` (nuevo endpoint servidor, `{ email, lang }`, no revela si
         el correo existe). El webhook, `/entrar` y `/gracias` ahora llaman al mismo camino, así
         que las **tres vías mandan el mismo correo** con el copy de Emi por Resend. Verificado
-        con `npm run build`.
+        con `npm run build` **y en producción** (PR #38 mergeado): Adrián confirmó que ya llega
+        el correo bilingüe de Emi por Resend, no el default de Supabase. ✅ **Punto 8 (con 8b y
+        8c) queda cerrado end-to-end.**
 - [x] **9. Rediseñar la página de agradecimiento del pago.** ✅ Hecho (CÓDIGO). Nueva **página
       dedicada y bilingüe** (componente `Gracias.astro`, rutas `/gracias/` y `/gracias/en/`) con el
       copy DEFINITIVO de Emi: eyebrow "No cierres esta pestaña", título "Gracias por unirte. Ya casi
@@ -545,10 +549,13 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**En vuelo:** rama `claude/welcome-email-localization-ahs4tm` (arreglo 8c: el correo de acceso de
-`/entrar` y `/gracias` ahora pasa por Resend igual que el automático — ver detalle arriba, PR #38),
-arrancada desde `main` ya al día (incluye hasta PR #37, mergeado — punto 1 cerrado con PR #35 +
-PR #36). Falta mergear el PR #38.
+**Sin PR abierto ahora mismo.** El PR #38 (arreglo 8c) ya está **mergeado a `main` y confirmado
+funcionando en producción por Adrián**: el correo de acceso llega por Resend con el copy
+bilingüe de Emi desde las tres vías (webhook, `/entrar`, `/gracias`). La rama local
+`claude/welcome-email-localization-ahs4tm` quedó reiniciada sobre `origin/main` al día (incluye
+hasta PR #38) solo para esta actualización de bitácora — **la próxima sesión debe arrancar una
+rama nueva** desde ahí para el siguiente punto del checklist (ver "Próxima sesión" arriba:
+**punto 11**, selector de destino del video en `/panel`).
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
@@ -557,10 +564,11 @@ diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 
 visual de la carta en aula/panel/entrar (punto 5), **#31** ingreso con correo + contraseña
 (punto 7, `/nueva-clave/`), **#32** correo de bienvenida automático al pagar (punto 8), **#33**
 correo de bienvenida bilingüe por Resend (punto 8b), **#34** página de agradecimiento bilingüe
-(punto 9), **#35** copy exacto de la página de ventas (punto 1, texto de Adrián) y **#36**
+(punto 9), **#35** copy exacto de la página de ventas (punto 1, texto de Adrián), **#36**
 ajustes de énfasis y orden sobre ese mismo copy (bold/itálica, mensaje final debajo del cuadro
-de precio + tercer botón). Con esto el punto **1 queda cerrado**. **En curso:** punto **8c**,
-arreglo de las vías de correo de acceso que no pasaban por Resend (ver detalle arriba, PR #38).
+de precio + tercer botón — con esto el punto **1 queda cerrado**) y **#38** arreglo del correo de
+acceso que no pasaba por Resend en `/entrar` y `/gracias` (punto 8c) — **confirmado funcionando
+en producción**, con esto el punto **8 (8b + 8c) queda cerrado end-to-end**.
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
@@ -574,7 +582,8 @@ red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam e
 Concepto Base / Bonus Material, maquetas), **#30** identidad visual compartida, **#31** login
 correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bienvenida bilingüe,
 **#34** página de agradecimiento bilingüe, **#35** copy exacto de la página de ventas, **#36**
-ajustes de énfasis/orden sobre ese copy.
+ajustes de énfasis/orden sobre ese copy, **#38** correo de acceso vía Resend en las tres vías
+(punto 8c, confirmado en producción).
 
 ### ⚠️ Lo más urgente para la próxima sesión
 El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el
