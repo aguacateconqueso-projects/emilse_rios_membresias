@@ -113,6 +113,7 @@
   .field input:focus, .field textarea:focus { outline: none; border-color: var(--ink); background: var(--paper); }
   .field textarea { min-height: 90px; resize: vertical; }
   .form__actions { display: flex; gap: 12px; margin-top: var(--space-4); flex-wrap: wrap; }
+  .form__actions .btn[hidden] { display: none; }
   .form-error { color: #8a2e2e; font-size: var(--text-sm); font-weight: var(--weight-semibold); margin-top: var(--space-3); }
   .form-error[hidden] { display: none; }
   .lang-note { font-size: var(--text-sm); color: var(--color-text-soft); background: var(--surface);
@@ -343,6 +344,7 @@
           <p class="lang-note" id="f-bonus-note" hidden>📌 El Bonus Material se publica de inmediato al guardar y queda en la grilla sin fecha de cierre.</p>
           <div class="form__actions">
             <button class="btn btn--solid" type="submit">Guardar y programar</button>
+            <button class="btn btn--ghost" type="button" id="publishNowBtn">Publicar ahora</button>
             <button class="btn btn--ghost" type="button" id="cancelBtn">Cancelar</button>
           </div>
           <p class="form-error" id="formErr" hidden></p>
@@ -519,7 +521,7 @@
     semana: {
       weekLabel: 'Etiqueta de semana', weekHelp: 'Texto corto que el miembro ve junto al título.',
       weekPh: 'Ej. Semana 24',
-      upLabel: 'Se publica', upHelp: 'Por defecto: próximo jueves 00:01 (hora local).',
+      upLabel: 'Se publica', upHelp: 'Por defecto: próximo jueves 00:01 (hora local). O usa «Publicar ahora» para saltarte la espera.',
       downLabel: 'Se cierra', downHelp: 'Por defecto: jueves siguiente 00:00 (hora local).',
       formNew: 'Nuevo ejercicio de la semana', formEdit: 'Editar ejercicio de la semana',
       empty: 'Aún no hay ejercicios. Crea el primero con “+ Nuevo”.',
@@ -527,7 +529,7 @@
     base: {
       weekLabel: 'Etiqueta del mes', weekHelp: 'Texto corto que el miembro ve junto al título (ej. el mes).',
       weekPh: 'Ej. Julio',
-      upLabel: 'Se publica', upHelp: 'Por defecto: ahora.',
+      upLabel: 'Se publica', upHelp: 'Por defecto: ahora. O usa «Publicar ahora» para saltarte la espera.',
       downLabel: 'Se cierra', downHelp: 'Por defecto: dentro de un mes.',
       formNew: 'Nuevo Concepto Base', formEdit: 'Editar Concepto Base',
       empty: 'Aún no hay ningún Concepto Base. Crea el primero con “+ Nuevo”.',
@@ -558,6 +560,16 @@
     return { pub, unp };
   }
 
+  // Cierre por defecto cuando se "Publica ahora" (fuera del ciclo normal de
+  // jueves): misma duración de siempre, pero contada desde el momento real de
+  // publicación en vez de la próxima fecha programada.
+  function defaultUnpublishFrom(kind, from) {
+    const unp = new Date(from);
+    if (kind === 'base') unp.setMonth(unp.getMonth() + 1);
+    else unp.setDate(unp.getDate() + 7);
+    return unp;
+  }
+
   // Ajusta labels/ayuda y muestra u oculta las fechas según el destino elegido.
   function applyKindUI(kind) {
     const meta = KIND_META[kind] || KIND_META.semana;
@@ -568,6 +580,7 @@
     $('f-down-label').textContent = meta.downLabel; $('f-down-help').textContent = meta.downHelp;
     $('f-dates').hidden = kind === 'bonus';
     $('f-bonus-note').hidden = kind !== 'bonus';
+    $('publishNowBtn').hidden = kind === 'bonus';
     document.querySelectorAll('.dest-picker .tab').forEach((b) => b.setAttribute('aria-checked', b.dataset.kind === kind ? 'true' : 'false'));
     $('f-kind').value = kind;
   }
@@ -735,8 +748,12 @@
   });
   $('cancelBtn')?.addEventListener('click', () => { newForm.hidden = true; resetForm(); });
 
-  newForm?.addEventListener('submit', async (ev) => {
-    ev.preventDefault();
+  // Guarda el formulario. `publishNow` viene del botón "Publicar ahora": salta
+  // la fecha de publicación programada y usa el momento actual (útil para
+  // sacar un ejercicio ya mismo en vez de esperar al jueves). La fecha de
+  // cierre, si Emi la dejó puesta, se respeta igual; si no, se calcula con la
+  // misma duración de siempre pero contada desde ahora.
+  async function saveExercise(publishNow) {
     const errEl = $('formErr'); errEl.hidden = true;
     const kind = $('f-kind').value || 'semana';
     const title_es = $('f-title-es').value.trim(), title_en = $('f-title-en').value.trim();
@@ -755,6 +772,12 @@
         const { pub, unp } = computeDefaultDates('bonus');
         pubISO = pub.toISOString(); unpISO = unp.toISOString();
       }
+    } else if (publishNow) {
+      const now = new Date();
+      const downVal = $('f-down').value;
+      const unp = downVal ? new Date(downVal) : defaultUnpublishFrom(kind, now);
+      if (unp <= now) { errEl.textContent = 'La fecha de cierre debe ser posterior a ahora.'; errEl.hidden = false; return; }
+      pubISO = now.toISOString(); unpISO = unp.toISOString();
     } else {
       const upVal = $('f-up').value, downVal = $('f-down').value;
       if (!upVal || !downVal) { errEl.textContent = 'Faltan las fechas de publicación y cierre.'; errEl.hidden = false; return; }
@@ -762,8 +785,13 @@
       pubISO = new Date(upVal).toISOString(); unpISO = new Date(downVal).toISOString();
     }
 
-    const saveBtn = newForm.querySelector('button[type="submit"]'); const lbl = saveBtn.textContent;
-    saveBtn.disabled = true; saveBtn.textContent = 'Guardando…';
+    const submitBtn = newForm.querySelector('button[type="submit"]');
+    const publishBtn = $('publishNowBtn');
+    const activeBtn = publishNow ? publishBtn : submitBtn;
+    const otherBtn = publishNow ? submitBtn : publishBtn;
+    const lbl = activeBtn.textContent;
+    activeBtn.disabled = true; activeBtn.textContent = publishNow ? 'Publicando…' : 'Guardando…';
+    otherBtn.disabled = true;
     try {
       const pdfEs = await uploadPdf($('f-pdf-es'));
       const pdfEn = await uploadPdf($('f-pdf-en'));
@@ -784,13 +812,17 @@
       newForm.hidden = true; resetForm(); currentFilterKind = kind;
       document.querySelectorAll('.dest-filter .tab').forEach((x) => x.setAttribute('aria-selected', x.dataset.kind === kind ? 'true' : 'false'));
       await loadExercises();
-      toast(editId ? 'Contenido actualizado' : 'Contenido creado');
+      toast(publishNow ? 'Publicado ahora' : (editId ? 'Contenido actualizado' : 'Contenido creado'));
     } catch (err) {
       errEl.textContent = 'No se pudo guardar: ' + err.message; errEl.hidden = false;
     } finally {
-      saveBtn.disabled = false; saveBtn.textContent = lbl;
+      activeBtn.disabled = false; activeBtn.textContent = lbl;
+      otherBtn.disabled = false;
     }
-  });
+  }
+
+  newForm?.addEventListener('submit', (ev) => { ev.preventDefault(); saveExercise(false); });
+  $('publishNowBtn')?.addEventListener('click', () => saveExercise(true));
 
   // ---------- MIEMBROS ----------
   function renderMemberRow(p, active) {
