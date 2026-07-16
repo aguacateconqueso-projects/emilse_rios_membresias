@@ -11,9 +11,10 @@
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
 > `/nueva-clave/`, PR #31), punto **8** (el webhook envía el correo de bienvenida al pagar,
 > PR #32), **8b** (correo de bienvenida **bilingüe ES/EN** por Resend + `/nueva-clave/en/`,
-> PR #33) y punto **9** (página de agradecimiento bilingüe, PR #34). **En este PR:** punto
-> **1** — copy definitivo de la página de ventas (texto exacto que pasó Adrián), ver detalle
-> abajo.
+> PR #33), punto **9** (página de agradecimiento bilingüe, PR #34) y punto **1** — copy
+> definitivo de la página de ventas: texto exacto de Adrián (PR #35) + ajustes de énfasis y
+> orden — bold/itálica en varios párrafos, mover "Mucho para muchos" debajo del cuadro de
+> precio con un tercer botón (PR #36). Ver detalle abajo.
 > Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
 > destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
 
@@ -63,6 +64,29 @@
       **16–23 de julio** en el copy; hay que confirmar que `STRIPE_FOUNDER_UNTIL` en Vercel (y
       los Price IDs de Stripe) reflejen esta ventana, si no el copy y el cobro real quedarían
       desalineados.
+      - **PR #36 (mismo punto, ajustes de énfasis/orden pedidos después por Adrián):** ✅
+        Hecho y MERGEADO. "Y en 2016 emigré. Tuve que dejar mi país." queda en **bold** y en
+        su propia línea (el resto — "Llegué a Argentina..." — pasa a la línea siguiente); los
+        dos párrafos que siguen al tercer descubrimiento ("Tener una meta..." y "Esta es una
+        membresía para hacer lo justo...") en **bold**; el párrafo de comunidad ("Los cursos se
+        terminan...") en **itálica y centrado**; dentro del cuadro de precio, la frase "La
+        membresía abre con precio de fundador..." en **bold** (el resto de la nota sigue
+        normal). El mensaje final ("Mucho para muchos... ¡Estudiemos juntos!") se **movió de
+        lugar**: antes iba al final después del FAQ, ahora va **justo debajo del cuadro de
+        precio**, con "Mucho para muchos." solo en su línea y el resto en la siguiente; se
+        agregó ahí un **tercer botón "Acá te unes"** (antes eran 2: el del cuadro + el de
+        después del FAQ). El P.D., el FAQ y el botón de después del FAQ quedan donde estaban.
+        Sin tocar CSS global. Verificado con build + HTML renderizado (ES/EN): 3 botones,
+        `<strong>` en los 4 párrafos indicados, orden real cuadro→mensaje→botón→P.D.→FAQ→botón→
+        newsletter.
+        - ⚠️ **Incidente de flujo (para no repetirlo):** después de mergear el PR #35, se
+          empujaron los commits de estos ajustes a la MISMA rama `claude/sales-page-update-gk8ldr`
+          sin abrir PR nuevo — como esa rama ya tenía su PR cerrado/mergeado, esos commits no
+          llegaban a ningún lado. Se corrigió reiniciando la rama desde `origin/main` (que ya
+          incluía el PR #35), reaplicando el commit de los ajustes encima, y abriendo el PR #36
+          nuevo desde ahí. Recordatorio: **siempre rama nueva + PR nuevo por cada tanda de
+          cambios**, incluso dentro del mismo punto del checklist si el PR anterior ya se
+          mergeó.
 - [x] **2. Quitar la personalización del nombre en `/aula`.** ✅ Hecho. El saludo ya no dice
       "Hola, {nombre} ·"; ahora es solo "Tu ejercicio de esta semana" / "Your exercise this week".
       Se quitó el nombre del `eyebrow` estático (ES/EN) y del `greeting` de JS en `Aula.astro`
@@ -502,9 +526,10 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**En vuelo:** rama `claude/sales-page-update-gk8ldr` (punto 1, copy exacto de la página de
-ventas), arrancada desde `main` ya al día (incluye hasta PR #34, mergeado). Falta abrir/mergear
-su PR.
+**Sin PR abierto ahora mismo.** El punto 1 quedó cerrado (PR #35 + PR #36, ambos mergeados a
+`main`). La rama local `claude/sales-page-update-gk8ldr` está reiniciada sobre `origin/main` al
+día (incluye hasta PR #36) — la próxima sesión debe arrancar una rama nueva desde ahí para el
+siguiente punto del checklist (ver "Próxima sesión" arriba: punto 11).
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
@@ -513,8 +538,9 @@ diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 
 visual de la carta en aula/panel/entrar (punto 5), **#31** ingreso con correo + contraseña
 (punto 7, `/nueva-clave/`), **#32** correo de bienvenida automático al pagar (punto 8), **#33**
 correo de bienvenida bilingüe por Resend (punto 8b), **#34** página de agradecimiento bilingüe
-(punto 9). **En curso:** punto **1**, copy exacto de la página de ventas (texto de Adrián, ver
-detalle arriba).
+(punto 9), **#35** copy exacto de la página de ventas (punto 1, texto de Adrián) y **#36**
+ajustes de énfasis y orden sobre ese mismo copy (bold/itálica, mensaje final debajo del cuadro
+de precio + tercer botón). Con esto el punto **1 queda cerrado**.
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
@@ -526,7 +552,9 @@ relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitác
 red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam en `/entrar`),
 **#27** checklist 16 jul + saludo del aula sin nombre, **#28** pestañas del aula (semana+foro /
 Concepto Base / Bonus Material, maquetas), **#30** identidad visual compartida, **#31** login
-correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bienvenida bilingüe.
+correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bienvenida bilingüe,
+**#34** página de agradecimiento bilingüe, **#35** copy exacto de la página de ventas, **#36**
+ajustes de énfasis/orden sobre ese copy.
 
 ### ⚠️ Lo más urgente para la próxima sesión
 El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el
