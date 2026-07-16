@@ -7,14 +7,25 @@
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
 > viaja en el mismo PR de cada punto.
 > **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27), puntos **3 + 4 + 12
-> (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30) y punto **7**
+> (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30), punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
 > `/nueva-clave/`, PR #31) y punto **8** (el webhook envía el correo de bienvenida al pagar,
-> PR #32). **En este PR:** **8b** — el correo de bienvenida ahora es **bilingüe (ES/EN)** según
-> el idioma en que se pagó, se envía **por Resend** con copy propio, y la página de crear
-> contraseña se hizo bilingüe (`/nueva-clave/` + `/nueva-clave/en/`).
-> Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
-> destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
+> PR #32).
+> **PR ABIERTO, aún SIN mergear:** **#33** — punto **8b**: el correo de bienvenida es
+> **bilingüe (ES/EN)** según el idioma en que se pagó (checkout guarda `lang` en la metadata de
+> Stripe), se envía **por Resend** con el **copy DEFINITIVO de Emi** (asunto, texto previo,
+> cuerpo y las dos posdatas — formato carta, sin botón corporativo), y la página de crear
+> contraseña se hizo bilingüe (`/nueva-clave/` + `/nueva-clave/en/`). Detalle de diseño: el texto
+> visible del enlace es literalmente `emilseriosacademy.com/entrar/` (lo que pidió Emi), pero el
+> `href` real apunta al enlace seguro de un solo uso que lleva a `/nueva-clave/` (donde de verdad
+> se crea la contraseña); el remitente técnico sigue siendo `info@emilseriosacademy.com` (único
+> dominio verificado en Resend) con `info@emilserios.com` como **reply-to** (las respuestas le
+> llegan a Emi). **Antes de mergear #33, falta la config de Vercel/Supabase — ver el punto 8 en
+> el checklist de abajo.**
+> **Sesión de HOY termina acá.** Pendiente el resto del checklist (ver abajo). **Próxima sesión:**
+> retomar con el **punto 9** (rediseñar la pantalla de agradecimiento del pago — Adrián ya tiene
+> el copy). Después de eso, lo natural es el **punto 11** (selector de destino del video en
+> `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
 
 - [ ] **1. Corregir el copy de la página de ventas.** No se copió textual: la *estructura*
       está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
@@ -107,7 +118,13 @@
         `/nueva-clave/` a los Redirect URLs de Supabase. Con Resend configurado ya NO hace falta
         tocar la plantilla de Supabase.
 - [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
-      spam/promociones (lo que ya decimos) y **sumar el link a `/entrar`**.
+      spam/promociones (lo que ya decimos) y **sumar el link a `/entrar`**. 📌 **Retomar acá la
+      próxima sesión.** Contexto: hoy `success_url` de Stripe (`src/pages/api/checkout.ts`) manda
+      a `/entrar/?pago=ok`, que hoy solo muestra un banner de texto ("¡Pago recibido!…") arriba del
+      formulario de login — Adrián pidió una **pantalla propia** de agradecimiento (no solo un
+      banner) con el link a `/entrar` para crear usuario y contraseña. **Adrián va a pasar el copy
+      de esa pantalla** ("te daré la info en breve") — sin eso no se puede arrancar el diseño
+      final; si no llegó, preguntar antes de improvisar el texto.
 - [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo
       se programa; agregar publicación inmediata en `/panel`.
 - [ ] **11. Selector de destino del video en `/panel`.** Al publicar, elegir a dónde va el video:
@@ -450,13 +467,24 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Todo mergeado a `main`.** No hay trabajo en vuelo. El siguiente cambio arranca de `main`
-fresco (`git fetch origin main` → rama nueva).
+⚠️ **HAY trabajo en vuelo:** PR **#33** (rama `claude/progress-checklist-review-f4rk8q`) abierto,
+SIN mergear — punto 8b (correo de bienvenida bilingüe ES/EN con el copy definitivo de Emi, ver el
+punto 8 en el checklist de arriba). **Antes de mergear #33**, hace falta la config de
+`RESEND_API_KEY` en Vercel y sumar `/nueva-clave/en/` a los Redirect URLs de Supabase.
+
+**Para la próxima sesión:** el punto 9 (pantalla de agradecimiento) es un cambio nuevo → arranca
+de `main` fresco (`git fetch origin main` → rama nueva), **igual que siempre**, aunque #33 siga
+sin mergear (son independientes). Si #33 ya se mergeó para entonces, mejor: la próxima rama parte
+de un `main` que ya lo incluye.
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
 semana con el foro adentro · Concepto Base · Bonus Material; las dos últimas son maquetas de
-diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11).
+diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11), **#30** punto
+**5** (identidad visual de la carta llevada al aula/panel/entrar), **#31** punto **7** (ingreso con
+correo + contraseña, `/nueva-clave/`), **#32** punto **8** (correo de bienvenida automático al
+pagar). **#33 (abierto, sin mergear)**: punto **8b** — correo de bienvenida bilingüe ES/EN con el
+copy definitivo de Emi, enviado por Resend.
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
@@ -467,7 +495,9 @@ relleno desde el cursor, cursor de clave de fa, notas musicales), **#19** bitác
 **#23** enlace "Entrar" en la carta para miembros que vuelven, **#24** bucle de pago arreglado +
 red de seguridad contra el webhook (`/api/verify-subscription` + aviso de spam en `/entrar`),
 **#27** checklist 16 jul + saludo del aula sin nombre, **#28** pestañas del aula (semana+foro /
-Concepto Base / Bonus Material, maquetas).
+Concepto Base / Bonus Material, maquetas), **#30** identidad visual de la carta en aula/panel/entrar,
+**#31** ingreso con correo + contraseña (`/nueva-clave/`), **#32** correo de bienvenida automático
+al pagar.
 
 ### ⚠️ Lo más urgente para la próxima sesión
 El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el
