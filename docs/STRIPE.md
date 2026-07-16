@@ -61,7 +61,8 @@ En el SQL Editor de Supabase corre `supabase/migrations/0006_stripe_subscription
 ## Cómo probar (modo test)
 1. En la carta pulsa "Acá te unes / Join here" → llegas a Stripe Checkout.
 2. Paga con la tarjeta de prueba `4242 4242 4242 4242`, fecha futura, CVC libre.
-3. Vuelves a `/entrar/?pago=ok`. Escribe **el mismo correo** del pago → enlace mágico.
+3. Vuelves a la página de agradecimiento (`/gracias/` o `/gracias/en/`). Escribe
+   **el mismo correo** del pago → llega el enlace de acceso.
 4. Entras al aula: si hay ejercicio en ventana, lo ves; arriba aparece
    "Suscripción" (portal). En la tabla `subscriptions` hay una fila `status=active`.
 

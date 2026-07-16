@@ -1,0 +1,203 @@
+---
+// Página de agradecimiento tras el pago (punto 9 del checklist) — componente
+// bilingüe (prop lang: 'es' | 'en'). Rutas: /gracias/ (es) y /gracias/en/ (en).
+// Stripe redirige aquí (success_url) en vez de a /entrar/?pago=ok. El comprador
+// aún no tiene sesión ni contraseña (pago anónimo, ver docs/PROGRESO.md punto 8);
+// aquí pide su enlace de acceso con el MISMO correo con el que pagó
+// (resetPasswordForEmail → /nueva-clave/, mismo flujo que /entrar).
+// Copy definitivo de Emi, jul 2026.
+interface Props { lang?: 'es' | 'en'; }
+const { lang = 'es' } = Astro.props;
+const isEN = lang === 'en';
+
+const t = isEN ? {
+  htmlLang: 'en',
+  metaTitle: 'Thank you — Let’s Study Together · Emilse Rios',
+  brandSmall: 'Membership',
+  warn: 'Don’t close this tab',
+  h1: 'Thank you for joining. We’re almost in.',
+  sub: 'Type the email you used for your payment and the link to the platform will arrive there. This tab will go away, but you can always come back to your email — it will stay saved there.',
+  label: 'Your email', ph: 'youremail@email.com',
+  submit: 'Send me my access', sending: 'Sending…',
+  sent: 'Done! Check your inbox — it should arrive in a moment.',
+  sendError: 'Could not send it: ',
+  noteIntro: 'Check your inbox carefully — also spam and junk mail. Look for this subject:',
+  subject: 'Your access to the membership',
+  directIntro: 'Here is also your direct access:',
+  directUrl: 'https://www.emilseriosacademy.com/entrar/',
+  closing1: 'But don’t close this tab until the email is in your inbox. If it doesn’t arrive, write to me at',
+  closing2: 'and we’ll fix it.',
+  contactEmail: 'info@emilserios.com',
+} : {
+  htmlLang: 'es',
+  metaTitle: 'Gracias — Estudiemos Juntos · Emilse Rios',
+  brandSmall: 'Membresía',
+  warn: 'No cierres esta pestaña',
+  h1: 'Gracias por unirte. Ya casi estamos dentro.',
+  sub: 'Escribe el correo con el que realizaste tu pago y te llegará el link de acceso a la plataforma. Esta pestaña se va, pero a tu correo puedes volver siempre — ahí quedará guardado.',
+  label: 'Tu correo', ph: 'tucorreo@email.com',
+  submit: 'Enviarme mi acceso', sending: 'Enviando…',
+  sent: '¡Listo! Revisa tu bandeja, llega en un momento.',
+  sendError: 'No se pudo enviar: ',
+  noteIntro: 'Revisa bien tu bandeja, también spam y correos no deseados. Busca este asunto:',
+  subject: 'Tu acceso a la membresía',
+  directIntro: 'Aquí tienes también el acceso directo:',
+  directUrl: 'https://www.emilseriosacademy.com/entrar/',
+  closing1: 'Pero hasta que el correo no esté en tu bandeja, no cierres esta pestaña. Y si no te llega, escríbeme a',
+  closing2: 'y lo solucionamos.',
+  contactEmail: 'info@emilserios.com',
+};
+---
+<!DOCTYPE html>
+<html lang={t.htmlLang}>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{t.metaTitle}</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
+<link rel="stylesheet" href="/colors_and_type.css" />
+<link rel="stylesheet" href="/membresia-ui.css" />
+<style is:inline>
+  /* Paleta, cursor y botones vienen de /membresia-ui.css (identidad de la carta). */
+  :root { --edge: clamp(20px, 5vw, 64px); }
+  body { min-height: 100svh; display: grid; place-items: center; padding: var(--edge); }
+  .display { font-family: var(--font-display); font-weight: var(--weight-semibold);
+             letter-spacing: -0.03em; line-height: 1.15; }
+  .card { width: 100%; max-width: 440px; }
+  .brand-logo { margin-bottom: var(--space-6); }
+  .warn { display: inline-flex; align-items: center; gap: 8px; font-size: var(--text-sm);
+          font-weight: var(--weight-semibold); color: var(--accent); border: 1px solid var(--accent);
+          border-radius: var(--radius-full); padding: 7px 16px; margin-bottom: var(--space-4); }
+  .warn::before { content: '●'; font-size: 0.55em; }
+  h1 { font-size: var(--text-2xl); margin: 0 0 var(--space-3); }
+  .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.55; }
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
+  .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+  .field input { font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
+                 padding: 13px 15px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
+  .field input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
+  .msg { margin-top: var(--space-4); font-size: var(--text-base); line-height: 1.5; }
+  .msg.ok { color: var(--ink); }
+  .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
+  .msg[hidden] { display: none; }
+  .note, .direct, .closing { font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.55; }
+  .note { margin-top: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+  .note strong { display: block; margin-top: 6px; color: var(--ink); font-weight: var(--weight-semibold); }
+  .direct { margin-top: var(--space-4); }
+  .direct a { color: var(--ink); font-weight: var(--weight-semibold); word-break: break-all; }
+  .closing { margin-top: var(--space-5); }
+  .closing a { color: var(--ink); font-weight: var(--weight-semibold); }
+</style>
+</head>
+<body data-page-lang={lang}>
+  <div class="card">
+    <a class="brand-logo" href="/">
+      <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+           onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+      <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+      <small>{t.brandSmall}</small>
+    </a>
+
+    <span class="warn">{t.warn}</span>
+    <h1 class="display">{t.h1}</h1>
+    <p class="sub">{t.sub}</p>
+
+    <form id="accessForm">
+      <div class="field">
+        <label for="email">{t.label}</label>
+        <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+               spellcheck="false" placeholder={t.ph} required />
+      </div>
+      <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
+        <span class="btn__label" id="submitLabel">{t.submit}</span>
+        <span class="btn__ar" aria-hidden="true">→</span>
+      </button>
+    </form>
+
+    <p class="msg ok" id="msgOk" hidden></p>
+    <p class="msg err" id="msgErr" hidden></p>
+
+    <p class="note">{t.noteIntro}<strong>«{t.subject}»</strong></p>
+
+    <p class="direct">{t.directIntro}<br /><a href={t.directUrl}>{t.directUrl}</a></p>
+
+    <p class="closing">{t.closing1} <a href={`mailto:${t.contactEmail}`}>{t.contactEmail}</a> {t.closing2}</p>
+  </div>
+
+<script>
+  import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+
+  const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
+  const EN = pageLang === 'en';
+  const $ = (id: string) => document.getElementById(id) as HTMLElement;
+  const form = $('accessForm') as HTMLFormElement;
+  const email = $('email') as HTMLInputElement;
+  const btn = $('submitBtn') as HTMLButtonElement;
+  const submitLabel = $('submitLabel');
+  const setBtnLabel = (txt: string) => { if (submitLabel) submitLabel.textContent = txt; else btn.textContent = txt; };
+  const msgOk = $('msgOk');
+  const msgErr = $('msgErr');
+
+  const T = {
+    sending: EN ? 'Sending…' : 'Enviando…',
+    submit: EN ? 'Send me my access' : 'Enviarme mi acceso',
+    sent: EN ? 'Done! Check your inbox — it should arrive in a moment.' : '¡Listo! Revisa tu bandeja, llega en un momento.',
+    sendError: EN ? 'Could not send it: ' : 'No se pudo enviar: ',
+    noConfig: EN
+      ? 'Supabase is not configured (PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are missing).'
+      : 'Falta configurar el archivo .env (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY).',
+    redirectTo: EN ? '/nueva-clave/en/' : '/nueva-clave/',
+  };
+
+  if (!isSupabaseConfigured) {
+    msgErr.textContent = T.noConfig;
+    msgErr.hidden = false;
+    btn.disabled = true;
+  }
+
+  function describeError(err: any): string {
+    if (!err) return 'error desconocido';
+    if (typeof err === 'string') return err;
+    const msg = err.message || err.error_description || err.msg || err.error || err.hint;
+    if (msg) return msg + (err.code || err.error_code ? ' · código ' + (err.code || err.error_code) : '');
+    try {
+      const own: Record<string, unknown> = {};
+      for (const k of Object.getOwnPropertyNames(err)) own[k] = err[k];
+      const s = JSON.stringify(own);
+      if (s && s !== '{}') return s;
+    } catch (_) { /* ignore */ }
+    return err.name || String(err) || 'error desconocido';
+  }
+
+  // Mismo flujo que /entrar → «Crea o restablece tu contraseña»: al pagar la
+  // cuenta ya existe (creada por el webhook) pero sin clave, así que este enlace
+  // de un solo uso sirve igual para fijarla por primera vez.
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msgOk.hidden = true; msgErr.hidden = true;
+    const mail = email.value.trim();
+    if (!mail) return;
+    btn.disabled = true; setBtnLabel(T.sending);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(mail, {
+        redirectTo: window.location.origin + T.redirectTo,
+      });
+      if (error) {
+        msgErr.textContent = T.sendError + describeError(error);
+        msgErr.hidden = false;
+      } else {
+        msgOk.textContent = T.sent;
+        msgOk.hidden = false;
+      }
+    } catch (err) {
+      msgErr.textContent = T.sendError + describeError(err);
+      msgErr.hidden = false;
+    } finally {
+      btn.disabled = false; setBtnLabel(T.submit);
+    }
+  });
+</script>
+<script src="/membresia-ui.js" defer></script>
+</body>
+</html>
