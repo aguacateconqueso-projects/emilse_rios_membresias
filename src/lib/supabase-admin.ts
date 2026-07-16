@@ -15,6 +15,19 @@ export function supabaseAdmin(): SupabaseClient | null {
   });
 }
 
+// Correo de bienvenida / crear contraseña: dispara el mismo correo de un solo uso
+// que /entrar (resetPasswordForEmail), apuntando a /nueva-clave/. Se usa desde el
+// webhook cuando el pago crea una cuenta NUEVA (que aún no tiene contraseña), para
+// que el comprador reciba el enlace sin tener que pedirlo. Usa el flujo público
+// (anon), igual que lo haría el navegador. No lanza: devuelve { error } si falla.
+export async function sendPasswordSetupEmail(email: string, redirectTo: string) {
+  if (!url || !anonKey) return { error: new Error('Supabase no configurado (falta anon key)') };
+  const client = createClient(url, anonKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  return client.auth.resetPasswordForEmail(email, { redirectTo });
+}
+
 // Valida el token de Supabase que manda el navegador (Authorization: Bearer …)
 // y devuelve el usuario. Se usa en /api/portal (miembro autenticado en el aula).
 export async function getUserFromRequest(request: Request) {
