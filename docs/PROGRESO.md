@@ -20,8 +20,15 @@
 > rojo con glow, título en dos líneas, PR #40) y el punto **11** (selector de destino del video
 > en `/panel` — Ejercicio de la semana / Concepto Base / Bonus Material —, con lo que Concepto
 > Base y Bonus Material dejan de ser maqueta en `/aula`, PR #41). Ver detalle abajo.
-> Pendientes el resto (ver abajo): puntos **6**, **10** y el tour del **12**. No se definió con
-> Adrián cuál sigue la próxima sesión.
+> **Segunda tanda del mismo día (16 jul):** ajuste de encabezado de `/entrar` (logo grande y
+> centrado como en `/gracias`, PR #43), punto **6** (borrar ejercicios desde `/panel`, PR #44),
+> punto **10** (botón "Publicar ahora" además de "Programar", PR #45) y un punto nuevo **13**
+> (menú de engranaje en el aula con **Soporte** y **Darse de baja**, PR #47 — el PR #46 del primer
+> intento en la carta se cerró sin mergear, ver punto 13). Adrián además **corrió la migración
+> `0007_content_kind.sql`** en Supabase (columna `kind`), así que el punto 11 (Concepto Base /
+> Bonus Material) ya tiene su respaldo en la BD.
+> Pendiente el resto (ver abajo): **solo el tour/onboarding del punto 12**. Adrián pasará el flujo
+> del tour cuando se trabaje.
 
 - [x] **1. Corregir el copy de la página de ventas.** ✅ Hecho. Adrián pasó el texto exacto y
       se reemplazó frase por frase en `Landing.astro` (ES, con la traducción EN actualizada en
@@ -120,8 +127,15 @@
       (`btn.textContent`), vía un MutationObserver. Verificado con `npm run build` y capturas
       headless de `/entrar` y el gate del panel. Las páginas ya no definen su propia paleta ni
       sus botones: los toman de la capa compartida para no volver a desalinearse.
-- [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
-      de fin, no borrarlos; hay 3 de prueba ocupando espacio. Agregar borrado real.
+- [x] **6. Poder borrar ejercicios pasados desde `/panel`.** ✅ Hecho (PR #44, rama
+      `claude/panel-delete-exercises`). Antes solo se podía cerrar un ejercicio con fecha de fin;
+      ahora cada fila de la tabla de Ejercicios (las tres pestañas: Ejercicio de la semana /
+      Concepto Base / Bonus Material, que comparten la tabla `exercises`) tiene un botón **"Borrar"**
+      junto a "Editar". Pide confirmación antes (avisando que también se borran las preguntas y
+      respuestas del foro asociadas, por el `on delete cascade` ya existente en la BD) y borra con
+      la política RLS de admin ya vigente (`exercises: admin all`), sin migración nueva. Verificado
+      con `npm run build`; el borrado contra datos reales queda por probar en producción (este
+      entorno no tiene credenciales de Supabase).
 - [x] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** ✅ Hecho (CÓDIGO).
       Se **eliminó el enlace mágico**: `/entrar` ahora es **correo + contraseña**
       (`signInWithPassword`) con casilla **"Mantener la sesión iniciada"**. La casilla controla
@@ -217,8 +231,17 @@
         explícitas ("Thank you for joining" / "We're almost in.", e igual en ES). El resto de la
         página (subtítulo, formulario, notas) no cambió. Verificado con capturas headless de
         ambos idiomas.
-- [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo
-      se programa; agregar publicación inmediata en `/panel`.
+- [x] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** ✅ Hecho
+      (PR #45, rama `claude/panel-publish-now`). El formulario de Ejercicio de la semana / Concepto
+      Base tenía solo "Guardar y programar" (fecha futura, por defecto el próximo jueves); se agregó
+      un segundo botón **"Publicar ahora"** que guarda el mismo contenido con `publish_at = ahora`
+      en vez de esperar. Si Emi ya puso fecha de cierre se respeta; si la dejó en blanco se calcula
+      con la misma duración de siempre (7 días semana / 1 mes base) pero contada desde ahora.
+      Funciona creando y editando (p. ej. adelantar un ejercicio ya programado). Oculto para Bonus
+      Material (que ya se publica de inmediato). De paso se corrigió el mismo bug ya conocido de
+      `[hidden]` perdiendo contra `.btn { display: inline-flex }` (`.form__actions .btn[hidden] {
+      display: none; }`), necesario para que el botón se oculte de verdad en Bonus. Verificado con
+      build + capturas headless del formulario en los tres destinos.
 - [x] **11. Selector de destino del video en `/panel`.** ✅ Hecho (PR #41, rama
       `claude/panel-content-destination`). Se reutiliza la tabla `exercises` (ya genérica:
       título/desc/vimeo/pdf bilingües + ventana de fechas) para las tres pestañas del aula, con
@@ -234,11 +257,11 @@
       correcto; la tabla de abajo se filtra por destino con su propia barra de pestañas. Se
       conectaron también las **dos subpáginas del aula** (ver punto 12: Concepto Base y Bonus
       Material dejan de ser maqueta).
-      ⚠️ **Pendiente de infraestructura (no es este PR):** correr
+      ✅ **Infraestructura ya corrida (16 jul):** Adrián ejecutó
       `supabase/migrations/0007_content_kind.sql` en el SQL Editor de Supabase (agrega la
-      columna `kind` + el enum + reescribe la política de lectura de miembro), igual que el
-      resto de las migraciones — hasta entonces el panel no podrá guardar ni leer contenido con
-      `kind`.
+      columna `kind` + el enum + reescribe la política de lectura de miembro), con resultado
+      "Success. No rows returned". Ya no hay pendiente de BD para este punto — el panel puede
+      guardar y leer Concepto Base y Bonus Material.
       - **Incidente de flujo (durante el desarrollo, ya corregido):** los botones nuevos del
         selector de Destino y del filtro de la tabla reusaban la clase `.tab`, la misma que usa
         el script de las pestañas superiores (Ejercicios/Miembros/Foro) con
@@ -260,7 +283,21 @@
       reales en este entorno por no tener credenciales de Supabase; falta probarlo en producción
       una vez corrida la migración `0007`). ⬜ Sigue pendiente el **tour/onboarding guiado** paso
       a paso (queda para su propio PR).
-
+- [x] **13. Menú de cuenta (engranaje) en el aula: soporte + darse de baja.** ✅ Hecho (nuevo, lo
+      pidió Adrián esta sesión; PR #47, rama `claude/aula-support-unsubscribe-menu`). Un ícono de
+      engranaje ⚙ en la barra superior de **`/aula`** (entre el selector EN/ES y "Salir") que abre
+      un menú con dos opciones: **Soporte** (abre el correo a `info@emilserios.com`) y **Darse de
+      baja** (enlace directo al portal de facturación de Stripe,
+      `billing.stripe.com/p/login/bJeaEX6V7dRDaUP8Zb73G00`). Bilingüe (ES/EN), mismo estilo de la
+      barra; se cierra con clic afuera o Escape. Convive con el enlace **"Suscripción"** que ya
+      existía en la misma barra (visible solo para miembros con suscripción activa, abre el portal
+      de Stripe **dinámico** vía `/api/portal`): quedan dos caminos al portal (el dinámico por
+      sesión y este estático). Abierto para más adelante: si Adrián prefiere, unificarlos en uno.
+      - ⚠️ **Incidente de flujo (corregido en la misma sesión):** en el primer intento el menú se
+        puso por error en la **carta de ventas** (`Landing.astro`, PR #46). Adrián lo detectó antes
+        de mergear; se **cerró el PR #46 sin mergear** (la landing quedó intacta) y se rehízo en el
+        aula (PR #47). Recordatorio: el engranaje de cuenta es para miembros que ya pagaron → va en
+        el aula, no en la página pública.
 
 ## Qué es
 Membresía de pago recurrente para contrabajistas de Emilse Rios, **separada** del
@@ -545,18 +582,17 @@ control de DNS y no depender de él.
       de problemas con el webhook, pero **hoy le está funcionando normal** (no hay síntomas del
       bucle de pago). Lo deja para revisar con calma más adelante; ver también la nota de
       "urgente" más abajo (sigue vigente hasta que se confirme el endpoint sano).
-- [ ] **Recorrido completo end-to-end**: Emi crea ejercicio (sin nivel)
-      → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta. Adrián lo
-      deja para cuando el resto del checklist esté más cerrado.
-- [ ] (Opcional, limpieza) Servir el **favicon** desde el dominio propio en vez del WordPress
-      viejo (`emilserios.com`) — quita un aviso de CORS y otra dependencia del tercero.
-      ⚠️ Reapareció al probar el cambio de idioma: el `<link rel="icon">` apunta a
-      `https://emilserios.com/...`; en entornos con proxy lento puede colgar la carga. En
-      producción carga bien, pero conviene autoalojarlo. (Adrián lo dejó para un PR aparte, sigue
-      sin prisa.)
-- [ ] Anti-reentrada fina por email (después).
-- [ ] Onboarding tipo Figma (después).
-- [ ] Favoritos (después).
+- [ ] **Recorrido completo end-to-end**: Emi crea ejercicio → `mdza.exp` lo ve, completa y
+      pregunta → Emi responde → alumno ve la respuesta. Adrián dijo (16 jul) que **están en eso**
+      (probándolo con el sistema ya casi completo).
+- [ ] **Tour/onboarding guiado del punto 12** (único punto del checklist que queda). Adrián pasará
+      el flujo paso a paso cuando se trabaje; es su propio PR.
+- [ ] Anti-reentrada fina por email (después; hoy ya cubierto "gratis" por la ventana del precio
+      de fundador — quien se da de baja y vuelve solo encuentra el precio estándar).
+      ✅ **Favicon:** Adrián confirmó (16 jul) que **el que está está bien** — no volver a proponer
+      autoalojarlo. (Antes figuraba como pendiente de limpieza; queda cerrado por decisión suya.)
+      ✅ **"Favoritos"** se retiró de la lista: era una idea especulativa del documento de
+      arquitectura original, nunca la pidió Emi ni Adrián. Si algún día hace falta se replantea.
 
 ## Incidente (merge desalineado de niveles) — para no repetirlo
 Al eliminar los niveles, el PR #2 ya se había mergeado a `main` en un commit **anterior**
@@ -584,22 +620,26 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
    prueba se fijan re-ejecutando `supabase/set_admin.sql` (edita la lista de admins ahí).
 
 ## Decisiones abiertas (preguntar a Emi)
-- Foro: ¿los miembros se responden entre ellos o solo responde Emi?
-- Onboarding/tutorial la primera vez.
+- ~~Foro: ¿los miembros se responden entre ellos o solo responde Emi?~~ **RESUELTO** (Adrián,
+  16 jul): **solo Emi responde**, no hay interacción entre alumnos. Todos ven las preguntas, pero
+  cada uno hace la suya y únicamente Emi contesta. (El código ya funciona así.)
+- Onboarding/tutorial la primera vez (punto 12): Adrián pasará el flujo cuando se trabaje.
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Sin PR abierto ahora mismo.** Los PR **#40** (ajuste de encabezado de `/gracias`) y **#41**
-(punto 11, selector de destino en `/panel`) ya están **mergeados a `main`**. La rama local
-`claude/progreso-update-panel-destino` quedó creada desde `origin/main` al día (incluye hasta
-PR #41) solo para esta actualización de bitácora — **la próxima sesión debe arrancar una rama
-nueva** desde ahí para el siguiente punto del checklist.
-⚠️ **Antes de seguir con el punto 11 en producción**, correr
-`supabase/migrations/0007_content_kind.sql` en el SQL Editor de Supabase (ver nota del punto 11
-arriba) — sin eso el panel no puede guardar ni leer Concepto Base ni Bonus Material.
-Quedan pendientes del checklist: **punto 6** (borrar ejercicios pasados desde `/panel`), **punto
-10** (botón "Publicar ahora" además de "Programar") y el **tour/onboarding guiado** del punto 12.
-No se definió con Adrián cuál sigue.
+**Sin PR abierto ahora mismo.** Todo lo de la segunda tanda del 16 jul quedó **mergeado a
+`main`**: **#43** (encabezado de `/entrar`), **#44** (punto 6, borrar ejercicios), **#45** (punto
+10, "Publicar ahora") y **#47** (punto 13, engranaje de cuenta en el aula). El **#46** (primer
+intento del punto 13 en la carta) se **cerró sin mergear**. La rama local
+`claude/progreso-update-session-16jul-pt2` quedó creada desde `origin/main` al día (incluye hasta
+PR #47) solo para esta actualización de bitácora — **la próxima sesión debe arrancar una rama
+nueva** desde ahí para el siguiente punto.
+✅ La migración `supabase/migrations/0007_content_kind.sql` **ya se corrió** en Supabase (Adrián,
+16 jul): el panel ya guarda/lee Concepto Base y Bonus Material en producción.
+**Único pendiente del checklist: el tour/onboarding guiado del punto 12.** Adrián pasará el flujo
+paso a paso del tour cuando se trabaje (es su propio PR). Todo lo demás del checklist (puntos 1–11
+y 13) está cerrado en código; queda por hacer el **recorrido end-to-end de prueba en producción**
+(sección "Pendiente ⬜") cuando Adrián quiera.
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
@@ -622,6 +662,18 @@ dashboard/Vercel de Stripe ok (ver Pendiente ⬜); el aviso de Stripe sobre el w
 abierto pero sin bloquear (le funciona normal); recorrido end-to-end y favicon se dejan para más
 adelante.
 
+**Segunda tanda del 16 jul (misma sesión, tras correr la migración 0007):** **#43** encabezado de
+`/entrar` (logo grande y centrado como en `/gracias`), **#44** punto **6** (botón "Borrar" en la
+tabla de ejercicios de `/panel`, con confirmación), **#45** punto **10** (botón "Publicar ahora"
+además de "Guardar y programar") y **#47** punto **13** nuevo (engranaje de cuenta en la barra del
+aula con **Soporte** → correo a `info@emilserios.com` y **Darse de baja** → link del portal de
+Stripe). El **#46** fue un primer intento del punto 13 puesto por error en la carta de ventas;
+Adrián lo detectó antes de mergear y se **cerró sin mergear** (la landing quedó intacta), rehecho
+en el aula en el #47. Adrián corrió además la migración **`0007_content_kind.sql`** en Supabase
+(punto 11 con respaldo real en la BD) y resolvió la decisión abierta del foro: **solo Emi
+responde**, sin interacción entre alumnos. Con esto **todo el checklist queda cerrado en código
+salvo el tour/onboarding del punto 12**.
+
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
 **#16/#17/#18** rediseño fluido/pro de la carta (logo+foto reales, tarjeta de precio, botones con
@@ -636,7 +688,11 @@ correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bie
 **#34** página de agradecimiento bilingüe, **#35** copy exacto de la página de ventas, **#36**
 ajustes de énfasis/orden sobre ese copy, **#38** correo de acceso vía Resend en las tres vías
 (punto 8c, confirmado en producción), **#40** ajuste de encabezado de `/gracias`, **#41** selector
-de destino del video en `/panel` (punto 11, Concepto Base y Bonus Material con datos reales).
+de destino del video en `/panel` (punto 11, Concepto Base y Bonus Material con datos reales),
+**#43** encabezado de `/entrar` (logo grande centrado como en `/gracias`), **#44** borrar
+ejercicios desde `/panel` (punto 6), **#45** botón "Publicar ahora" en `/panel` (punto 10) y
+**#47** engranaje de cuenta en el aula con Soporte + Darse de baja (punto 13; el #46, primer
+intento en la carta, se cerró sin mergear).
 
 ### ⚠️ Pendiente de seguimiento (ya no bloquea)
 El **webhook de Stripe** tuvo un aviso de Stripe sobre posibles problemas, pero Adrián confirmó
