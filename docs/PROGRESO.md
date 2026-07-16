@@ -16,13 +16,13 @@
       "Hola, {nombre} ·"; ahora es solo "Tu ejercicio de esta semana" / "Your exercise this week".
       Se quitó el nombre del `eyebrow` estático (ES/EN) y del `greeting` de JS en `Aula.astro`
       (ya no interpola `full_name`/email). Verificado en el build.
-- [ ] **3. Nuevo modelo de contenido: "Concepto/Ejercicio Base" mensual.** La dinámica de Emi
-      cambia: 5 videos mensuales (10 con ES/EN); **1 de ellos es el "Video/Ejercicio Base" (¿Core
-      Exercise?)** que muestra las bases de los ejercicios del mes. Se resuelve con el sistema de
-      pestañas del punto 12 (el Concepto Base es una pestaña propia). *(Fusionado con el punto 12.)*
-- [ ] **4. Apartado "Bonus Material" en el aula.** Pestaña aparte o sección abajo (por definir
-      cuál funciona mejor). Ahí irá, por ejemplo, el **video de bienvenida** que ya grabó Emi
-      (uno en inglés y otro en español).
+- [x] **3. Nuevo modelo de contenido: "Concepto Base" mensual.** ✅ Diseño hecho (maqueta). El
+      Concepto Base es ahora una **pestaña propia** en el aula (ver punto 12). Muestra video
+      (ES/EN) + descripción + "de qué va", con la idea de que los ejercicios semanales se apoyan
+      en él. ⬜ Falta conectarlo a la BD (junto al punto 11).
+- [x] **4. Apartado "Bonus Material" en el aula.** ✅ Diseño hecho (maqueta). Es una **pestaña**
+      con grilla de tarjetas (media + título + descripción + ES·EN). La primera tarjeta es el
+      **video de bienvenida** de Emi. ⬜ Falta conectarlo a la BD (junto al punto 11).
 - [ ] **5. Unificar el diseño de la página de ventas con aula y panel** (estilo de botones, etc.).
       *En veremos — Adrián lo confirma con Emi.*
 - [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
@@ -41,11 +41,12 @@
       **Ejercicio de la semana**, **Bonus Material** o **Ejercicio/Concepto Base**. Requiere
       **diseñar las dos subpáginas** (Bonus Material y Concepto Base) — se conecta con los
       puntos 3 y 4.
-- [ ] **12. Sistema de pestañas del aula + tour paso a paso.** Estructura final en **pestañas**:
-      **Ejercicio de la semana**, **Bonus Material** y **Concepto Base**. **El foro NO es una
-      pestaña**: vive dentro del "Ejercicio de la semana" — el miembro ve el video y, haciendo
-      scroll down, deja su consulta ahí mismo. Sumar un **tour/onboarding guiado** que resalte
-      cada parte al entrar por primera vez. *(Absorbe la propuesta original del punto 3.)*
+- [~] **12. Sistema de pestañas del aula + tour paso a paso.** ✅ **Pestañas hechas** (`Aula.astro`):
+      **Ejercicio de la semana** (con datos reales + el **foro adentro**, no es pestaña aparte),
+      **Concepto Base** y **Bonus Material** (maquetas). Subrayado editorial en la pestaña activa,
+      navegación por teclado (flechas), deep-link por hash (`#base`/`#bonus`). El gate de pago
+      oculta pestañas + paneles. Verificado headless (switching + sin errores). ⬜ Falta el
+      **tour/onboarding guiado** paso a paso (queda pendiente para su propio PR).
 
 
 ## Qué es
