@@ -14,11 +14,14 @@
 > PR #33), punto **9** (página de agradecimiento bilingüe, PR #34), punto **1** — copy
 > definitivo de la página de ventas: texto exacto de Adrián (PR #35) + ajustes de énfasis y
 > orden — bold/itálica en varios párrafos, mover "Mucho para muchos" debajo del cuadro de
-> precio con un tercer botón (PR #36) — y **8c** (arreglo del correo de acceso que no pasaba
+> precio con un tercer botón (PR #36) —, **8c** (arreglo del correo de acceso que no pasaba
 > por Resend en `/entrar` y `/gracias`, PR #38, **confirmado funcionando en producción por
-> Adrián**). Ver detalle abajo.
-> Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es el **punto 11** (selector de
-> destino del video en `/panel`) para que Concepto Base y Bonus Material muestren contenido real.
+> Adrián**), un ajuste de encabezado en `/gracias` pedido después por Adrián (logo grande, aviso
+> rojo con glow, título en dos líneas, PR #40) y el punto **11** (selector de destino del video
+> en `/panel` — Ejercicio de la semana / Concepto Base / Bonus Material —, con lo que Concepto
+> Base y Bonus Material dejan de ser maqueta en `/aula`, PR #41). Ver detalle abajo.
+> Pendientes el resto (ver abajo): puntos **6**, **10** y el tour del **12**. No se definió con
+> Adrián cuál sigue la próxima sesión.
 
 - [x] **1. Corregir el copy de la página de ventas.** ✅ Hecho. Adrián pasó el texto exacto y
       se reemplazó frase por frase en `Landing.astro` (ES, con la traducción EN actualizada en
@@ -207,18 +210,56 @@
       (`src/pages/api/checkout.ts`) ahora apunta aquí (antes `/entrar/?pago=ok`) según el idioma en
       que se pagó. Se quitó el banner viejo de `?pago=ok` en `/entrar/index.astro` (superado por esta
       página). Verificado con `npm run build` + capturas headless de ambos idiomas.
+      - **Ajuste de encabezado pedido por Adrián (PR #40, mismo día):** logo caligráfico grande y
+        centrado arriba (como en la carta de ventas) con "Membership"/"Membresía" debajo; el
+        aviso "No cierres esta pestaña" pasa de píldora con borde a texto rojo grande en negrita
+        con resplandor (glow) pulsante, sin marco; título centrado y partido en dos líneas
+        explícitas ("Thank you for joining" / "We're almost in.", e igual en ES). El resto de la
+        página (subtítulo, formulario, notas) no cambió. Verificado con capturas headless de
+        ambos idiomas.
 - [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo
       se programa; agregar publicación inmediata en `/panel`.
-- [ ] **11. Selector de destino del video en `/panel`.** Al publicar, elegir a dónde va el video:
-      **Ejercicio de la semana**, **Bonus Material** o **Ejercicio/Concepto Base**. Requiere
-      **diseñar las dos subpáginas** (Bonus Material y Concepto Base) — se conecta con los
-      puntos 3 y 4.
-- [~] **12. Sistema de pestañas del aula + tour paso a paso.** ✅ **Pestañas hechas** (`Aula.astro`):
-      **Ejercicio de la semana** (con datos reales + el **foro adentro**, no es pestaña aparte),
-      **Concepto Base** y **Bonus Material** (maquetas). Subrayado editorial en la pestaña activa,
-      navegación por teclado (flechas), deep-link por hash (`#base`/`#bonus`). El gate de pago
-      oculta pestañas + paneles. Verificado headless (switching + sin errores). ⬜ Falta el
-      **tour/onboarding guiado** paso a paso (queda pendiente para su propio PR).
+- [x] **11. Selector de destino del video en `/panel`.** ✅ Hecho (PR #41, rama
+      `claude/panel-content-destination`). Se reutiliza la tabla `exercises` (ya genérica:
+      título/desc/vimeo/pdf bilingües + ventana de fechas) para las tres pestañas del aula, con
+      una columna nueva `kind` (`semana` / `base` / `bonus`) que dice a cuál pertenece cada fila:
+      - **semana**: sin cambios, misma ventana semanal de siempre.
+      - **base**: mismo mecanismo de ventana pero pensado para un rango mensual (una fila
+        "vigente" a la vez, igual que la semanal).
+      - **bonus**: se acumula — una vez publicada (publish_at ≤ ahora) **no expira**; la
+        política RLS de miembro ignora `unpublish_at` para este tipo.
+      En `/panel`, el formulario "+ Nuevo" tiene un selector de **Destino** (los mismos tres
+      nombres) que ajusta las etiquetas del formulario, muestra u oculta las fechas (Bonus se
+      publica de inmediato al guardar, sin fecha de cierre visible) y guarda con el `kind`
+      correcto; la tabla de abajo se filtra por destino con su propia barra de pestañas. Se
+      conectaron también las **dos subpáginas del aula** (ver punto 12: Concepto Base y Bonus
+      Material dejan de ser maqueta).
+      ⚠️ **Pendiente de infraestructura (no es este PR):** correr
+      `supabase/migrations/0007_content_kind.sql` en el SQL Editor de Supabase (agrega la
+      columna `kind` + el enum + reescribe la política de lectura de miembro), igual que el
+      resto de las migraciones — hasta entonces el panel no podrá guardar ni leer contenido con
+      `kind`.
+      - **Incidente de flujo (durante el desarrollo, ya corregido):** los botones nuevos del
+        selector de Destino y del filtro de la tabla reusaban la clase `.tab`, la misma que usa
+        el script de las pestañas superiores (Ejercicios/Miembros/Foro) con
+        `document.querySelectorAll('.tab')` — al hacer clic, ese script también los capturaba y
+        ocultaba TODO el panel (porque ninguno de los tres botones de sección "coincidía" con el
+        clic). Se acotó ese selector a `.tab[aria-controls]` (solo las pestañas de sección, que
+        sí controlan un `<section>`). También apareció el mismo problema ya conocido de
+        `[hidden]` perdiendo contra `.grid2 { display: grid }`: se agregó `.grid2[hidden] {
+        display: none; }` (mismo patrón que ya existía para `.form[hidden]`).
+- [x] **12. Sistema de pestañas del aula + tour paso a paso.** ✅ **Pestañas con datos reales**
+      (`Aula.astro`, ver punto 11): **Ejercicio de la semana** (con el **foro adentro**, no es
+      pestaña aparte), **Concepto Base** (mismo patrón que la semana: título, video ES/EN con su
+      propio selector de idioma, descripción, PDF) y **Bonus Material** (grilla real desde
+      Supabase; el video de cada tarjeta se carga recién al hacer clic, no de entrada). Subrayado
+      editorial en la pestaña activa, navegación por teclado (flechas), deep-link por hash
+      (`#base`/`#bonus`). El gate de pago oculta pestañas + paneles. Mensajes de "vacío" propios
+      si aún no hay Concepto Base vigente o Bonus Material publicado. Verificado con
+      `npm run build` + capturas headless de la estructura (no se pudo probar el flujo con datos
+      reales en este entorno por no tener credenciales de Supabase; falta probarlo en producción
+      una vez corrida la migración `0007`). ⬜ Sigue pendiente el **tour/onboarding guiado** paso
+      a paso (queda para su propio PR).
 
 
 ## Qué es
@@ -496,24 +537,23 @@ control de DNS y no depender de él.
       la red de seguridad.
 
 ### Pendiente ⬜
-- [ ] **STRIPE — CONFIG DE DASHBOARD/VERCEL (el CÓDIGO ya está, ver "Hecho")**. Lo que falta
-      NO es código, es configuración que hace Adrián (guía completa en `docs/STRIPE.md`):
-      1. **Webhook** en Stripe apuntando a `https://emilseriosacademy.com/api/stripe-webhook`
-         (eventos: `checkout.session.completed`, `customer.subscription.created/updated/deleted`,
-         `invoice.paid`, `invoice.payment_failed`) → copiar el `whsec_...`.
-      2. **Variables de entorno** en Vercel: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`,
-         `STRIPE_PRICE_FOUNDER`, `STRIPE_PRICE_STANDARD`, `SUPABASE_SERVICE_ROLE_KEY`
-         (y opcional `STRIPE_FOUNDER_UNTIL`). Redeploy.
-      3. Correr la migración `supabase/migrations/0006_stripe_subscription_link.sql`.
-      4. Probar con tarjeta `4242 4242 4242 4242` (modo test) → pasar a LIVE.
-      Flujo elegido con Adrián: **2a pago anónimo + enlace por email** y **1b precios ya creados**.
+- [x] **STRIPE — CONFIG DE DASHBOARD/VERCEL.** ✅ Confirmado por Adrián (16 jul): precio de
+      fundador (`STRIPE_FOUNDER_UNTIL`, ventana 16–23 jul) comprobado, y el resto de la
+      configuración de dashboard/Vercel también quedó ok. Flujo elegido: **2a pago anónimo +
+      enlace por email** y **1b precios ya creados**. Guía completa en `docs/STRIPE.md`.
+      ⚠️ **Webhook — queda abierto, no bloquea:** Adrián recibió un correo de Stripe avisando
+      de problemas con el webhook, pero **hoy le está funcionando normal** (no hay síntomas del
+      bucle de pago). Lo deja para revisar con calma más adelante; ver también la nota de
+      "urgente" más abajo (sigue vigente hasta que se confirme el endpoint sano).
 - [ ] **Recorrido completo end-to-end**: Emi crea ejercicio (sin nivel)
-      → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta.
+      → `mdza.exp` lo ve, completa y pregunta → Emi responde → alumno ve la respuesta. Adrián lo
+      deja para cuando el resto del checklist esté más cerrado.
 - [ ] (Opcional, limpieza) Servir el **favicon** desde el dominio propio en vez del WordPress
       viejo (`emilserios.com`) — quita un aviso de CORS y otra dependencia del tercero.
       ⚠️ Reapareció al probar el cambio de idioma: el `<link rel="icon">` apunta a
       `https://emilserios.com/...`; en entornos con proxy lento puede colgar la carga. En
-      producción carga bien, pero conviene autoalojarlo. (Adrián lo dejó para un PR aparte.)
+      producción carga bien, pero conviene autoalojarlo. (Adrián lo dejó para un PR aparte, sigue
+      sin prisa.)
 - [ ] Anti-reentrada fina por email (después).
 - [ ] Onboarding tipo Figma (después).
 - [ ] Favoritos (después).
@@ -549,26 +589,38 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Sin PR abierto ahora mismo.** El PR #38 (arreglo 8c) ya está **mergeado a `main` y confirmado
-funcionando en producción por Adrián**: el correo de acceso llega por Resend con el copy
-bilingüe de Emi desde las tres vías (webhook, `/entrar`, `/gracias`). La rama local
-`claude/welcome-email-localization-ahs4tm` quedó reiniciada sobre `origin/main` al día (incluye
-hasta PR #38) solo para esta actualización de bitácora — **la próxima sesión debe arrancar una
-rama nueva** desde ahí para el siguiente punto del checklist (ver "Próxima sesión" arriba:
-**punto 11**, selector de destino del video en `/panel`).
+**Sin PR abierto ahora mismo.** Los PR **#40** (ajuste de encabezado de `/gracias`) y **#41**
+(punto 11, selector de destino en `/panel`) ya están **mergeados a `main`**. La rama local
+`claude/progreso-update-panel-destino` quedó creada desde `origin/main` al día (incluye hasta
+PR #41) solo para esta actualización de bitácora — **la próxima sesión debe arrancar una rama
+nueva** desde ahí para el siguiente punto del checklist.
+⚠️ **Antes de seguir con el punto 11 en producción**, correr
+`supabase/migrations/0007_content_kind.sql` en el SQL Editor de Supabase (ver nota del punto 11
+arriba) — sin eso el panel no puede guardar ni leer Concepto Base ni Bonus Material.
+Quedan pendientes del checklist: **punto 6** (borrar ejercicios pasados desde `/panel`), **punto
+10** (botón "Publicar ahora" además de "Programar") y el **tour/onboarding guiado** del punto 12.
+No se definió con Adrián cuál sigue.
 
 Sesión **16 jul 2026** (checklist de arriba): **#27** checklist del día + punto **2** (saludo del
 aula sin nombre), **#28** puntos **3+4+12**: **sistema de pestañas** del aula (Ejercicio de la
-semana con el foro adentro · Concepto Base · Bonus Material; las dos últimas son maquetas de
-diseño con contenido de muestra, pendientes de conectar a la BD junto al punto 11), **#30** identidad
+semana con el foro adentro · Concepto Base · Bonus Material; las dos últimas eran maquetas de
+diseño con contenido de muestra), **#30** identidad
 visual de la carta en aula/panel/entrar (punto 5), **#31** ingreso con correo + contraseña
 (punto 7, `/nueva-clave/`), **#32** correo de bienvenida automático al pagar (punto 8), **#33**
 correo de bienvenida bilingüe por Resend (punto 8b), **#34** página de agradecimiento bilingüe
 (punto 9), **#35** copy exacto de la página de ventas (punto 1, texto de Adrián), **#36**
 ajustes de énfasis y orden sobre ese mismo copy (bold/itálica, mensaje final debajo del cuadro
-de precio + tercer botón — con esto el punto **1 queda cerrado**) y **#38** arreglo del correo de
+de precio + tercer botón — con esto el punto **1 queda cerrado**), **#38** arreglo del correo de
 acceso que no pasaba por Resend en `/entrar` y `/gracias` (punto 8c) — **confirmado funcionando
-en producción**, con esto el punto **8 (8b + 8c) queda cerrado end-to-end**.
+en producción**, con esto el punto **8 (8b + 8c) queda cerrado end-to-end** —, **#40** ajuste de
+encabezado de `/gracias` pedido por Adrián (logo grande, aviso rojo con glow, título en dos
+líneas) y **#41** punto **11**: selector de destino del video en `/panel` (Ejercicio de la
+semana / Concepto Base / Bonus Material), con lo que **Concepto Base y Bonus Material dejan de
+ser maqueta** en `/aula` — con esto el punto **11 queda cerrado (código) y el punto 12 solo le
+falta el tour**. Adrián también confirmó ese mismo día: precio de fundador y config de
+dashboard/Vercel de Stripe ok (ver Pendiente ⬜); el aviso de Stripe sobre el webhook queda
+abierto pero sin bloquear (le funciona normal); recorrido end-to-end y favicon se dejan para más
+adelante.
 
 Últimas mergeadas a `main`: **#7** copy de ventas, **#8** píldora nav, **#9** menú desplegable,
 **#10** cambio de idioma, **#11** bitácora, **#12** rediseño "carta editorial", **#13** píldora EN/ES,
@@ -583,16 +635,18 @@ Concepto Base / Bonus Material, maquetas), **#30** identidad visual compartida, 
 correo+contraseña, **#32** correo de bienvenida al pagar, **#33** correo de bienvenida bilingüe,
 **#34** página de agradecimiento bilingüe, **#35** copy exacto de la página de ventas, **#36**
 ajustes de énfasis/orden sobre ese copy, **#38** correo de acceso vía Resend en las tres vías
-(punto 8c, confirmado en producción).
+(punto 8c, confirmado en producción), **#40** ajuste de encabezado de `/gracias`, **#41** selector
+de destino del video en `/panel` (punto 11, Concepto Base y Bonus Material con datos reales).
 
-### ⚠️ Lo más urgente para la próxima sesión
-El **webhook de Stripe probablemente no está escribiendo** la fila de `subscriptions` (por eso el
-caso `hello@arcmediahouse.com` cayó en el bucle de pago). El PR #24 puso una **red de seguridad**
-(verificación directa con Stripe por correo), así que los usuarios ya NO quedan bloqueados, pero el
-webhook es el camino normal y conviene dejarlo sano. Revisar en Stripe → Developers → Webhooks si el
-endpoint `https://emilseriosacademy.com/api/stripe-webhook` existe, está apuntando bien y sus entregas
-salen 200 (no 400 "firma inválida" ni 500). Verificar también que `STRIPE_WEBHOOK_SECRET` y
-`SUPABASE_SERVICE_ROLE_KEY` estén en Vercel. Guía en `docs/STRIPE.md` (ver Pendiente ⬜).
+### ⚠️ Pendiente de seguimiento (ya no bloquea)
+El **webhook de Stripe** tuvo un aviso de Stripe sobre posibles problemas, pero Adrián confirmó
+(16 jul) que **le está funcionando normal** hoy — no hay síntomas del bucle de pago que motivó
+esta nota originalmente (caso `hello@arcmediahouse.com`, resuelto por la red de seguridad del PR
+#24: verificación directa con Stripe por correo, `/api/verify-subscription`). Igual conviene, sin
+apuro, revisar en Stripe → Developers → Webhooks que el endpoint
+`https://emilseriosacademy.com/api/stripe-webhook` esté apuntando bien y sus entregas salgan 200
+(no 400 "firma inválida" ni 500), y que `STRIPE_WEBHOOK_SECRET` y `SUPABASE_SERVICE_ROLE_KEY`
+estén en Vercel. Guía en `docs/STRIPE.md` (ver Pendiente ⬜).
 
 ## ⚠️ Flujo de trabajo con Adrián (IMPORTANTE)
 Adrián pide **una rama nueva desde `main` + un PR nuevo por cada cambio**. Motivo: su flujo
