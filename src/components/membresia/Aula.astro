@@ -160,6 +160,21 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
           color: var(--color-text-soft); transition: color var(--duration) var(--ease); white-space: nowrap; }
   .acct:hover { color: var(--ink); }
 
+  /* Menú de cuenta (engranaje): soporte / darse de baja. */
+  .gearmenu { position: relative; display: flex; }
+  .gearmenu__btn { appearance: none; background: transparent; border: 0; cursor: pointer;
+                   color: var(--color-text-soft); font-size: 1.05rem; line-height: 1; padding: 4px 7px;
+                   border-radius: var(--radius-full); transition: color var(--duration) var(--ease), background var(--duration) var(--ease); }
+  .gearmenu__btn:hover, .gearmenu__btn[aria-expanded="true"] { color: var(--ink); background: rgba(23, 20, 15, 0.06); }
+  .gearmenu__list { position: absolute; top: calc(100% + 8px); right: 0; z-index: 60;
+                    display: flex; flex-direction: column; min-width: 210px;
+                    background: var(--paper); border: 1px solid var(--color-border); border-radius: 14px;
+                    padding: 6px; box-shadow: 0 10px 30px rgba(23, 20, 15, 0.14); }
+  .gearmenu__list[hidden] { display: none; }
+  .gearmenu__list a { text-decoration: none; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+                      padding: 10px 12px; border-radius: 9px; text-align: left; white-space: nowrap; }
+  .gearmenu__list a:hover { background: rgba(23, 20, 15, 0.06); }
+
   .lead { padding: clamp(32px, 6vh, 64px) 0 clamp(20px, 3vh, 32px); }
   .lead__title { font-size: clamp(2.2rem, 5.4vw, 3.8rem); margin: var(--space-4) 0 var(--space-3); }
   .lead__meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
@@ -309,6 +324,15 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
         <a class="acct" id="adminBack" href="/panel/" hidden>{isEN ? '← Back to panel' : '← Volver al panel'}</a>
         <!-- Solo miembros con suscripción activa; abre el portal de Stripe. -->
         <a class="acct" id="acctBilling" href="#" hidden>{isEN ? 'Subscription' : 'Suscripción'}</a>
+        <!-- Menú de cuenta: soporte por correo y baja directa (link del portal de Stripe). -->
+        <div class="gearmenu">
+          <button type="button" class="gearmenu__btn" id="gearBtn" aria-haspopup="true" aria-expanded="false"
+                  aria-label={isEN ? 'More options' : 'Más opciones'}>⚙</button>
+          <div class="gearmenu__list" id="gearMenu" role="menu" hidden>
+            <a role="menuitem" href="mailto:info@emilserios.com">{isEN ? 'Support' : 'Soporte'}</a>
+            <a role="menuitem" href="https://billing.stripe.com/p/login/bJeaEX6V7dRDaUP8Zb73G00" target="_blank" rel="noopener">{isEN ? 'Cancel subscription' : 'Darse de baja'}</a>
+          </div>
+        </div>
         <a class="acct" href="/salir/">{isEN ? 'Log out' : 'Salir'}</a>
       </div>
     </div>
@@ -995,6 +1019,24 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       composeText.value = '';
       node.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
+  })();
+</script>
+<script is:inline>
+  // Menú de cuenta (engranaje): soporte / darse de baja. UI pura, sin datos.
+  (function () {
+    var btn = document.getElementById('gearBtn');
+    var menu = document.getElementById('gearMenu');
+    if (!btn || !menu) return;
+    function close() { menu.hidden = true; btn.setAttribute('aria-expanded', 'false'); }
+    function open() { menu.hidden = false; btn.setAttribute('aria-expanded', 'true'); }
+    btn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (menu.hidden) open(); else close();
+    });
+    document.addEventListener('click', function (e) {
+      if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) close();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
   })();
 </script>
 <script src="/membresia-ui.js" defer></script>
