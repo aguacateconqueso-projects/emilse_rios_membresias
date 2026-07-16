@@ -31,7 +31,11 @@
   .field input { font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
                  padding: 13px 15px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
   .field input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
-  .brand-logo { margin-bottom: var(--space-7); }
+  .header { text-align: center; margin: 0 0 var(--space-6); }
+  .brand-logo { display: flex; flex-direction: column; align-items: center; gap: 8px;
+                margin: 0 auto var(--space-4); }
+  .brand-logo__img { height: auto; width: clamp(190px, 58vw, 300px); }
+  .brand-logo small { font-size: 13px; }
   /* Casilla "mantener sesión iniciada" */
   .remember { display: flex; align-items: center; gap: 10px; margin: 0 0 var(--space-4);
               font-size: var(--text-sm); color: var(--color-text-soft); cursor: pointer; user-select: none; }
@@ -51,13 +55,15 @@
 </head>
 <body>
   <div class="card">
-    <a class="brand-logo" href="/">
-      <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
-           onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
-      <span class="brand-logo__fallback" hidden>Emilse Rios</span>
-      <small>Membresía</small>
-    </a>
-    <span class="ovl">Acceso de miembros</span>
+    <div class="header">
+      <a class="brand-logo" href="/">
+        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+             onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+        <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+        <small>Membresía</small>
+      </a>
+      <span class="ovl">Acceso de miembros</span>
+    </div>
     <h1 class="display">Entrar</h1>
     <p class="sub">Entra con tu correo y tu contraseña.</p>
 
