@@ -3,6 +3,31 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
+> Rama: `claude/aula-sales-updates-pk2875`. Adrián irá pasando el detalle de cada punto;
+> por ahora solo queda **registrada la lista** (nada implementado todavía). Probable que
+> se modifique. Un cambio por rama/PR según el flujo con Adrián.
+
+- [ ] **1. Corregir el copy de la página de ventas.** No se copió textual: la *estructura*
+      está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
+      pasará el texto correcto más tarde para reemplazar frase por frase (sin tocar la
+      estructura).
+- [ ] **2. Quitar la personalización del nombre en `/aula`.** El saludo "Hola, Adrián M ·"
+      no va; dejar solo "Tu ejercicio de esta semana".
+- [ ] **3. Nuevo modelo de contenido: "Ejercicio Base" mensual.** La dinámica de Emi cambia:
+      5 videos mensuales (10 con ES/EN); **1 de ellos es el "Video/Ejercicio Base" (¿Core
+      Exercise?)** que muestra las bases de los ejercicios del mes. Modificar el aula para que
+      se entienda: primero SIEMPRE el ejercicio de la semana, y **debajo del foro una pestaña
+      que abre/cierra** con el Ejercicio Base. *(Propuesta a confirmar.)*
+- [ ] **4. Apartado "Bonus Material" en el aula.** Pestaña aparte o sección abajo (por definir
+      cuál funciona mejor). Ahí irá, por ejemplo, el **video de bienvenida** que ya grabó Emi
+      (uno en inglés y otro en español).
+- [ ] **5. Unificar el diseño de la página de ventas con aula y panel** (estilo de botones, etc.).
+      *En veremos — Adrián lo confirma con Emi.*
+- [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
+      de fin, no borrarlos; hay 3 de prueba ocupando espacio. Agregar borrado real.
+
+
 ## Qué es
 Membresía de pago recurrente para contrabajistas de Emilse Rios, **separada** del
 WordPress + Tutor LMS actual (eso no se toca). App propia. Bilingüe ES/EN.
