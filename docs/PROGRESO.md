@@ -6,13 +6,13 @@
 ## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
 > viaja en el mismo PR de cada punto.
-> **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27) y puntos **3 + 4 + 12
-> (pestañas)** (PR #28). **En este PR:** punto **5** — se llevó la identidad visual de la carta
-> de ventas al **aula, panel y `/entrar`** (capa compartida `membresia-ui.css/.js`: crema+tinta
-> cálida, logo, botón editorial con relleno desde el cursor + notas + cursor de clave de fa).
-> Pendientes el resto (ver abajo). **Próxima sesión:** lo natural es seguir con el **punto 11**
-> (selector de destino del video en `/panel`) para que las pestañas Concepto Base y Bonus
-> Material dejen de ser maqueta y muestren contenido real de la BD.
+> **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27), puntos **3 + 4 + 12
+> (pestañas)** (PR #28) y punto **5** (identidad visual de la carta llevada al aula/panel/entrar,
+> PR #30). **En este PR:** punto **7** — ingreso con **correo + contraseña** (fuera el enlace
+> mágico), casilla "mantener sesión iniciada", y flujo de crear/restablecer contraseña
+> (`/nueva-clave/`). Pendientes el resto (ver abajo). **Próxima sesión:** el **punto 8** (envío
+> automático del correo de bienvenida al pagar, que ya se apoya en el flujo de `/nueva-clave/`)
+> o el **punto 11** (selector de destino del video en `/panel`).
 
 - [ ] **1. Corregir el copy de la página de ventas.** No se copió textual: la *estructura*
       está bien, pero hay frases que quedaron distintas al texto que pasó Adrián. Adrián
@@ -48,10 +48,25 @@
       sus botones: los toman de la capa compartida para no volver a desalinearse.
 - [ ] **6. Poder borrar ejercicios pasados desde `/panel`.** Hoy solo se les puede poner fecha
       de fin, no borrarlos; hay 3 de prueba ocupando espacio. Agregar borrado real.
-- [ ] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** Se **elimina el
-      enlace mágico** por completo; el acceso será **solo con usuario y contraseña**. Sumar
-      opción de **"mantener sesión iniciada"** (recordar sesión). Toca login (`/entrar`), alta,
-      y el mail de bienvenida (punto 8).
+- [x] **7. Cambiar la dinámica de ingreso al aula: usuario y contraseña.** ✅ Hecho (CÓDIGO).
+      Se **eliminó el enlace mágico**: `/entrar` ahora es **correo + contraseña**
+      (`signInWithPassword`) con casilla **"Mantener la sesión iniciada"**. La casilla controla
+      DÓNDE se guarda la sesión (adaptador de almacenamiento en `src/lib/supabase.ts`):
+      **localStorage** si se recuerda (sobrevive al cerrar el navegador) o **sessionStorage** si
+      no (se borra al cerrar). La preferencia se escribe en `erm_remember` ANTES de iniciar
+      sesión para que el token quede en el almacén correcto. **Primera clave / recuperación:**
+      como el pago es anónimo (la cuenta se crea sin contraseña), se añadió el flujo elegido
+      **"correo → crear clave"**: desde `/entrar` el enlace **«Crea o restablece tu contraseña»**
+      envía un correo (`resetPasswordForEmail`) con un enlace de un solo uso a la **nueva página
+      `/nueva-clave/`**, que fija la contraseña (`updateUser`) y entra. Sirve igual para la
+      primera vez y para **«Olvidé mi contraseña»**. Se actualizó la red de seguridad de la
+      landing (enlaces `type=recovery` → `/nueva-clave/`), el aviso de `?pago=ok` en `/entrar`, y
+      `src/lib/auth.ts` (fuera `sendMagicLink`, entran `signIn` + `sendPasswordSetup`).
+      ⚠️ **Config pendiente en Supabase** (no es código): en **Authentication → URL Configuration**
+      agregar `https://emilseriosacademy.com/nueva-clave/` (o un comodín del dominio) a **Redirect
+      URLs**, o el enlace del correo será rechazado. El **envío automático** del correo al pagar es
+      el **punto 8** (por ahora el miembro nuevo lo pide él mismo desde `/entrar`); ahí también se
+      puede afinar la plantilla del correo de recuperación para que diga "crea tu contraseña".
 - [ ] **8. Mail de bienvenida con link para entrar al aula.** Al alta/bienvenida, enviar un
       correo con el enlace de acceso, que apunta a **`/entrar`**.
 - [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
@@ -89,7 +104,9 @@ control de DNS y no depender de él.
   **verificado en Resend**; remitente `info@emilseriosacademy.com`. ⚠️ Ojo: el buzón
   real de Emi `info@emilserios.com` NO sirve como remitente — ese dominio no está
   verificado en Resend (y verificarlo exigiría tocar el DNS del tercero).
-- **Login:** enlace mágico (passwordless).
+- **Login:** **correo + contraseña** (se eliminó el enlace mágico en el punto 7). Casilla
+  "mantener sesión iniciada" (localStorage vs sessionStorage). La primera contraseña se crea
+  con un enlace de un solo uso por correo (`/nueva-clave/`), que también sirve de recuperación.
 - **Modelo de contenido:** UN ejercicio vigente a la vez, global, rota cada **jueves**
   (00:00 baja / 00:01 sube, hora Madrid). Sin biblioteca histórica. El cobro es mensual
   por miembro, en un reloj aparte.
@@ -101,7 +118,7 @@ control de DNS y no depender de él.
 - `/` y `/en` — landing de ventas (bilingüe)
 - `/aula` (+ `/aula/en`) — área de miembros (datos reales)
 - `/panel` — panel de Emi (admin, auth real)
-- `/entrar` — login · `/salir` — logout
+- `/entrar` — login (correo + contraseña) · `/nueva-clave` — crear/restablecer contraseña · `/salir` — logout
 
 ## Estado
 

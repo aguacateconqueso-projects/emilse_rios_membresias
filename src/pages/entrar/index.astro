@@ -1,6 +1,9 @@
 ---
-// Login por enlace mágico (passwordless) para miembros y para Emi.
-// Al volver del enlace del correo, enruta: admin → panel, miembro → aula.
+// Login con correo + contraseña para miembros y para Emi (se eliminó el enlace
+// mágico). Casilla "mantener sesión iniciada" (localStorage vs sessionStorage).
+// La primera contraseña / recuperación se hace con un enlace de un solo uso por
+// correo que lleva a /nueva-clave/. Al iniciar sesión enruta: admin → panel,
+// miembro → aula.
 ---
 <!DOCTYPE html>
 <html lang="es">
@@ -29,6 +32,14 @@
                  padding: 13px 15px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
   .field input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
   .brand-logo { margin-bottom: var(--space-7); }
+  /* Casilla "mantener sesión iniciada" */
+  .remember { display: flex; align-items: center; gap: 10px; margin: 0 0 var(--space-4);
+              font-size: var(--text-sm); color: var(--color-text-soft); cursor: pointer; user-select: none; }
+  .remember input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+  /* Enlace secundario (crear / restablecer contraseña) */
+  .alt { margin-top: var(--space-4); font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.5; }
+  .alt a { color: var(--ink); font-weight: var(--weight-semibold); text-decoration: underline;
+           text-underline-offset: 3px; cursor: pointer; }
   .msg { margin-top: var(--space-4); font-size: var(--text-base); line-height: 1.5; }
   .msg.ok { color: var(--ink); }
   .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
@@ -48,7 +59,7 @@
     </a>
     <span class="ovl">Acceso de miembros</span>
     <h1 class="display">Entrar</h1>
-    <p class="sub">Escribe tu correo y te enviamos un enlace para entrar. Sin contraseñas.</p>
+    <p class="sub">Entra con tu correo y tu contraseña.</p>
 
     <p class="msg ok" id="payNote" hidden></p>
 
@@ -58,11 +69,25 @@
         <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
                spellcheck="false" placeholder="tucorreo@email.com" required />
       </div>
+      <div class="field">
+        <label for="password">Tu contraseña</label>
+        <input id="password" type="password" autocomplete="current-password"
+               placeholder="Tu contraseña" required />
+      </div>
+      <label class="remember" for="remember">
+        <input id="remember" type="checkbox" checked />
+        Mantener la sesión iniciada
+      </label>
       <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
-        <span class="btn__label" id="submitLabel">Enviar enlace</span>
+        <span class="btn__label" id="submitLabel">Entrar</span>
         <span class="btn__ar" aria-hidden="true">→</span>
       </button>
     </form>
+
+    <p class="alt">
+      ¿Primera vez o olvidaste tu contraseña?
+      <a id="resetLink" role="button" tabindex="0">Crea o restablece tu contraseña</a>
+    </p>
 
     <p class="msg ok" id="msgOk" hidden></p>
     <p class="msg err" id="msgErr" hidden></p>
@@ -76,8 +101,11 @@
 
   const form = document.getElementById('loginForm');
   const email = document.getElementById('email');
+  const password = document.getElementById('password');
+  const remember = document.getElementById('remember');
   const btn = document.getElementById('submitBtn');
   const submitLabel = document.getElementById('submitLabel');
+  const resetLink = document.getElementById('resetLink');
   // Cambia solo el texto del botón sin borrar el relleno/flecha (spans inyectados).
   const setBtnLabel = (txt) => { if (submitLabel) submitLabel.textContent = txt; else btn.textContent = txt; };
   const msgOk = document.getElementById('msgOk');
@@ -90,25 +118,28 @@
     btn.disabled = true;
   }
 
-  // Si venimos de un enlace mágico fallido, Supabase devuelve el error en el
-  // hash (#error=access_denied&error_code=otp_expired…). Muéstralo claro y
-  // limpia la URL; el caso típico es un enlace caducado o ya usado.
-  const hashErr = new URLSearchParams(window.location.hash.slice(1));
-  if (hashErr.get('error_code') || hashErr.get('error')) {
-    msgErr.textContent = hashErr.get('error_code') === 'otp_expired'
-      ? 'Ese enlace ya caducó o ya se usó (es de un solo uso). Escribe tu correo y te enviamos uno nuevo.'
-      : 'No se pudo iniciar sesión: ' + (hashErr.get('error_description') || hashErr.get('error_code') || hashErr.get('error'));
+  // Si un enlace de crear/restablecer contraseña cae aquí (fallback al Site URL de
+  // Supabase) en vez de en /nueva-clave/, reenvíalo allí, que sí sabe fijar la clave.
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  if (hashParams.get('type') === 'recovery' || (hashParams.get('access_token') && hashParams.get('type') !== 'signup')) {
+    window.location.replace('/nueva-clave/' + window.location.hash);
+  }
+  // Otros errores en el hash (enlace caducado o ya usado): muéstralo claro.
+  if (hashParams.get('error_code') || hashParams.get('error')) {
+    msgErr.textContent = hashParams.get('error_code') === 'otp_expired'
+      ? 'Ese enlace ya caducó o ya se usó (es de un solo uso). Usa «Crea o restablece tu contraseña» para pedir uno nuevo.'
+      : 'No se pudo continuar: ' + (hashParams.get('error_description') || hashParams.get('error_code') || hashParams.get('error'));
     msgErr.hidden = false;
     history.replaceState(null, '', window.location.pathname);
   }
 
-  // Al volver de Stripe (?pago=ok): el pago se recibió pero el visitante aún no
-  // tiene sesión. Le pedimos entrar con el MISMO correo con el que pagó.
+  // Al volver de Stripe (?pago=ok): el pago se recibió pero la cuenta aún no tiene
+  // contraseña. Le pedimos crearla con el MISMO correo con el que pagó.
   const params = new URLSearchParams(window.location.search);
   if (params.get('pago') === 'ok') {
     const payNote = document.getElementById('payNote');
     if (payNote) {
-      payNote.textContent = '¡Pago recibido! Escribe abajo el mismo correo con el que pagaste y te enviamos el enlace para entrar. Ojo: el enlace suele llegar a la carpeta de spam o promociones.';
+      payNote.textContent = '¡Pago recibido! Si es tu primera vez, escribe abajo el mismo correo con el que pagaste y pulsa «Crea o restablece tu contraseña»: te enviamos un enlace para crearla. Ojo: suele llegar a la carpeta de spam o promociones.';
       payNote.hidden = false;
     }
     history.replaceState(null, '', window.location.pathname);
@@ -124,7 +155,7 @@
       : '/aula/';
   }
 
-  // Solo enrutamos tras un inicio de sesión REAL (volver del enlace mágico).
+  // Solo enrutamos tras un inicio de sesión REAL (enviar el formulario).
   // Si ya había sesión al cargar (INITIAL_SESSION), NO expulsamos: así se puede
   // cambiar de cuenta o salir. Mostramos un aviso con opciones.
   supabase.auth.onAuthStateChange((event, session) => {
@@ -178,35 +209,80 @@
     return err.name || String(err) || 'error desconocido';
   }
 
-  function showError(err) {
-    // Log enriquecido para la consola (con las props no enumerables incluidas).
-    try { console.error('[login] error:', err, JSON.stringify(err, Object.getOwnPropertyNames(err || {}))); }
-    catch (_) { console.error('[login] error:', err); }
-    msgErr.textContent = 'No se pudo enviar el enlace: ' + describeError(err);
-    msgErr.hidden = false;
-    btn.disabled = false; setBtnLabel('Enviar enlace');
+  // Traduce los errores de login más comunes a un mensaje claro en español.
+  function loginErrorMessage(err) {
+    const raw = describeError(err).toLowerCase();
+    if (raw.includes('invalid login credentials')) {
+      return 'Correo o contraseña incorrectos. Si es tu primera vez, crea tu contraseña con el enlace de abajo.';
+    }
+    if (raw.includes('email not confirmed')) {
+      return 'Tu correo aún no está confirmado. Usa «Crea o restablece tu contraseña» para activarlo.';
+    }
+    return 'No se pudo entrar: ' + describeError(err);
   }
 
+  function showError(err) {
+    try { console.error('[login] error:', err, JSON.stringify(err, Object.getOwnPropertyNames(err || {}))); }
+    catch (_) { console.error('[login] error:', err); }
+    msgErr.textContent = loginErrorMessage(err);
+    msgErr.hidden = false;
+    btn.disabled = false; setBtnLabel('Entrar');
+  }
+
+  // Iniciar sesión con correo + contraseña. La casilla "mantener sesión iniciada"
+  // se guarda ANTES del login para que el token quede en el almacén correcto
+  // (localStorage si se recuerda, sessionStorage si no).
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     msgOk.hidden = true; msgErr.hidden = true;
-    btn.disabled = true; setBtnLabel('Enviando…');
+    const mail = email.value.trim();
+    const pass = password.value;
+    if (!mail || !pass) return;
+    try { localStorage.setItem('erm_remember', remember.checked ? '1' : '0'); } catch (_) {}
+    btn.disabled = true; setBtnLabel('Entrando…');
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        email: email.value.trim(),
-        options: { emailRedirectTo: window.location.origin + '/entrar/' },
-      });
-      if (error) {
-        showError(error);
-      } else {
-        msgOk.textContent = 'Listo. Revisa tu correo y abre el enlace para entrar. Si no lo ves en unos minutos, mira en la carpeta de spam o promociones (a veces llega ahí).';
-        msgOk.hidden = false;
-        setBtnLabel('Enlace enviado');
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email: mail, password: pass });
+      if (error) { showError(error); return; }
+      setBtnLabel('Entrando…');
+      // onAuthStateChange (SIGNED_IN) enruta por rol; routeByRole es la red de seguridad.
+      routeByRole();
     } catch (err) {
       showError(err);
     }
   });
+
+  // Crear / restablecer contraseña: envía un correo con un enlace de un solo uso a
+  // /nueva-clave/. Sirve para la PRIMERA vez (cuenta creada al pagar, sin clave) y
+  // para recuperar el acceso. Por privacidad, Supabase responde igual exista o no
+  // el correo, así que mostramos el mismo aviso siempre.
+  async function sendReset() {
+    const mail = email.value.trim();
+    msgOk.hidden = true; msgErr.hidden = true;
+    if (!mail) {
+      msgErr.textContent = 'Escribe tu correo arriba y vuelve a pulsar el enlace.';
+      msgErr.hidden = false; email.focus(); return;
+    }
+    resetLink.textContent = 'Enviando…';
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(mail, {
+        redirectTo: window.location.origin + '/nueva-clave/',
+      });
+      if (error) {
+        msgErr.textContent = 'No se pudo enviar el correo: ' + describeError(error);
+        msgErr.hidden = false;
+      } else {
+        msgOk.textContent = 'Listo. Te enviamos un correo con un enlace para crear tu contraseña. Si no lo ves en unos minutos, mira en spam o promociones (a veces llega ahí).';
+        msgOk.hidden = false;
+      }
+    } catch (err) {
+      msgErr.textContent = 'No se pudo enviar el correo: ' + describeError(err);
+      msgErr.hidden = false;
+    } finally {
+      resetLink.textContent = 'Crea o restablece tu contraseña';
+    }
+  }
+  resetLink?.addEventListener('click', sendReset);
+  resetLink?.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sendReset(); } });
 </script>
 <script src="/membresia-ui.js" defer></script>
 </body>

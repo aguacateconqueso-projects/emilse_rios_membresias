@@ -16,11 +16,16 @@ export async function getProfile() {
   return data;
 }
 
-export async function sendMagicLink(email: string, redirectTo: string) {
-  return supabase.auth.signInWithOtp({
-    email,
-    options: { emailRedirectTo: redirectTo },
-  });
+// El acceso es con correo + contraseña (se eliminó el enlace mágico).
+export async function signIn(email: string, password: string) {
+  return supabase.auth.signInWithPassword({ email, password });
+}
+
+// Envía el correo con el enlace de un solo uso para crear/restablecer la
+// contraseña (redirige a /nueva-clave/). Sirve tanto para la primera vez (cuenta
+// creada al pagar, sin clave) como para recuperar el acceso.
+export async function sendPasswordSetup(email: string, redirectTo: string) {
+  return supabase.auth.resetPasswordForEmail(email, { redirectTo });
 }
 
 export async function signOut() {
