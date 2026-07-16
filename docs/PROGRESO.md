@@ -84,14 +84,28 @@
         webhook lo lee y envía el correo en ES o EN, con el enlace al destino correcto
         (**`/nueva-clave/`** o **`/nueva-clave/en/`** — la página de crear contraseña ahora es
         **bilingüe**, componente `NuevaClave.astro`). El correo se manda **por Resend** (API
-        directa, `src/lib/email.ts`) con el copy de Emi (hoy hay un **copy provisional** en la voz
-        de Emi, listo para reemplazar): se genera el enlace de un solo uso sin enviar
-        (`generatePasswordSetupLink` → `admin.generateLink({type:'recovery'})`) y se envía con la
-        plantilla del idioma. **Si falta `RESEND_API_KEY`, cae al correo estándar de Supabase**
-        (plantilla única) con el enlace igual en el idioma correcto. ⚠️ **Config nueva:** agregar
-        `RESEND_API_KEY` (y opcional `RESEND_FROM`) en Vercel para que salga el correo bilingüe con
-        el copy propio; y agregar **`/nueva-clave/en/`** además de `/nueva-clave/` a los Redirect
-        URLs de Supabase. Con Resend configurado ya NO hace falta tocar la plantilla de Supabase.
+        directa, `src/lib/email.ts`) con el **copy DEFINITIVO de Emi** (asunto, texto previo,
+        cuerpo, PD/PS con sus dos posdatas — carta personal, sin botón corporativo): se genera el
+        enlace de un solo uso sin enviar (`generatePasswordSetupLink` →
+        `admin.generateLink({type:'recovery'})`) y se envía con la plantilla del idioma. **Si
+        falta `RESEND_API_KEY`, cae al correo estándar de Supabase** (plantilla única, sin el copy
+        de Emi) con el enlace igual en el idioma correcto.
+        - **Enlace del correo:** el texto visible es literalmente el que pidió Emi
+          (`emilseriosacademy.com/entrar/`), pero el `href` real apunta al enlace seguro de un
+          solo uso que lleva a `/nueva-clave/` — que es "donde creas tu usuario y contraseña", lo
+          que dice el propio copy. Un `/entrar/` pelado no serviría: sin contraseña puesta,
+          `/entrar/` no puede loguear a nadie (haría falta un SEGUNDO correo pidiendo el enlace de
+          «Crea o restablece tu contraseña»). Visualmente es igual a lo que pidió Emi;
+          funcionalmente hace lo que promete el texto.
+        - **Remitente vs. reply-to:** el remitente técnico sigue siendo `info@emilseriosacademy.com`
+          (el único dominio **verificado en Resend**; `info@emilserios.com` NO lo está y Resend
+          rechazaría el envío con ese remitente). `info@emilserios.com` va como **reply-to**: si
+          alguien responde el correo, le llega directo al buzón real de Emi — cumple la intención
+          del PD/PS sin romper el envío.
+        ⚠️ **Config nueva:** agregar `RESEND_API_KEY` (y opcional `RESEND_FROM`) en Vercel para que
+        salga el correo bilingüe con el copy de Emi; y agregar **`/nueva-clave/en/`** además de
+        `/nueva-clave/` a los Redirect URLs de Supabase. Con Resend configurado ya NO hace falta
+        tocar la plantilla de Supabase.
 - [ ] **9. Rediseñar la página de agradecimiento del pago.** Mantener el aviso de revisar
       spam/promociones (lo que ya decimos) y **sumar el link a `/entrar`**.
 - [ ] **10. Botón "Publicar ahora" además de "Programar" el ejercicio de la semana.** Hoy solo

@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { stripe, siteOrigin } from '../../lib/stripe';
 import { supabaseAdmin, sendPasswordSetupEmail, generatePasswordSetupLink } from '../../lib/supabase-admin';
 import { writeSubscriptionRow } from '../../lib/stripe-sync';
-import { isResendConfigured, sendEmail, welcomeEmailContent } from '../../lib/email';
+import { isResendConfigured, sendEmail, welcomeEmailContent, WELCOME_REPLY_TO } from '../../lib/email';
 
 // Webhook de Stripe (función serverless). Escucha los eventos y mantiene la tabla
 // `subscriptions` de Supabase como espejo del estado de Stripe. Flujo 2a: el
@@ -133,7 +133,7 @@ async function sendWelcomeEmail(email: string, lang: 'es' | 'en', origin?: strin
       const { link, error: linkErr } = await generatePasswordSetupLink(lower, redirectTo);
       if (link) {
         const { subject, html, text } = welcomeEmailContent(lang, link);
-        const { error: mailErr } = await sendEmail({ to: lower, subject, html, text });
+        const { error: mailErr } = await sendEmail({ to: lower, subject, html, text, replyTo: WELCOME_REPLY_TO });
         if (!mailErr) return; // enviado por Resend en el idioma correcto
         console.error('[stripe-webhook] Resend falló, uso Supabase:', mailErr.message || mailErr);
       } else {
