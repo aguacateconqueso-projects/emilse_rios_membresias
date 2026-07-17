@@ -365,15 +365,58 @@
       <section class="panel" id="panel-mi" role="tabpanel" aria-labelledby="tab-mi" hidden>
         <div class="sec-head">
           <h2>Miembros</h2>
-          <span class="pill"><span class="dot"></span> <span id="miCount">…</span></span>
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span class="pill"><span class="dot"></span> <span id="miCount">…</span></span>
+            <button class="btn btn--solid" id="addMemberBtn" type="button">+ Agregar miembro</button>
+          </div>
         </div>
         <p class="hint">Lista de miembros y su estado de suscripción.</p>
+
+        <!-- formulario: alta manual de un miembro (alumnos, miembro previo…) -->
+        <form class="form" id="addMemberForm" hidden>
+          <h3>Agregar miembro manualmente</h3>
+          <p class="lang-note">✍️ Para dar acceso al aula a un <b>alumno</b> o a un <b>miembro previo</b> sin que pase por el pago. Se le concede una suscripción activa (sin vencimiento, hasta que la quites) y, si dejas la casilla marcada, le llega el correo para crear su contraseña.</p>
+          <div class="grid2">
+            <div class="field">
+              <label for="am-email">Correo</label>
+              <input id="am-email" type="email" placeholder="alumno@correo.com" autocomplete="off" />
+              <span class="help">Con este correo entra al aula.</span>
+            </div>
+            <div class="field">
+              <label for="am-name">Nombre (opcional)</label>
+              <input id="am-name" type="text" placeholder="Ej. Lucía Fernández" autocomplete="off" />
+              <span class="help">Cómo aparece en la lista y en el foro.</span>
+            </div>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="am-lang">Idioma del correo de acceso</label>
+              <select id="am-lang" style="font-family:var(--font-body);font-size:var(--text-base);color:var(--ink);padding:12px 14px;border:1px solid var(--color-border);border-radius:var(--radius);background:var(--surface);">
+                <option value="es">Español</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div class="field">
+              <label style="flex-direction:row;align-items:center;gap:8px;display:flex;cursor:pointer;">
+                <input id="am-send" type="checkbox" checked style="width:auto;" />
+                Enviarle el correo de acceso ahora
+              </label>
+              <span class="help">Lleva el enlace para crear su contraseña (→ /nueva-clave/). Si lo dejas sin marcar, puede pedirlo él mismo desde «Entrar».</span>
+            </div>
+          </div>
+          <div class="form__actions">
+            <button class="btn btn--solid" type="submit">Agregar miembro</button>
+            <button class="btn btn--ghost" type="button" id="addMemberCancel">Cancelar</button>
+          </div>
+          <p class="form-error" id="addMemberErr" hidden></p>
+        </form>
+
         <table class="tbl">
           <thead>
-            <tr><th>Miembro</th><th>Suscripción</th><th>Alta</th></tr>
+            <tr><th>Miembro</th><th>Suscripción</th><th>Alta</th><th></th></tr>
           </thead>
           <tbody id="miRows">
-            <tr class="empty-row"><td colspan="3">Cargando…</td></tr>
+            <tr class="empty-row"><td colspan="4">Cargando…</td></tr>
           </tbody>
         </table>
       </section>
@@ -825,7 +868,7 @@
   $('publishNowBtn')?.addEventListener('click', () => saveExercise(true));
 
   // ---------- MIEMBROS ----------
-  function renderMemberRow(p, active) {
+  function renderMemberRow(p, active, manual) {
     const tr = document.createElement('tr');
     const td1 = document.createElement('td');
     const name = document.createElement('div'); name.className = 'name'; name.textContent = p.full_name || '(sin nombre)';
@@ -838,29 +881,112 @@
     else { pill.className = 'pill pill--closed'; pill.textContent = 'Inactiva'; }
     td3.appendChild(pill);
     if (p.role === 'admin') { const a = document.createElement('span'); a.className = 'pill'; a.style.marginLeft = '8px'; a.textContent = 'Admin'; td3.appendChild(a); }
+    else if (manual) { const m = document.createElement('span'); m.className = 'pill'; m.style.marginLeft = '8px'; m.textContent = 'Manual'; td3.appendChild(m); }
 
     const td4 = document.createElement('td'); td4.className = 'sub'; td4.textContent = fmtDate(p.created_at);
-    tr.append(td1, td3, td4); return tr;
+
+    // Solo las altas manuales se pueden quitar desde aquí: borra su concesión
+    // manual (no toca facturación de Stripe). Las bajas de Stripe van por el portal.
+    const td5 = document.createElement('td');
+    if (manual && p.role !== 'admin') {
+      const rm = document.createElement('button'); rm.className = 'btn btn--ghost btn--sm'; rm.type = 'button';
+      rm.textContent = 'Quitar acceso';
+      rm.addEventListener('click', () => removeMember(p, rm));
+      td5.appendChild(rm);
+    }
+    tr.append(td1, td3, td4, td5); return tr;
+  }
+
+  async function removeMember(p, btn) {
+    const label = p.full_name || p.email || 'este miembro';
+    const ok = window.confirm(
+      `¿Quitar el acceso manual de «${label}»?\n\nDeja de ver el aula de inmediato. Su cuenta no se borra: puedes volver a agregarlo cuando quieras. (No afecta ninguna suscripción de Stripe.)`
+    );
+    if (!ok) return;
+    const lbl = btn.textContent; btn.disabled = true; btn.textContent = 'Quitando…';
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/remove-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (s && s.access_token || '') },
+        body: JSON.stringify({ user_id: p.id }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || out.error) throw new Error(out.error || ('Error ' + res.status));
+      await loadMembers();
+      toast(out.removed ? 'Acceso quitado' : 'No tenía acceso manual');
+    } catch (err) {
+      btn.disabled = false; btn.textContent = lbl;
+      toast('No se pudo quitar: ' + err.message);
+    }
   }
 
   async function loadMembers() {
     const tb = $('miRows');
     const [{ data: profiles, error: pe }, { data: subs }] = await Promise.all([
       supabase.from('profiles').select('id, full_name, email, role, created_at').order('created_at', { ascending: false }),
-      supabase.from('subscriptions').select('user_id, status, current_period_end'),
+      supabase.from('subscriptions').select('user_id, status, current_period_end, stripe_subscription_id'),
     ]);
-    if (pe) { tb.innerHTML = ''; tb.appendChild(emptyRow(3, 'No se pudo cargar: ' + pe.message)); $('miCount').textContent = '—'; return; }
-    const activeMap = {};
+    if (pe) { tb.innerHTML = ''; tb.appendChild(emptyRow(4, 'No se pudo cargar: ' + pe.message)); $('miCount').textContent = '—'; return; }
+    const activeMap = {}, manualMap = {};
     (subs || []).forEach((s) => {
       const active = s.status === 'active' && (!s.current_period_end || new Date(s.current_period_end) > new Date());
       if (active) activeMap[s.user_id] = true;
+      // Suscripción dada de alta a mano (sin Stripe): id sintético "manual_…".
+      if (active && typeof s.stripe_subscription_id === 'string' && s.stripe_subscription_id.startsWith('manual_')) manualMap[s.user_id] = true;
     });
     const members = profiles || [];
     $('miCount').textContent = members.filter((p) => activeMap[p.id]).length + ' con suscripción activa';
     tb.innerHTML = '';
-    if (!members.length) { tb.appendChild(emptyRow(3, 'Aún no hay miembros registrados.')); return; }
-    members.forEach((p) => tb.appendChild(renderMemberRow(p, !!activeMap[p.id])));
+    if (!members.length) { tb.appendChild(emptyRow(4, 'Aún no hay miembros registrados.')); return; }
+    members.forEach((p) => tb.appendChild(renderMemberRow(p, !!activeMap[p.id], !!manualMap[p.id])));
   }
+
+  // --- alta manual de miembro ---
+  const addMemberForm = $('addMemberForm');
+  function resetAddMember() {
+    ['am-email', 'am-name'].forEach((id) => { $(id).value = ''; });
+    $('am-lang').value = 'es'; $('am-send').checked = true; $('addMemberErr').hidden = true;
+  }
+  $('addMemberBtn')?.addEventListener('click', () => {
+    if (addMemberForm.hidden) { resetAddMember(); addMemberForm.hidden = false; addMemberForm.scrollIntoView({ behavior: 'smooth', block: 'center' }); $('am-email').focus(); }
+    else { addMemberForm.hidden = true; }
+  });
+  $('addMemberCancel')?.addEventListener('click', () => { addMemberForm.hidden = true; resetAddMember(); });
+
+  addMemberForm?.addEventListener('submit', async (ev) => {
+    ev.preventDefault();
+    const errEl = $('addMemberErr'); errEl.hidden = true;
+    const email = $('am-email').value.trim();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { errEl.textContent = 'Escribe un correo válido.'; errEl.hidden = false; return; }
+    const payload = {
+      email,
+      full_name: $('am-name').value.trim(),
+      lang: $('am-lang').value === 'en' ? 'en' : 'es',
+      send_email: $('am-send').checked,
+    };
+    const submitBtn = addMemberForm.querySelector('button[type="submit"]');
+    const lbl = submitBtn.textContent; submitBtn.disabled = true; submitBtn.textContent = 'Agregando…';
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/add-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (s && s.access_token || '') },
+        body: JSON.stringify(payload),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || out.error) throw new Error(out.error || ('Error ' + res.status));
+      addMemberForm.hidden = true; resetAddMember();
+      await loadMembers();
+      const parts = [out.created ? 'Miembro agregado' : 'Ya existía; suscripción activada'];
+      if (out.emailed) parts.push('correo de acceso enviado');
+      toast(parts.join(' · '));
+    } catch (err) {
+      errEl.textContent = 'No se pudo agregar: ' + err.message; errEl.hidden = false;
+    } finally {
+      submitBtn.disabled = false; submitBtn.textContent = lbl;
+    }
+  });
 
   // ---------- FORO ----------
   function renderQCard(q, adminId) {
