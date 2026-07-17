@@ -318,6 +318,34 @@
         de mergear; se **cerró el PR #46 sin mergear** (la landing quedó intacta) y se rehízo en el
         aula (PR #47). Recordatorio: el engranaje de cuenta es para miembros que ya pagaron → va en
         el aula, no en la página pública.
+- [x] **14. Agregar miembros manualmente desde `/panel`.** ✅ Hecho (CÓDIGO; rama
+      `claude/manual-member-addition-3pyjo5`). Emi necesitaba dar de alta **alumnos** y un
+      **miembro previo** de membresía sin que pasen por el checkout de Stripe. En la pestaña
+      **Miembros** hay un botón **"+ Agregar miembro"** que abre un formulario: **correo**
+      (obligatorio), **nombre** (opcional), **idioma del correo de acceso** (ES/EN) y una casilla
+      **"Enviarle el correo de acceso ahora"** (marcada por defecto). Al enviar:
+      - Llama al nuevo endpoint **`POST /api/admin/add-member`** (solo admin: valida el token del
+        navegador y que el `role` sea `admin`; todo lo demás corre con **service_role**, lo único
+        que puede crear la cuenta en `auth.users` — el navegador no puede).
+      - **Crea o reutiliza** la cuenta por correo (mismo criterio que el webhook de Stripe:
+        busca el perfil; si no existe, `admin.createUser` con `email_confirm`; el trigger de la BD
+        crea el `profile`). Si mandaste nombre y el perfil no tenía uno, lo completa.
+      - **Concede una suscripción MANUAL activa**: fila en `subscriptions` con `status='active'`,
+        **sin id real de Stripe** (id sintético `manual_<userId>` como clave de conflicto para que
+        dar de alta dos veces al mismo miembro **actualice** la misma fila, no la duplique) y
+        **sin fecha de fin** (`current_period_end = null`, que `has_active_sub()` trata como
+        vigente) → acceso al aula hasta que Emi lo quite. No hace falta migración: reusa la tabla
+        y el índice único de `stripe_subscription_id` (0006), y la política **`subs: admin all`**.
+      - Si la casilla está marcada, le envía el **correo de acceso** por el mismo camino que el
+        resto (Resend con el copy bilingüe de Emi → respaldo Supabase, vía `sendAccessEmail`), con
+        el enlace de un solo uso para **crear su contraseña** (→ `/nueva-clave/` o `/en/`). Si la
+        deja sin marcar, el miembro puede pedir el enlace él mismo desde «Entrar».
+      - En la lista de miembros, los dados de alta a mano muestran una etiqueta **"Manual"** (se
+        detecta por el prefijo `manual_` del `stripe_subscription_id`).
+      Verificado con `npm run build` (endpoint empaquetado como función serverless
+      `pages/api/admin/add-member`; el cliente incluye la llamada). El alta contra datos reales
+      queda por probar en producción (este entorno no tiene credenciales de Supabase).
+      ⚠️ **Requiere** que `SUPABASE_SERVICE_ROLE_KEY` esté en Vercel (ya lo está, el checkout la usa).
 
 ## Qué es
 Membresía de pago recurrente para contrabajistas de Emilse Rios, **separada** del
@@ -647,6 +675,11 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
+**En curso (17 jul):** punto **14** — agregar miembros manualmente desde `/panel` — en la rama
+`claude/manual-member-addition-3pyjo5` (nuevo endpoint `POST /api/admin/add-member` + formulario en
+la pestaña Miembros). Pendiente abrir PR y probar el alta en producción. Ver el detalle en el punto 14
+del checklist.
+
 **Sin PR abierto ahora mismo.** Todo lo de la segunda tanda del 16 jul quedó **mergeado a
 `main`**: **#43** (encabezado de `/entrar`), **#44** (punto 6, borrar ejercicios), **#45** (punto
 10, "Publicar ahora") y **#47** (punto 13, engranaje de cuenta en el aula). El **#46** (primer
