@@ -318,7 +318,7 @@
         de mergear; se **cerró el PR #46 sin mergear** (la landing quedó intacta) y se rehízo en el
         aula (PR #47). Recordatorio: el engranaje de cuenta es para miembros que ya pagaron → va en
         el aula, no en la página pública.
-- [x] **14. Agregar miembros manualmente desde `/panel`.** ✅ Hecho (CÓDIGO; rama
+- [x] **14. Agregar miembros manualmente desde `/panel`.** ✅ Hecho y **MERGEADO** (PR #50, rama
       `claude/manual-member-addition-3pyjo5`). Emi necesitaba dar de alta **alumnos** y un
       **miembro previo** de membresía sin que pasen por el checkout de Stripe. En la pestaña
       **Miembros** hay un botón **"+ Agregar miembro"** que abre un formulario: **correo**
@@ -689,12 +689,17 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**En curso (17 jul):** punto **14** — agregar miembros manualmente desde `/panel` — en la rama
-`claude/manual-member-addition-3pyjo5` (nuevo endpoint `POST /api/admin/add-member` + formulario en
-la pestaña Miembros). Pendiente abrir PR y probar el alta en producción. Ver el detalle en el punto 14
-del checklist.
+**Sin PR abierto ahora mismo.** Sesión **17 jul 2026**: se cerró el punto **14** (alta y baja
+manual de miembros desde `/panel`) — **PR #50 MERGEADO a `main`** (rama
+`claude/manual-member-addition-3pyjo5`). Incluye los endpoints `POST /api/admin/add-member` y
+`POST /api/admin/remove-member` (solo admin, service_role) + el formulario "+ Agregar miembro" y el
+botón "Quitar acceso" en la pestaña Miembros, más la etiqueta "Manual". Se **revisó** además la baja
+por Stripe: ya es correcta (conserva acceso hasta el fin del mes pagado, luego lo pierde), sin
+cambios. Queda por **probar en producción** el alta/baja con datos reales (este entorno no tiene
+credenciales de Supabase). **La próxima sesión arranca una rama nueva** desde `origin/main` (ya
+incluye el PR #50).
 
-**Sin PR abierto ahora mismo.** Todo lo de la segunda tanda del 16 jul quedó **mergeado a
+Todo lo de la segunda tanda del 16 jul quedó **mergeado a
 `main`**: **#43** (encabezado de `/entrar`), **#44** (punto 6, borrar ejercicios), **#45** (punto
 10, "Publicar ahora") y **#47** (punto 13, engranaje de cuenta en el aula). El **#46** (primer
 intento del punto 13 en la carta) se **cerró sin mergear**. La rama local
@@ -759,7 +764,9 @@ de destino del video en `/panel` (punto 11, Concepto Base y Bonus Material con d
 **#43** encabezado de `/entrar` (logo grande centrado como en `/gracias`), **#44** borrar
 ejercicios desde `/panel` (punto 6), **#45** botón "Publicar ahora" en `/panel` (punto 10) y
 **#47** engranaje de cuenta en el aula con Soporte + Darse de baja (punto 13; el #46, primer
-intento en la carta, se cerró sin mergear).
+intento en la carta, se cerró sin mergear) y **#50** alta y baja manual de miembros desde `/panel`
+(punto 14: `POST /api/admin/add-member` + `remove-member`, formulario "+ Agregar miembro" y botón
+"Quitar acceso"; #49 fue la tercera tanda de ajustes de layout del `/aula`).
 
 ### ⚠️ Pendiente de seguimiento (ya no bloquea)
 El **webhook de Stripe** tuvo un aviso de Stripe sobre posibles problemas, pero Adrián confirmó
