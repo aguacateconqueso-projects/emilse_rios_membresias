@@ -177,9 +177,11 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
                     background: var(--paper); border: 1px solid var(--color-border); border-radius: 14px;
                     padding: 6px; box-shadow: 0 10px 30px rgba(23, 20, 15, 0.14); }
   .gearmenu__list[hidden] { display: none; }
-  .gearmenu__list a { text-decoration: none; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+  .gearmenu__list a, .gearmenu__item { text-decoration: none; color: var(--ink); font-size: var(--text-sm); font-weight: var(--weight-semibold);
                       padding: 10px 12px; border-radius: 9px; text-align: left; white-space: nowrap; }
-  .gearmenu__list a:hover { background: rgba(23, 20, 15, 0.06); }
+  .gearmenu__list a:hover, .gearmenu__item:hover { background: rgba(23, 20, 15, 0.06); }
+  .gearmenu__item { appearance: none; border: 0; background: transparent; cursor: pointer; width: 100%;
+                    font-family: var(--font-body); display: block; }
 
   .lead { padding: clamp(32px, 6vh, 64px) 0 clamp(20px, 3vh, 32px); }
   .lead__title { font-size: clamp(2.2rem, 5.4vw, 3.8rem); margin: var(--space-4) 0 var(--space-3); }
@@ -339,6 +341,44 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   .subgate__h { font-size: var(--text-2xl); margin-bottom: var(--space-3); }
   .subgate__p { color: var(--color-text-soft); line-height: 1.55; margin-bottom: var(--space-5); }
   .subgate .btn { min-width: min(320px, 80%); }
+
+  /* --- Tour de bienvenida (onboarding paso a paso, estilo Figma) --------------
+     Oscurece la pantalla, "ilumina" la sección de turno con un recorte + glow y
+     muestra un cuadro con el paso (X de 6), el mensaje de Emi y un botón cuadrado
+     (sin la animación de relleno de los .btn — es un botón aparte a propósito). */
+  .tour[hidden] { display: none; }
+  .tour__block { position: fixed; inset: 0; z-index: 2000; background: transparent; }
+  .tour__block.is-full { background: rgba(23, 20, 15, 0.62); }
+  .tour__spot { position: fixed; z-index: 2001; border-radius: 10px; pointer-events: none;
+                box-shadow: 0 0 0 9999px rgba(23, 20, 15, 0.62),
+                            0 0 0 2px rgba(250, 247, 241, 0.95),
+                            0 0 26px 6px rgba(250, 247, 241, 0.28);
+                transition: top 260ms var(--ease), left 260ms var(--ease),
+                            width 260ms var(--ease), height 260ms var(--ease); }
+  .tour__spot[hidden] { display: none; }
+  .tour__spot.is-glow { animation: tour-glow 2.2s var(--ease) infinite; }
+  @keyframes tour-glow {
+    0%, 100% { box-shadow: 0 0 0 9999px rgba(23, 20, 15, 0.62), 0 0 0 2px rgba(250, 247, 241, 0.95), 0 0 22px 5px rgba(250, 247, 241, 0.22); }
+    50%      { box-shadow: 0 0 0 9999px rgba(23, 20, 15, 0.62), 0 0 0 2px rgba(250, 247, 241, 1),    0 0 34px 9px rgba(250, 247, 241, 0.38); }
+  }
+  .tour__pop { position: fixed; z-index: 2002; width: min(340px, calc(100vw - 32px));
+               background: var(--paper); border: 1px solid var(--color-border); border-radius: 12px;
+               padding: clamp(18px, 2.4vw, 24px); box-shadow: 0 22px 60px rgba(23, 20, 15, 0.32);
+               animation: tour-pop 240ms var(--ease); }
+  @keyframes tour-pop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; } }
+  .tour__count { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+                 letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .tour__text { margin: 10px 0 18px; font-size: var(--text-md); line-height: 1.55; color: var(--ink); }
+  .tour__actions { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+  .tour__skip { appearance: none; background: transparent; border: 0; cursor: pointer; padding: 4px 2px;
+                font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+                color: var(--color-text-soft); text-decoration: underline; text-underline-offset: 3px; }
+  .tour__skip:hover { color: var(--ink); }
+  /* Botón cuadrado, mismo lenguaje editorial que los .btn pero SIN animación. */
+  .tour__btn { appearance: none; cursor: pointer; border: 1.5px solid var(--ink); border-radius: 0;
+               background: var(--ink); color: #fff; font-family: var(--font-body); font-weight: var(--weight-semibold);
+               font-size: 0.78rem; letter-spacing: 0.11em; text-transform: uppercase; padding: 12px 22px; }
+  .tour__btn:hover { background: #000; }
   @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; } }
 </style>
 </head>
@@ -368,6 +408,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
                   aria-label={isEN ? 'More options' : 'Más opciones'}>⚙</button>
           <div class="gearmenu__list" id="gearMenu" role="menu" hidden>
             <a role="menuitem" href="mailto:info@emilserios.com">{isEN ? 'Support' : 'Soporte'}</a>
+            <button type="button" role="menuitem" id="tourReplay" class="gearmenu__item">{isEN ? 'Show tutorial' : 'Ver tutorial'}</button>
             <a role="menuitem" href="https://billing.stripe.com/p/login/bJeaEX6V7dRDaUP8Zb73G00" target="_blank" rel="noopener">{isEN ? 'Cancel subscription' : 'Darse de baja'}</a>
           </div>
         </div>
@@ -958,10 +999,18 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     if (error) console.error('[aula] exercises error:', error);
     const ex = rows && rows[0];
     console.log('[aula] perfil:', profile, '· ejercicio:', ex);
+    // Tour de bienvenida (punto 12): la primera vez que un miembro con acceso
+    // entra al aula. No se muestra en la puerta de pago (sin pestañas que
+    // presentar). El propio tour respeta el flag de localStorage con auto:true.
+    function maybeAutoTour() {
+      if (typeof window.startAulaTour === 'function') window.startAulaTour({ auto: true });
+    }
+
     if (!ex) {
       // Sin ejercicio: si es un miembro sin suscripción, ofrécele suscribirse;
       // si tiene suscripción (o es admin) es que no hay ejercicio en ventana ahora.
-      if (!isAdmin && !hasActive) showSubscribeGate(); else showLocked();
+      if (!isAdmin && !hasActive) showSubscribeGate();
+      else { showLocked(); maybeAutoTour(); }
       return;
     }
 
@@ -1076,6 +1125,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       composeText.value = '';
       node.scrollIntoView({ behavior: 'smooth', block: 'center' });
     });
+
+    // El aula ya está lista (ejercicio + foro): ofrece el tour la primera vez.
+    maybeAutoTour();
   })();
 </script>
 <script is:inline>
@@ -1094,6 +1146,160 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       if (!menu.hidden && !menu.contains(e.target) && e.target !== btn) close();
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') close(); });
+  })();
+</script>
+<script is:inline>
+  /* Tour de bienvenida (onboarding paso a paso, estilo Figma). Se dispara la
+     primera vez (guardado en localStorage) y se puede repetir desde el menú del
+     engranaje ("Ver tutorial"). Todo el copy está en la voz de Emi (ES/EN). */
+  (function () {
+    var EN = document.body.dataset.pageLang === 'en';
+    var STORE_KEY = 'erm_tour_v1';
+
+    // Paso: { sel, tab, scroll, top, text }. sel=null → cuadro centrado, sin foco.
+    var steps = EN ? [
+      { sel: null, text: 'Welcome to your classroom! Let me walk you through everything you have on hand to study, step by step.' },
+      { sel: '#tab-semana', tab: 'semana', top: true, text: 'Here’s your exercise of the week: the video, its description and —when the exercise includes one— a button to download the PDF and keep it on your stand.' },
+      { sel: '#composeForm', tab: 'semana', scroll: true, text: 'Right below the exercise you’ll find questions and answers. Leave me any doubt that comes up and I’ll reply to you personally, no rush.' },
+      { sel: '#tab-base', tab: 'base', top: true, text: 'This is the Core Concept: the video that all of the month’s exercises are built on. It stays available all month, so come back to it whenever you need to.' },
+      { sel: '#tab-bonus', tab: 'bonus', top: true, text: 'Here I’ll be adding Bonus Material little by little. It stays available always, for you to use as support or a complement whenever you like.' },
+      { sel: '#gearBtn', top: true, text: 'And from this gear you can write to me if something on the platform isn’t working, or cancel your membership if you ever need to.' },
+    ] : [
+      { sel: null, text: '¡Bienvenido a tu aula! Deja que te muestre, paso a paso, todo lo que tienes a mano para estudiar.' },
+      { sel: '#tab-semana', tab: 'semana', top: true, text: 'Acá está tu ejercicio de la semana: el video, su descripción y —cuando el ejercicio lo traiga— un botón para descargar el PDF y tenerlo en el atril.' },
+      { sel: '#composeForm', tab: 'semana', scroll: true, text: 'Justo debajo del ejercicio tienes las preguntas y respuestas. Déjame cualquier duda que te surja y yo te respondo personalmente, sin apuro.' },
+      { sel: '#tab-base', tab: 'base', top: true, text: 'Este es el Concepto Base: el video que sostiene todos los ejercicios del mes. Está disponible durante todo el mes, así que vuelve a él siempre que lo necesites.' },
+      { sel: '#tab-bonus', tab: 'bonus', top: true, text: 'Acá voy sumando Bonus Material poco a poco. Queda disponible siempre, para que lo uses como apoyo o complemento cuando quieras.' },
+      { sel: '#gearBtn', top: true, text: 'Y desde este engranaje puedes escribirme si algo de la plataforma no te funciona, o darte de baja si alguna vez lo necesitas.' },
+    ];
+    var TOTAL = steps.length;
+    var L = {
+      count: function (n) { return EN ? (n + ' of ' + TOTAL) : (n + ' de ' + TOTAL); },
+      next: EN ? 'Next' : 'Siguiente',
+      done: EN ? 'Done' : 'Listo',
+      skip: EN ? 'Skip' : 'Saltar',
+    };
+
+    var root, block, spot, pop, popCount, popText, popSkip, popBtn;
+    var i = 0, active = false;
+
+    function build() {
+      root = document.createElement('div'); root.className = 'tour'; root.hidden = true;
+      block = document.createElement('div'); block.className = 'tour__block';
+      spot = document.createElement('div'); spot.className = 'tour__spot'; spot.hidden = true;
+      pop = document.createElement('div'); pop.className = 'tour__pop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-modal', 'true');
+      popCount = document.createElement('div'); popCount.className = 'tour__count';
+      popText = document.createElement('p'); popText.className = 'tour__text';
+      var actions = document.createElement('div'); actions.className = 'tour__actions';
+      popSkip = document.createElement('button'); popSkip.type = 'button'; popSkip.className = 'tour__skip'; popSkip.textContent = L.skip;
+      popBtn = document.createElement('button'); popBtn.type = 'button'; popBtn.className = 'tour__btn';
+      actions.append(popSkip, popBtn);
+      pop.append(popCount, popText, actions);
+      root.append(block, spot, pop);
+      document.body.appendChild(root);
+
+      popBtn.addEventListener('click', function () { if (i >= TOTAL - 1) finish(true); else goTo(i + 1); });
+      popSkip.addEventListener('click', function () { finish(true); });
+      document.addEventListener('keydown', onKey);
+      // El recorte y el cuadro son fixed: si la página se mueve, los realineamos
+      // con la sección de turno (no congelamos el scroll para poder desplazarnos
+      // hasta el foro en el paso 3).
+      window.addEventListener('resize', reposition);
+      window.addEventListener('scroll', reposition, { passive: true });
+    }
+
+    function onKey(e) {
+      if (!active) return;
+      if (e.key === 'Escape') { finish(true); }
+      else if (e.key === 'Enter' || e.key === 'ArrowRight') { e.preventDefault(); popBtn.click(); }
+    }
+
+    function activateTab(name) {
+      var btn = document.getElementById('tab-' + name);
+      if (btn && btn.getAttribute('aria-selected') !== 'true') btn.click();
+    }
+
+    function visibleRect(el) {
+      if (!el) return null;
+      var r = el.getBoundingClientRect();
+      if (r.width < 2 || r.height < 2) return null;
+      return r;
+    }
+
+    function place() {
+      var step = steps[i];
+      var el = step.sel ? document.querySelector(step.sel) : null;
+      var r = visibleRect(el);
+      if (!r) {
+        // Centrado (paso de bienvenida o elemento no visible en este estado).
+        spot.hidden = true; spot.classList.remove('is-glow');
+        block.classList.add('is-full');
+        pop.style.top = '50%'; pop.style.left = '50%'; pop.style.transform = 'translate(-50%, -50%)';
+        return;
+      }
+      block.classList.remove('is-full');
+      var pad = 8;
+      spot.hidden = false;
+      spot.style.top = (r.top - pad) + 'px';
+      spot.style.left = (r.left - pad) + 'px';
+      spot.style.width = (r.width + pad * 2) + 'px';
+      spot.style.height = (r.height + pad * 2) + 'px';
+      spot.classList.add('is-glow');
+      pop.style.transform = 'none';
+      var pw = pop.offsetWidth, ph = pop.offsetHeight, m = 16;
+      var top = r.bottom + 14;
+      if (top + ph > window.innerHeight - m) { var above = r.top - ph - 14; top = above >= m ? above : Math.max(m, window.innerHeight - ph - m); }
+      var left = r.left + r.width / 2 - pw / 2;
+      left = Math.max(m, Math.min(left, window.innerWidth - pw - m));
+      pop.style.top = top + 'px'; pop.style.left = left + 'px';
+    }
+
+    function reposition() { if (active) place(); }
+
+    function goTo(n) {
+      i = n;
+      var step = steps[i];
+      popCount.textContent = L.count(i + 1);
+      popText.textContent = step.text;
+      popBtn.textContent = (i >= TOTAL - 1) ? L.done : L.next;
+      if (step.tab) activateTab(step.tab);
+      if (step.top) window.scrollTo({ top: 0, behavior: 'auto' });
+      requestAnimationFrame(function () {
+        if (step.scroll && step.sel) { var el = document.querySelector(step.sel); if (el) el.scrollIntoView({ block: 'center', behavior: 'auto' }); }
+        requestAnimationFrame(place);
+      });
+    }
+
+    function finish(markDone) {
+      active = false;
+      if (root) root.hidden = true;
+      // Vuelve a la pestaña inicial para que el aula quede como estaba.
+      activateTab('semana');
+      window.scrollTo({ top: 0, behavior: 'auto' });
+      if (markDone) { try { localStorage.setItem(STORE_KEY, '1'); } catch (_) {} }
+    }
+
+    function start() {
+      if (!root) build();
+      active = true;
+      root.hidden = false;
+      goTo(0);
+    }
+
+    // API pública: el módulo de datos la llama tras cargar el aula (auto:true) y
+    // el menú del engranaje la usa para repetir el tour.
+    window.startAulaTour = function (opts) {
+      opts = opts || {};
+      if (opts.auto) { try { if (localStorage.getItem(STORE_KEY)) return; } catch (_) {} }
+      start();
+    };
+
+    var replay = document.getElementById('tourReplay');
+    if (replay) replay.addEventListener('click', function () {
+      var menu = document.getElementById('gearMenu'), btn = document.getElementById('gearBtn');
+      if (menu) menu.hidden = true; if (btn) btn.setAttribute('aria-expanded', 'false');
+      window.startAulaTour({ auto: false });
+    });
   })();
 </script>
 <script src="/membresia-ui.js" defer></script>
