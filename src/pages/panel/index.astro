@@ -413,10 +413,10 @@
 
         <table class="tbl">
           <thead>
-            <tr><th>Miembro</th><th>Suscripción</th><th>Alta</th></tr>
+            <tr><th>Miembro</th><th>Suscripción</th><th>Alta</th><th></th></tr>
           </thead>
           <tbody id="miRows">
-            <tr class="empty-row"><td colspan="3">Cargando…</td></tr>
+            <tr class="empty-row"><td colspan="4">Cargando…</td></tr>
           </tbody>
         </table>
       </section>
@@ -884,7 +884,41 @@
     else if (manual) { const m = document.createElement('span'); m.className = 'pill'; m.style.marginLeft = '8px'; m.textContent = 'Manual'; td3.appendChild(m); }
 
     const td4 = document.createElement('td'); td4.className = 'sub'; td4.textContent = fmtDate(p.created_at);
-    tr.append(td1, td3, td4); return tr;
+
+    // Solo las altas manuales se pueden quitar desde aquí: borra su concesión
+    // manual (no toca facturación de Stripe). Las bajas de Stripe van por el portal.
+    const td5 = document.createElement('td');
+    if (manual && p.role !== 'admin') {
+      const rm = document.createElement('button'); rm.className = 'btn btn--ghost btn--sm'; rm.type = 'button';
+      rm.textContent = 'Quitar acceso';
+      rm.addEventListener('click', () => removeMember(p, rm));
+      td5.appendChild(rm);
+    }
+    tr.append(td1, td3, td4, td5); return tr;
+  }
+
+  async function removeMember(p, btn) {
+    const label = p.full_name || p.email || 'este miembro';
+    const ok = window.confirm(
+      `¿Quitar el acceso manual de «${label}»?\n\nDeja de ver el aula de inmediato. Su cuenta no se borra: puedes volver a agregarlo cuando quieras. (No afecta ninguna suscripción de Stripe.)`
+    );
+    if (!ok) return;
+    const lbl = btn.textContent; btn.disabled = true; btn.textContent = 'Quitando…';
+    try {
+      const { data: { session: s } } = await supabase.auth.getSession();
+      const res = await fetch('/api/admin/remove-member', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + (s && s.access_token || '') },
+        body: JSON.stringify({ user_id: p.id }),
+      });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || out.error) throw new Error(out.error || ('Error ' + res.status));
+      await loadMembers();
+      toast(out.removed ? 'Acceso quitado' : 'No tenía acceso manual');
+    } catch (err) {
+      btn.disabled = false; btn.textContent = lbl;
+      toast('No se pudo quitar: ' + err.message);
+    }
   }
 
   async function loadMembers() {
@@ -893,7 +927,7 @@
       supabase.from('profiles').select('id, full_name, email, role, created_at').order('created_at', { ascending: false }),
       supabase.from('subscriptions').select('user_id, status, current_period_end, stripe_subscription_id'),
     ]);
-    if (pe) { tb.innerHTML = ''; tb.appendChild(emptyRow(3, 'No se pudo cargar: ' + pe.message)); $('miCount').textContent = '—'; return; }
+    if (pe) { tb.innerHTML = ''; tb.appendChild(emptyRow(4, 'No se pudo cargar: ' + pe.message)); $('miCount').textContent = '—'; return; }
     const activeMap = {}, manualMap = {};
     (subs || []).forEach((s) => {
       const active = s.status === 'active' && (!s.current_period_end || new Date(s.current_period_end) > new Date());
@@ -904,7 +938,7 @@
     const members = profiles || [];
     $('miCount').textContent = members.filter((p) => activeMap[p.id]).length + ' con suscripción activa';
     tb.innerHTML = '';
-    if (!members.length) { tb.appendChild(emptyRow(3, 'Aún no hay miembros registrados.')); return; }
+    if (!members.length) { tb.appendChild(emptyRow(4, 'Aún no hay miembros registrados.')); return; }
     members.forEach((p) => tb.appendChild(renderMemberRow(p, !!activeMap[p.id], !!manualMap[p.id])));
   }
 

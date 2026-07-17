@@ -342,10 +342,24 @@
         deja sin marcar, el miembro puede pedir el enlace él mismo desde «Entrar».
       - En la lista de miembros, los dados de alta a mano muestran una etiqueta **"Manual"** (se
         detecta por el prefijo `manual_` del `stripe_subscription_id`).
-      Verificado con `npm run build` (endpoint empaquetado como función serverless
-      `pages/api/admin/add-member`; el cliente incluye la llamada). El alta contra datos reales
-      queda por probar en producción (este entorno no tiene credenciales de Supabase).
+      - **Quitar acceso (mismo punto):** en la lista de miembros, las altas manuales muestran un
+        botón **"Quitar acceso"** que llama a **`POST /api/admin/remove-member`** (solo admin) y
+        **borra la fila `manual_<userId>`** → deja de tener acceso al aula de inmediato. **No borra
+        la cuenta** (se puede volver a agregar) y **no toca ninguna suscripción de Stripe** (solo la
+        concesión hecha a mano). Las bajas de Stripe se gestionan por el portal de Stripe.
+      Verificado con `npm run build` (endpoints empaquetados como funciones serverless
+      `pages/api/admin/add-member` y `remove-member`; el cliente incluye ambas llamadas). El alta y
+      la baja contra datos reales quedan por probar en producción (este entorno no tiene credenciales
+      de Supabase).
       ⚠️ **Requiere** que `SUPABASE_SERVICE_ROLE_KEY` esté en Vercel (ya lo está, el checkout la usa).
+      - **Baja por Stripe (revisado, ya correcto):** al cancelar por el portal, Stripe deja la
+        suscripción `active` con `cancel_at_period_end=true` hasta el fin del mes pagado (el webhook
+        lo espeja → **conserva acceso hasta que termina el mes**); al vencer, `customer.subscription
+        .deleted` pone `status='canceled'` → `has_active_sub()` da falso → **pierde acceso**. Además,
+        la condición `current_period_end > now()` de `has_active_sub()` corta el acceso al pasar la
+        fecha aunque el webhook fallara. Única dependencia: que el endpoint del webhook reciba eventos
+        (ver la nota de seguimiento del webhook). Posible endurecimiento futuro (opcional): exigir
+        `current_period_end` no nulo para filas de Stripe (las manuales lo dejan nulo a propósito).
 
 ## Qué es
 Membresía de pago recurrente para contrabajistas de Emilse Rios, **separada** del
