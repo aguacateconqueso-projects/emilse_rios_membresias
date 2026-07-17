@@ -301,8 +301,21 @@
       si aún no hay Concepto Base vigente o Bonus Material publicado. Verificado con
       `npm run build` + capturas headless de la estructura (no se pudo probar el flujo con datos
       reales en este entorno por no tener credenciales de Supabase; falta probarlo en producción
-      una vez corrida la migración `0007`). ⬜ Sigue pendiente el **tour/onboarding guiado** paso
-      a paso (queda para su propio PR).
+      una vez corrida la migración `0007`).
+      - **Tour/onboarding guiado ✅ Hecho** (sesión 17 jul, rama `claude/progreso-checklist-pendiente-3hv9no`).
+        Onboarding paso a paso estilo Figma en `/aula`: oscurece la pantalla, **ilumina** la sección de
+        turno con un recorte + glow y muestra un cuadro con el paso (**"X de 6"**), el mensaje de Emi
+        (ES/EN, en su voz) y un botón **cuadrado sin animación** (Siguiente / Listo) + enlace "Saltar".
+        **6 pasos:** (1) bienvenida al centro · (2) pestaña *Ejercicio de la semana* (video, descripción,
+        PDF) · (3) baja al foro de *preguntas y respuestas* · (4) pestaña *Concepto Base* · (5) pestaña
+        *Bonus Material* · (6) el **engranaje** (soporte / darse de baja). Cada paso activa la pestaña
+        que toca y hace scroll a su elemento (el recorte/cuadro se realinean al hacer scroll o resize,
+        sin congelar la página). Se dispara **la primera vez** que un miembro con acceso entra (flag en
+        `localStorage` `erm_tour_v1`) y se puede **repetir** desde el menú del engranaje → **"Ver
+        tutorial"**. Al terminar/saltar vuelve a la pestaña inicial. Todo es UI pura (sin BD ni
+        migración). Copy provisional en la voz de Emi (Adrián lo ajusta después si hace falta).
+        Verificado con `npm run build` + capturas headless de los 6 pasos en un harness con el CSS/JS
+        reales del componente (auto-skip cuando ya se vio, y replay desde el engranaje, comprobados).
 - [x] **13. Menú de cuenta (engranaje) en el aula: soporte + darse de baja.** ✅ Hecho (nuevo, lo
       pidió Adrián esta sesión; PR #47, rama `claude/aula-support-unsubscribe-menu`). Un ícono de
       engranaje ⚙ en la barra superior de **`/aula`** (entre el selector EN/ES y "Salir") que abre
@@ -647,8 +660,11 @@ control de DNS y no depender de él.
 - [ ] **Recorrido completo end-to-end**: Emi crea ejercicio → `mdza.exp` lo ve, completa y
       pregunta → Emi responde → alumno ve la respuesta. Adrián dijo (16 jul) que **están en eso**
       (probándolo con el sistema ya casi completo).
-- [ ] **Tour/onboarding guiado del punto 12** (único punto del checklist que queda). Adrián pasará
-      el flujo paso a paso cuando se trabaje; es su propio PR.
+- [x] **Tour/onboarding guiado del punto 12** ✅ Hecho (sesión 17 jul, rama
+      `claude/progreso-checklist-pendiente-3hv9no`). Onboarding paso a paso estilo Figma (6 pasos,
+      "X de 6", cuadro con el mensaje de Emi + botón cuadrado, "Ver tutorial" en el engranaje para
+      repetirlo). Ver el detalle en el punto 12 del checklist. Con esto **el checklist queda cerrado
+      por completo en código**. Copy provisional (Adrián lo ajusta si hace falta).
 - [ ] Anti-reentrada fina por email (después; hoy ya cubierto "gratis" por la ventana del precio
       de fundador — quien se da de baja y vuelve solo encuentra el precio estándar).
       ✅ **Favicon:** Adrián confirmó (16 jul) que **el que está está bien** — no volver a proponer
@@ -689,7 +705,19 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Sin PR abierto ahora mismo.** Sesión **17 jul 2026**: se cerró el punto **14** (alta y baja
+**Sesión 17 jul 2026 (segunda tanda) — punto 12, tour/onboarding:** rama
+`claude/progreso-checklist-pendiente-3hv9no` desde `origin/main`. Se agregó el **tour guiado paso a
+paso** en `/aula` (estilo Figma: oscurece la pantalla, ilumina la sección de turno, cuadro con
+"X de 6" + mensaje de Emi + botón cuadrado; 6 pasos; se dispara la primera vez por flag en
+`localStorage` y se repite desde el engranaje con "Ver tutorial"). Solo toca
+`src/components/membresia/Aula.astro` (UI pura, sin BD ni migración). Verificado con `npm run build`
++ capturas headless de los 6 pasos. **Con esto el checklist de 14 puntos queda cerrado en código.**
+Falta el **PR** (crear cuando Adrián lo pida) y probar el flujo en producción. El copy del tour es
+provisional en la voz de Emi.
+
+---
+
+**Sesión anterior (17 jul 2026):** se cerró el punto **14** (alta y baja
 manual de miembros desde `/panel`) — **PR #50 MERGEADO a `main`** (rama
 `claude/manual-member-addition-3pyjo5`). Incluye los endpoints `POST /api/admin/add-member` y
 `POST /api/admin/remove-member` (solo admin, service_role) + el formulario "+ Agregar miembro" y el
