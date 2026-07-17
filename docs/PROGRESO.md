@@ -29,8 +29,8 @@
 > Bonus Material) ya tiene su respaldo en la BD.
 > Pendiente el resto (ver abajo): **solo el tour/onboarding del punto 12**. Adrián pasará el flujo
 > del tour cuando se trabaje.
-> **Tercera tanda del mismo día (16 jul) — 4 ajustes de layout del `/aula`** (rama
-> `claude/aula-layout-updates-ik7ein`), todos en `Aula.astro`, sin BD ni migración:
+> **Tercera tanda del mismo día (16 jul) — 4 ajustes de layout del `/aula`** (PR **#49**
+> MERGEADO, rama `claude/aula-layout-updates-ik7ein`), todos en `Aula.astro`, sin BD ni migración:
 > 1. **Logo más grande** en la barra del aula (override local: `clamp(30–44px)` en vez de
 >    `22–30px`), con "Aula" al lado en escritorio y **oculto en móvil** (≤560px). No toca la
 >    capa compartida, así que panel/`/entrar`/`/gracias` quedan igual.
@@ -49,6 +49,18 @@
 >    blur, animación de entrada) con una **"×" arriba a la derecha**; se cierra con la X, clic en
 >    el fondo o Escape (y detiene la reproducción al cerrar). Verificado con `npm run build` +
 >    capturas headless (barra 44px con "Aula"/30px sin ella en móvil, y el modal).
+> ⚠️ **Incidente de infraestructura (NO era nuestro código) — outage de GitHub:** al mergear/
+> desplegar el PR #49, Vercel **no generó el deploy automático** y su UI (Create Deployment,
+> Redeploy, y hasta Settings → Git) se quedaba girando/en gris. Diagnóstico: la integración
+> GitHub↔Vercel estaba sana (repo *Connected*, GitHub App con permisos y *All repositories*); lo
+> que fallaba era un **outage de GitHub** que afectaba *automatic deployments and account
+> connection* (GitHub lo confirmó con un aviso propio). Se intentó forzar con un commit vacío de
+> re-trigger, pero nada disparaba porque el problema era de GitHub, no de la config. Se resolvió
+> **solo, esperando** a que GitHub se recuperara; después Adrián pudo desplegar y **mergear**.
+> Aprendizaje: si Vercel deja de auto-desplegar Y su propia UI se cuelga, sospechar primero de un
+> **incidente de GitHub/Vercel** (revisar githubstatus.com / vercel-status.com) antes de tocar la
+> integración; no acumular clics de Redeploy (encolan deploys duplicados que se disparan juntos al
+> volver el servicio).
 
 - [x] **1. Corregir el copy de la página de ventas.** ✅ Hecho. Adrián pasó el texto exacto y
       se reemplazó frase por frase en `Landing.astro` (ES, con la traducción EN actualizada en
