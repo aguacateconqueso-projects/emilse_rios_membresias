@@ -705,15 +705,27 @@ correr migraciones destructivas; y aplicar la migración **después** de confirm
 - Ajustes visuales y de copy finales con Emi.
 
 ## Rama de trabajo
-**Sesión 17 jul 2026 (segunda tanda) — punto 12, tour/onboarding:** rama
-`claude/progreso-checklist-pendiente-3hv9no` desde `origin/main`. Se agregó el **tour guiado paso a
-paso** en `/aula` (estilo Figma: oscurece la pantalla, ilumina la sección de turno, cuadro con
-"X de 6" + mensaje de Emi + botón cuadrado; 6 pasos; se dispara la primera vez por flag en
-`localStorage` y se repite desde el engranaje con "Ver tutorial"). Solo toca
-`src/components/membresia/Aula.astro` (UI pura, sin BD ni migración). Verificado con `npm run build`
-+ capturas headless de los 6 pasos. **Con esto el checklist de 14 puntos queda cerrado en código.**
-Falta el **PR** (crear cuando Adrián lo pida) y probar el flujo en producción. El copy del tour es
-provisional en la voz de Emi.
+**Sesión 17 jul 2026 (segunda tanda) — punto 12, tour/onboarding: PR #52** (rama
+`claude/progreso-checklist-pendiente-3hv9no` desde `origin/main`; el PR lo abrió Adrián desde la UI
+de Claude Code — empujar a esta rama lo actualiza). Se agregó el **tour guiado paso a paso** en
+`/aula` (estilo Figma: oscurece la pantalla, ilumina la sección de turno, cuadro con "X de 6" +
+mensaje de Emi + botón cuadrado; 6 pasos; se dispara la primera vez por flag en `localStorage` y se
+repite desde el engranaje con "Ver tutorial"). Solo toca `src/components/membresia/Aula.astro` (UI
+pura, sin BD ni migración). Verificado con `npm run build` + capturas headless de los 6 pasos.
+**Adrián lo probó** (17 jul) y confirmó tres cosas revisadas:
+- **Responsive ES/EN ✅**: comprobado en viewport de móvil (390px) en los dos idiomas — el cuadro se
+  adapta al ancho (`min(340px, 100vw − 32px)`), no se sale de pantalla, el botón siempre queda a la
+  vista y el contador va en el idioma correcto ("X de 6" / "X of 6").
+- **Solo la primera vez ✅**: se muestra una vez y no vuelve (flag `erm_tour_v1` en `localStorage`).
+  Matiz conocido: es por **navegador/dispositivo**, no por cuenta (si entra en otro equipo o borra
+  datos, lo vuelve a ver). Adrián lo dejó así a propósito. Opción futura si hiciera falta: recordarlo
+  por cuenta en Supabase (columna nueva) y/o marcarlo como visto solo al llegar al final (hoy también
+  cuenta como visto si le da "Saltar").
+- **Repetir a demanda ✅**: la opción **"Ver tutorial" / "Show tutorial"** ya vive en el menú del
+  engranaje (entre Soporte y Darse de baja); reinicia el tour desde el paso 1.
+**Con esto el checklist de 14 puntos queda cerrado en código.** Falta solo probar el flujo con datos
+reales de Supabase en producción. El copy del tour es provisional en la voz de Emi (se ajusta si
+hace falta).
 
 ---
 
