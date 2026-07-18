@@ -20,6 +20,22 @@
 > override local (no toca `membresia-ui.css`), sin BD ni migración. **Pendiente opcional:** el aula,
 > `/entrar` y `/gracias` siguen usando el PNG con margen — si se quiere el logo igual de grande ahí,
 > conviene apuntarlos al mismo `logo_emi_trim.png`.
+> **Continuación — logo parejo en toda la app (18 jul, rama `claude/logo-parejo-barras`, PR
+> nuevo):** Adrián pidió que quede parejo en todos lados. Se apuntaron al `logo_emi_trim.png`
+> (recortado, sin margen) las páginas que faltaban, respetando dos familias de tamaño:
+> - **Barras** (`/panel` ya estaba + **`/aula`**): `height: clamp(30px, 3.4vw, 38px)` — se
+>   bajó la del aula de `clamp(30–44)` a `clamp(30–38)` para que las dos barras midan igual.
+> - **Encabezados centrados** (`/entrar`, `/gracias`, `/nueva-clave`): logo grande centrado.
+>   En `/entrar` y `/gracias` el ancho pasó de `clamp(190–300px)` a `clamp(121–191px)` (× ~0.64)
+>   para que el glifo se vea **del mismo tamaño que antes** ahora que la caja no incluye el aire
+>   vacío lateral (no crecen ni encogen; solo usan el asset limpio). **`/nueva-clave`** además se
+>   convirtió de logo chico en línea (heredaba el estilo de barra) a **encabezado centrado grande
+>   igual que los otros dos** — antes desentonaba en el mismo flujo.
+> - La **tarjeta de acceso (gate) de `/panel`** también pasó al asset recortado.
+> - **`Landing.astro` (carta de ventas pública) NO se tocó** — su hero está diseñado aparte.
+> Verificado con `npm run build` + capturas headless de `/entrar`, `/gracias` y `/nueva-clave`
+> (los tres con el logo idéntico y centrado). Solo swaps de `src` + ajustes de tamaño; sin BD ni
+> migración. Cuando este PR se mergee, `logo_emi_alpha.png` queda sin uso salvo en la carta.
 > **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27), puntos **3 + 4 + 12
 > (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30), punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",

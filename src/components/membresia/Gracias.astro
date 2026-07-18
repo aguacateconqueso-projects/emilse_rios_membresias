@@ -70,7 +70,10 @@ const t = isEN ? {
   .header { text-align: center; margin: 0 0 var(--space-6); }
   .brand-logo { display: flex; flex-direction: column; align-items: center; gap: 8px;
                 margin: 0 auto var(--space-5); }
-  .brand-logo__img { height: auto; width: clamp(190px, 58vw, 300px); }
+  /* logo_emi_trim.png = el logo sin el margen transparente del PNG original.
+     El ancho se recalcula (× ~0.64) para que el glifo se vea del mismo tamaño
+     que antes, ahora que la caja no incluye aire vacío a los lados. */
+  .brand-logo__img { height: auto; width: clamp(121px, 37vw, 191px); }
   .brand-logo small { font-size: 13px; }
   .warn { display: block; font-size: clamp(1.4rem, 5.2vw, 1.9rem); font-weight: var(--weight-bold, 700);
           color: #ff2d3a;
@@ -106,7 +109,7 @@ const t = isEN ? {
   <div class="card">
     <div class="header">
       <a class="brand-logo" href="/">
-        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+        <img class="brand-logo__img" src="/img/logo_emi_trim.png" alt="Emilse Rios"
              onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
         <span class="brand-logo__fallback" hidden>Emilse Rios</span>
         <small>{t.brandSmall}</small>
