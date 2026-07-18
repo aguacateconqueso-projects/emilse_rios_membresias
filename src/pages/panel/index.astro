@@ -34,6 +34,11 @@
          border-bottom: 1px solid var(--color-border); }
   .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 12px var(--edge);
              display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
+  /* Logo más grande en la barra del panel (override local; no toca la capa
+     compartida, así que aula/carta/entrar/gracias quedan igual). Mismo tamaño
+     que la barra del aula. */
+  .bar .brand-logo__img { height: clamp(30px, 4.6vw, 44px); }
+  .bar .brand-logo { gap: 0.6em; }
   .bar__right { display: flex; align-items: center; gap: clamp(12px, 2vw, 20px); }
   .acct { text-decoration: none; font-size: var(--text-sm); font-weight: var(--weight-semibold);
           color: var(--color-text-soft); transition: color var(--duration) var(--ease); white-space: nowrap; }
