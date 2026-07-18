@@ -6,6 +6,12 @@
 ## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
 > viaja en el mismo PR de cada punto.
+> **Ajuste suelto (18 jul, rama `claude/emi-logo-size-tggyg2`):** el logo de Emi arriba a la
+> izquierda del **`/panel`** se veía chico. Se agrandó con un override local en la barra
+> (`.bar .brand-logo__img { height: clamp(30px, 4.6vw, 44px); }`, el mismo tamaño que ya
+> usa la barra del aula), sin tocar la capa compartida `membresia-ui.css` — así carta,
+> `/entrar` y `/gracias` quedan igual. Solo `src/pages/panel/index.astro`, sin BD ni
+> migración. Verificado con `npm run build`.
 > **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27), puntos **3 + 4 + 12
 > (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30), punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",
