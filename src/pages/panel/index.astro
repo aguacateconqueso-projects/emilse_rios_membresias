@@ -35,9 +35,12 @@
   .bar__in { max-width: var(--wrap); margin: 0 auto; padding: 12px var(--edge);
              display: flex; align-items: center; justify-content: space-between; gap: var(--space-4); }
   /* Logo más grande en la barra del panel (override local; no toca la capa
-     compartida, así que aula/carta/entrar/gracias quedan igual). Mismo tamaño
-     que la barra del aula. */
-  .bar .brand-logo__img { height: clamp(30px, 4.6vw, 44px); }
+     compartida, así que aula/carta/entrar/gracias quedan igual).
+     Usa /img/logo_emi_trim.png: el mismo logo pero SIN el margen transparente
+     que trae el PNG original (el glifo real solo ocupaba ~34% del alto del
+     archivo, por eso subir la altura casi no se notaba). Ya recortado, la
+     altura de la caja = altura visible del logo. */
+  .bar .brand-logo__img { height: clamp(30px, 3.4vw, 38px); }
   .bar .brand-logo { gap: 0.6em; }
   .bar__right { display: flex; align-items: center; gap: clamp(12px, 2vw, 20px); }
   .acct { text-decoration: none; font-size: var(--text-sm); font-weight: var(--weight-semibold);
@@ -218,7 +221,7 @@
   <header class="bar">
     <div class="bar__in">
       <a class="brand-logo" href="/panel/">
-        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+        <img class="brand-logo__img" src="/img/logo_emi_trim.png" alt="Emilse Rios"
              onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
         <span class="brand-logo__fallback" hidden>Emilse Rios</span>
         <small>Panel</small>
