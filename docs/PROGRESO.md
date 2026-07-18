@@ -3,6 +3,41 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 18 jul 2026 — PRIMER SUSCRIPTOR + incidente del webhook (308) RESUELTO
+> **¡Primer suscriptor oficial de pago!** 🎉 El pago entró en Stripe pero el miembro **no
+> aparecía en la plataforma**. Diagnóstico y arreglo end-to-end:
+>
+> **Síntoma:** en Stripe → Developers → Webhooks, **TODAS** las entregas fallaban con
+> **`308 ERR`** (`checkout.session.completed`, `customer.subscription.created/updated`,
+> `invoice.paid`) → "Failed, next retry in N minutes". Como el pago no dispara nada por sí solo
+> (el puente es el webhook: crea el usuario en Supabase + escribe la fila de `subscriptions` +
+> manda el correo de bienvenida), el comprador quedaba pagado en Stripe pero **sin cuenta**.
+>
+> **Causa raíz:** `308 = Permanent Redirect`. El endpoint del webhook en Stripe apuntaba al
+> dominio **sin `www`** (`https://emilseriosacademy.com/api/stripe-webhook`), y en Vercel el
+> canónico es **`www`**, así que Vercel respondía 308 redirigiendo a `www.…`. **Stripe NO sigue
+> redirects en webhooks** → marcaba cada entrega como fallida y reintentaba contra la misma URL
+> rota. No era bug de código (fallaban TODOS los tipos de evento por igual → problema de URL, no
+> de lógica).
+>
+> **Arreglo (solo config, sin código ni deploy):** Adrián editó la URL del endpoint en Stripe a
+> la versión canónica **con `www`**: `https://www.emilseriosacademy.com/api/stripe-webhook`.
+> Verificado: el siguiente evento entró **`200 OK`**. Los eventos viejos en 308 se reenvían
+> (**Resend**) o se auto-curan en el próximo reintento (el webhook es idempotente: upsert por
+> `stripe_subscription_id` único). El primer suscriptor quedó **confirmado en Supabase y en
+> `/panel → Miembros`** con suscripción activa.
+>
+> **Regla para el futuro:** cualquier URL que consuma un tercero que NO siga redirects (webhooks
+> de Stripe, etc.) debe apuntar SIEMPRE al host **canónico `www.emilseriosacademy.com`**, nunca
+> al ápice pelado. Lo mismo para los **Redirect URLs de Supabase** (`/nueva-clave/` con `www`) y
+> `PUBLIC_SITE_URL` en Vercel (`https://www.emilseriosacademy.com`), para que el enlace del correo
+> de bienvenida no se rechace.
+>
+> ⚠️ **Cabo suelto de config (no bloquea, para limpiar):** `astro.config.mjs` todavía tiene
+> `site: 'https://membresias.emilserios.com'` (el dominio abandonado). No afecta el webhook
+> —`siteOrigin()`/`PUBLIC_SITE_URL` resuelven el host real— pero conviene actualizarlo al
+> dominio canónico `www.emilseriosacademy.com` para canonical/sitemap.
+
 ## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
 > viaja en el mismo PR de cada punto.
