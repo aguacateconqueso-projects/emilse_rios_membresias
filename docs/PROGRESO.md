@@ -6,12 +6,36 @@
 ## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist
 > viaja en el mismo PR de cada punto.
-> **Ajuste suelto (18 jul, rama `claude/emi-logo-size-tggyg2`):** el logo de Emi arriba a la
-> izquierda del **`/panel`** se veía chico. Se agrandó con un override local en la barra
-> (`.bar .brand-logo__img { height: clamp(30px, 4.6vw, 44px); }`, el mismo tamaño que ya
-> usa la barra del aula), sin tocar la capa compartida `membresia-ui.css` — así carta,
-> `/entrar` y `/gracias` quedan igual. Solo `src/pages/panel/index.astro`, sin BD ni
-> migración. Verificado con `npm run build`.
+> **Ajuste suelto (18 jul, rama `claude/emi-logo-size-tggyg2`, PR #53):** el logo de Emi arriba
+> a la izquierda del **`/panel`** se veía chico. **Primer intento (no funcionó):** subir la altura
+> del `<img>` (`clamp(30–44px)`). Casi no se notó y Adrián avisó. **Causa real:** el PNG
+> `logo_emi_alpha.png` es 2560×1440 pero el glifo real («Emilse Rios») solo ocupa una caja de
+> 1631×487 **en el centro** — o sea **~34% del alto del archivo es margen transparente**. Como
+> `height` fija la caja de la imagen (margen incluido), subir la altura agranda sobre todo el aire
+> vacío; el glifo visible seguía chico. **Arreglo:** se generó `public/img/logo_emi_trim.png` (el
+> mismo logo pero recortado al contenido, sin el margen), se apuntó la barra del panel a ese archivo
+> y se puso `height: clamp(30px, 3.4vw, 38px)`. Ya recortado, la altura de la caja = altura visible
+> del logo, así que a **38px** se ve claramente más grande que el original a 44px (verificado con
+> captura headless comparando antes/después). Solo `src/pages/panel/index.astro` + el asset nuevo,
+> override local (no toca `membresia-ui.css`), sin BD ni migración. **Pendiente opcional:** el aula,
+> `/entrar` y `/gracias` siguen usando el PNG con margen — si se quiere el logo igual de grande ahí,
+> conviene apuntarlos al mismo `logo_emi_trim.png`.
+> **Continuación — logo parejo en toda la app (18 jul, rama `claude/logo-parejo-barras`, PR
+> nuevo):** Adrián pidió que quede parejo en todos lados. Se apuntaron al `logo_emi_trim.png`
+> (recortado, sin margen) las páginas que faltaban, respetando dos familias de tamaño:
+> - **Barras** (`/panel` ya estaba + **`/aula`**): `height: clamp(30px, 3.4vw, 38px)` — se
+>   bajó la del aula de `clamp(30–44)` a `clamp(30–38)` para que las dos barras midan igual.
+> - **Encabezados centrados** (`/entrar`, `/gracias`, `/nueva-clave`): logo grande centrado.
+>   En `/entrar` y `/gracias` el ancho pasó de `clamp(190–300px)` a `clamp(121–191px)` (× ~0.64)
+>   para que el glifo se vea **del mismo tamaño que antes** ahora que la caja no incluye el aire
+>   vacío lateral (no crecen ni encogen; solo usan el asset limpio). **`/nueva-clave`** además se
+>   convirtió de logo chico en línea (heredaba el estilo de barra) a **encabezado centrado grande
+>   igual que los otros dos** — antes desentonaba en el mismo flujo.
+> - La **tarjeta de acceso (gate) de `/panel`** también pasó al asset recortado.
+> - **`Landing.astro` (carta de ventas pública) NO se tocó** — su hero está diseñado aparte.
+> Verificado con `npm run build` + capturas headless de `/entrar`, `/gracias` y `/nueva-clave`
+> (los tres con el logo idéntico y centrado). Solo swaps de `src` + ajustes de tamaño; sin BD ni
+> migración. Cuando este PR se mergee, `logo_emi_alpha.png` queda sin uso salvo en la carta.
 > **Hechos y MERGEADOS hoy:** punto **2** (saludo sin nombre, PR #27), puntos **3 + 4 + 12
 > (pestañas)** (PR #28), punto **5** (identidad visual de la carta, PR #30), punto **7**
 > (ingreso con **correo + contraseña**, fuera el enlace mágico, casilla "mantener sesión",

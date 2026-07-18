@@ -162,7 +162,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 
   /* Logo del aula: más presencia que el resto (override local de la capa
      compartida). El texto "Aula" queda al lado en escritorio y se oculta en móvil. */
-  .bar .brand-logo__img { height: clamp(30px, 4.6vw, 44px); }
+  .bar .brand-logo__img { height: clamp(30px, 3.4vw, 38px); }
   .bar .brand-logo { gap: 0.6em; }
   @media (max-width: 560px) { .bar .brand-logo small { display: none; } }
 
@@ -387,7 +387,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   <header class="bar">
     <div class="bar__in">
       <a class="brand-logo" href={t.home}>
-        <img class="brand-logo__img" src="/img/logo_emi_alpha.png" alt="Emilse Rios"
+        <img class="brand-logo__img" src="/img/logo_emi_trim.png" alt="Emilse Rios"
              onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
         <span class="brand-logo__fallback" hidden>Emilse Rios</span>
         <small>{t.brandSmall}</small>
