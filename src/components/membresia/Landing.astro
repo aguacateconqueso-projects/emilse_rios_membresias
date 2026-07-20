@@ -18,7 +18,7 @@ interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
 const other = isEN ? '/' : '/en/';
-const newsHref = 'https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=RxE3BW';
+const newsHref = 'https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=SaE8Px';
 
 const t = isEN ? {
   htmlLang: 'en',
@@ -63,6 +63,7 @@ const t = isEN ? {
     'You struggle to be consistent with your practice.',
     'You’ve reached a level that lets you play in orchestras and ensembles but you have technical gaps that hold you back on basic bow strokes: spiccato, staccato, legato.',
     'You feel your technique limits you from advancing in interpretation (better vibrato, connection between notes, etc.).',
+    'You’re in the jazz world and want to learn and master the bow.',
   ],
   fitNoH: 'It’s not for you if…',
   fitNo: [
@@ -158,6 +159,7 @@ const t = isEN ? {
     'Te cuesta ser constante con el estudio del contrabajo.',
     'Has alcanzado un nivel que te permite tocar en orquestas y ensambles pero tienes muchos vacíos técnicos que te detienen en golpes de arco básicos: spiccato, staccato, legato.',
     'Sientes que tu técnica te limita en avanzar en la interpretación (mejor vibrato, conexión entre las notas, etc.).',
+    'Estás en el mundo del jazz y quieres aprender y dominar el arco.',
   ],
   fitNoH: 'No es para ti si…',
   fitNo: [
