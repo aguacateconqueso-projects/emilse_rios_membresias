@@ -20,6 +20,17 @@ const isEN = lang === 'en';
 const other = isEN ? '/' : '/en/';
 const newsHref = 'https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=SaE8Px';
 
+// Fin de la ventana del precio de fundador. Es la MISMA variable que usa el
+// checkout (src/lib/stripe.ts): así la carta y el cobro real deciden con el
+// mismo dato. El valor se hornea en el HTML en el build; el flip visual entre
+// fundador y estándar lo hace un script en el cliente comparando la hora real
+// con esta fecha (ver más abajo), para que cambie SOLO en el momento del corte
+// sin depender de un redeploy. El estado renderizado por defecto (útil sin JS)
+// se calcula aquí con la misma lógica.
+const FOUNDER_UNTIL = process.env.STRIPE_FOUNDER_UNTIL || '2025-07-10T23:59:59+02:00';
+const founderUntilMs = Date.parse(FOUNDER_UNTIL);
+const builtIsFounder = !Number.isNaN(founderUntilMs) && Date.now() <= founderUntilMs;
+
 const t = isEN ? {
   htmlLang: 'en',
   metaTitle: "Let's Study Together — Emilse Rios Membership",
@@ -74,11 +85,16 @@ const t = isEN ? {
   community: 'Courses come to an end, but this membership stays with you. You won’t be alone in this — every week, double bassists in different parts of the world are doing the same exercise as you, the same week. You can ask your questions in the chat, and I’ll gladly answer them; you can also see the community’s questions — you learn from the group too.',
 
   titleEcho: 'Estudiemos juntos',
-  priceLabel: 'Founder price',
-  priceAmount: '$57',
   pricePer: '/mo',
-  priceInBoxLead: 'The membership opens at founder price: $57/month, only from July 16 to 23.',
-  priceInBoxRest: 'That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
+  // Dos estados: fundador (dentro de la ventana) y estándar (cuando cierra).
+  priceLabelFounder: 'Founder price',
+  priceLabelStd: 'Price',
+  priceAmountFounder: '$57',
+  priceAmountStd: '$80',
+  priceInBoxLeadFounder: 'The membership opens at founder price: $57/month, only from July 16 to 23.',
+  priceInBoxLeadStd: 'The membership is $80/month.',
+  priceInBoxRestFounder: 'That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
+  priceInBoxRestStd: 'That price freezes for you: the day it goes up, you keep paying the same for as long as you stay in.',
   priceFeatures: [
     'A new exercise every Thursday on the platform, based on a core concept.',
     'Every month I explain one topic — a core technical concept — so you understand where the movements, coordination, and sound come from. Just one concept. Simple.',
@@ -170,11 +186,16 @@ const t = isEN ? {
   community: 'Los cursos se terminan, pero esta membresía siempre está contigo. No vas a estar solo en esto, cada semana, contrabajistas en distintas partes del mundo estamos haciendo el mismo ejercicio que tú, la misma semana, puedes hacer tus preguntas en el chat, con mucho gusto las contestaré, también, puedes ver las preguntas de la comunidad, del grupo también se aprende.',
 
   titleEcho: 'Let’s study together',
-  priceLabel: 'Precio de fundador',
-  priceAmount: '$57',
   pricePer: '/mes',
-  priceInBoxLead: 'La membresía abre con precio de fundador: $57 al mes, solo del 16 al 23 de julio.',
-  priceInBoxRest: 'Ese precio se congela para ti: aunque suba (y va a subir), tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
+  // Dos estados: fundador (dentro de la ventana) y estándar (cuando cierra).
+  priceLabelFounder: 'Precio de fundador',
+  priceLabelStd: 'Precio',
+  priceAmountFounder: '$57',
+  priceAmountStd: '$80',
+  priceInBoxLeadFounder: 'La membresía abre con precio de fundador: $57 al mes, solo del 16 al 23 de julio.',
+  priceInBoxLeadStd: 'La membresía cuesta $80 al mes.',
+  priceInBoxRestFounder: 'Ese precio se congela para ti: aunque suba (y va a subir), tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
+  priceInBoxRestStd: 'Ese precio se congela para ti: el día que suba, tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
   priceFeatures: [
     'Cada jueves un ejercicio nuevo en la plataforma basado en un concepto base.',
     'Cada mes te explico un tema, un concepto base técnico, para que entiendas de dónde vienen los movimientos, la coordinación, el sonido, solo un concepto. Simple.',
@@ -612,9 +633,9 @@ const t = isEN ? {
       <div class="pricecard">
         <div class="pricecard__left">
           <p class="pricecard__name">{t.title} <span class="echo">{t.titleEcho}</span></p>
-          <p class="pricecard__plan">{t.priceLabel}</p>
-          <p class="pricecard__price"><span class="num">{t.priceAmount}</span><span class="per">{t.pricePer}</span></p>
-          <p class="pricecard__note"><strong>{t.priceInBoxLead}</strong> {t.priceInBoxRest}</p>
+          <p class="pricecard__plan" id="pcPlan">{builtIsFounder ? t.priceLabelFounder : t.priceLabelStd}</p>
+          <p class="pricecard__price"><span class="num" id="pcNum">{builtIsFounder ? t.priceAmountFounder : t.priceAmountStd}</span><span class="per">{t.pricePer}</span></p>
+          <p class="pricecard__note"><strong id="pcLead">{builtIsFounder ? t.priceInBoxLeadFounder : t.priceInBoxLeadStd}</strong> <span id="pcRest">{builtIsFounder ? t.priceInBoxRestFounder : t.priceInBoxRestStd}</span></p>
         </div>
         <div class="pricecard__right">
           <ul class="pricecard__feat">{t.priceFeatures.map((f) => (<li>{f}</li>))}</ul>
@@ -630,6 +651,26 @@ const t = isEN ? {
         <p class="pricecard__foot">{t.priceBelow}</p>
       </div>
     </div>
+
+    <script is:inline define:vars={{ founderUntil: FOUNDER_UNTIL, copy: {
+      founder: { label: t.priceLabelFounder, amount: t.priceAmountFounder, lead: t.priceInBoxLeadFounder, rest: t.priceInBoxRestFounder },
+      standard: { label: t.priceLabelStd, amount: t.priceAmountStd, lead: t.priceInBoxLeadStd, rest: t.priceInBoxRestStd },
+    } }}>
+      // Flip fundador ↔ estándar según la hora REAL del visitante (no la del build).
+      // Corre en cuanto se parsea la tarjeta, así el precio queda correcto antes de
+      // que se pinte / se llegue a él con scroll. Cambia solo en el momento del corte,
+      // sin necesidad de redeploy. Usa la MISMA fecha que el checkout (STRIPE_FOUNDER_UNTIL).
+      (function () {
+        var until = Date.parse(founderUntil);
+        var isFounder = !isNaN(until) && Date.now() <= until;
+        var c = isFounder ? copy.founder : copy.standard;
+        var set = function (id, txt) { var el = document.getElementById(id); if (el) el.textContent = txt; };
+        set('pcPlan', c.label);
+        set('pcNum', c.amount);
+        set('pcLead', c.lead);
+        set('pcRest', c.rest);
+      })();
+    </script>
 
     <p class="finalmsg reveal">
       <span class="finalmsg__a">{t.finalMsgLead}</span>
