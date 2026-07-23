@@ -15,7 +15,7 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'es';
   const origin = siteOrigin(request);
 
-  // El precio (fundador $57 / estándar $77) lo decide la fecha. El tier queda
+  // El precio (fundador $57 / estándar $80) lo decide la fecha. El tier queda
   // congelado en la suscripción: Stripe seguirá cobrando ese precio.
   const tier = currentTier();
   const price = priceForTier(tier);

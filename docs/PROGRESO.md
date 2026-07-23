@@ -3,6 +3,37 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 23 jul 2026 — Precio estándar $77 → $80 + precio dinámico en la carta
+> Emi subió el precio estándar (el de después del fundador) de **$77 a $80/mes** y quiere
+> **cerrar la ventana de fundador hoy 23 jul a las 23:59** (hora Madrid). Cómo funciona el
+> precio: el checkout lee **dos Price IDs de Stripe** desde variables de Vercel
+> (`STRIPE_PRICE_FOUNDER` / `STRIPE_PRICE_STANDARD`) y una fecha de corte
+> (`STRIPE_FOUNDER_UNTIL`) decide cuál cobrar.
+>
+> **Lo que hace Emi + Adrián (config, NO código):**
+> 1. En Stripe los precios son **inmutables**: no se edita el de $77. Emi **crea un Price NUEVO
+>    de $80/mes** sobre el mismo producto y pasa su `price_...`.
+> 2. En Vercel: **`STRIPE_PRICE_STANDARD`** = el nuevo Price ID de $80; y
+>    **`STRIPE_FOUNDER_UNTIL`** = `2026-07-23T23:59:59+02:00`. **Redeploy** para que tomen efecto.
+>    (La variable ya existía, pero apuntaba al Price de $77 — por eso no bastaba con tocar Stripe.)
+> Los que ya pagaron $57 **siguen en $57** (Stripe congela el precio de cada suscripción).
+>
+> **Lo que se hizo en código (este PR):** la carta mostraba **"$57" y "solo del 16 al 23 de
+> julio"** escritos a mano → al cerrar la ventana quedaría desalineada con el cobro real. Se
+> hizo el precio de la tarjeta **dinámico**: hay dos estados de copy (fundador / estándar) por
+> idioma; el estado por defecto se renderiza en el build según `STRIPE_FOUNDER_UNTIL`, y un
+> **script inline en el cliente** compara la hora real del visitante con esa misma fecha de corte
+> y aplica el estado correcto (fundador `$57` + ventana ↔ estándar `$80` sin la línea de
+> fundador). Así **cambia solo en el momento del corte, sin depender de un redeploy** y con la
+> **misma fecha** que usa el checkout (fuente de verdad única). Es solo la carta (`Landing.astro`);
+> no se tocó la lógica del checkout ni la BD.
+> - **Etiqueta heredada:** el enum de la BD/código sigue siendo `standard_77` (columna
+>   `price_tier` de `0001_init.sql`). Es solo un bucket que mapea Price ID ↔ fila; con $80 el
+>   nombre queda de mentiroso pero **funciona igual**. Renombrarlo exigiría migración → se dejó
+>   como limpieza opcional (comentado en `src/lib/stripe.ts`).
+> Verificado con `npm run build` + volcado del HTML (ES/EN): ambas variantes de copy quedan
+> embebidas para el flip y el script inline está presente.
+
 ## 🗓️ 23 jul 2026 — Login bilingüe (toggle EN/ES)
 > La pantalla de **login (`/entrar`) solo existía en español**, a diferencia del resto del
 > flujo (`/aula`, `/gracias`, `/nueva-clave`, la carta) que ya es bilingüe. Adrián pidió
@@ -483,7 +514,10 @@ control de DNS y no depender de él.
 - **Modelo de contenido:** UN ejercicio vigente a la vez, global, rota cada **jueves**
   (00:00 baja / 00:01 sube, hora Madrid). Sin biblioteca histórica. El cobro es mensual
   por miembro, en un reloj aparte.
-- **Precio:** fundador **$57/mes** (1–10 jul) · estándar **$77/mes** (desde 11 jul).
+- **Precio:** fundador **$57/mes** (ventana controlada por `STRIPE_FOUNDER_UNTIL`) · estándar
+  **$80/mes** al cerrar la ventana (antes iba a ser $77; Emi lo subió a $80 el 23 jul 2026).
+  El precio de la carta es **dinámico** (ver entrada del 23 jul): cambia solo en el momento del
+  corte, con la misma fecha que usa el checkout.
 - **Sin niveles:** un solo ejercicio para todos; Emi guía inicial y avanzado dentro del
   mismo video. **Foro separado por idioma** (sin traducción automática).
 

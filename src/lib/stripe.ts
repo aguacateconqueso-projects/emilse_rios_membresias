@@ -11,6 +11,10 @@ export const stripe = secret ? new Stripe(secret) : null;
 export const PRICE_FOUNDER = process.env.STRIPE_PRICE_FOUNDER || '';
 export const PRICE_STANDARD = process.env.STRIPE_PRICE_STANDARD || '';
 
+// OJO: los nombres del enum ('standard_77') son ETIQUETAS HEREDADAS: el estándar
+// pasó a $80 (jul 2026) pero el valor del enum se conserva para no migrar la BD
+// (columna price_tier en 0001_init.sql). El monto real lo fija el Price de Stripe,
+// no este nombre; el enum es solo un bucket que mapea Price ID ↔ fila de la BD.
 export type Tier = 'founder_57' | 'standard_77';
 
 // Fin de la ventana del precio fundador. Por defecto 10 jul 2025, 23:59 (Madrid);
