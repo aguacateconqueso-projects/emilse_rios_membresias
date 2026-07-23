@@ -546,7 +546,7 @@ const t = isEN ? {
     <a href="/" aria-current={(!isEN).toString()} data-lang-switch>ES</a>
     <a href="/en/" aria-current={isEN.toString()} data-lang-switch>EN</a>
     <span class="langpill__sep" aria-hidden="true"></span>
-    <a class="langpill__enter" href="/entrar/">{t.enter}</a>
+    <a class="langpill__enter" href={isEN ? '/entrar/en/' : '/entrar/'}>{t.enter}</a>
   </nav>
 
   <main class="page">

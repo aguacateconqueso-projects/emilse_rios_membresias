@@ -3,6 +3,25 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 23 jul 2026 — Login bilingüe (toggle EN/ES)
+> La pantalla de **login (`/entrar`) solo existía en español**, a diferencia del resto del
+> flujo (`/aula`, `/gracias`, `/nueva-clave`, la carta) que ya es bilingüe. Adrián pidió
+> agregarle un **toggle EN/ES**. Se siguió el mismo patrón que las demás pantallas bilingües:
+> - Se extrajo `src/pages/entrar/index.astro` a un **componente `Login.astro`** con prop
+>   `lang` (`'es' | 'en'`): todos los textos del markup y los mensajes/estados del lado del
+>   cliente (errores de login, "Entrando…", aviso de sesión ya iniciada, envío del correo de
+>   acceso) quedan traducidos.
+> - Rutas: **`/entrar/`** (es) y nueva **`/entrar/en/`** (en), thin wrappers que importan el
+>   componente con su `lang` (igual que `/gracias/en/` y `/nueva-clave/en/`).
+> - **Píldora EN/ES** fija arriba a la derecha (mismo vidrio esmerilado y estilo que la carta
+>   de ventas), que navega entre las dos rutas.
+> - El correo de «Crea o restablece tu contraseña» ahora sale en el **idioma de la página**
+>   (`lang: pageLang` a `/api/send-access-email`), no siempre en español.
+> - El login en inglés enruta a **`/aula/en/`** (antes solo `/aula/`).
+> - La carta de ventas en EN ahora enlaza su "Log in" a `/entrar/en/` (antes siempre a `/entrar/`).
+> Sin BD ni migración; solo UI. Verificado con `npm run build` + volcado del HTML renderizado
+> (ES y EN: título, textos y la píldora con ambos enlaces presentes en cada página).
+
 ## 🗓️ 18 jul 2026 — PRIMER SUSCRIPTOR + incidente del webhook (308) RESUELTO
 > **¡Primer suscriptor oficial de pago!** 🎉 El pago entró en Stripe pero el miembro **no
 > aparecía en la plataforma**. Diagnóstico y arreglo end-to-end:
