@@ -1,0 +1,373 @@
+---
+// Login con correo + contraseña para miembros y para Emi (se eliminó el enlace
+// mágico). Componente bilingüe (prop lang: 'es' | 'en'). Rutas: /entrar/ (es) y
+// /entrar/en/ (en), con una píldora EN/ES arriba a la derecha para cambiar de
+// idioma (mismo estilo que la carta de ventas). Casilla "mantener sesión iniciada"
+// (localStorage vs sessionStorage). La primera contraseña / recuperación se hace
+// con un enlace de un solo uso por correo que lleva a /nueva-clave/. Al iniciar
+// sesión enruta: admin → panel, miembro → aula (en su idioma).
+interface Props { lang?: 'es' | 'en'; }
+const { lang = 'es' } = Astro.props;
+const isEN = lang === 'en';
+
+const t = isEN ? {
+  htmlLang: 'en',
+  metaTitle: 'Log in — Let’s Study Together · Emilse Rios',
+  brandSmall: 'Membership',
+  ovl: 'Members access',
+  h1: 'Log in',
+  sub: 'Log in with your email and password.',
+  labelEmail: 'Your email', phEmail: 'youremail@email.com',
+  labelPass: 'Your password', phPass: 'Your password',
+  remember: 'Keep me signed in',
+  submit: 'Log in',
+  altQ: 'First time or forgot your password?',
+  resetLink: 'Create or reset your password',
+  back: '← Back to the membership',
+} : {
+  htmlLang: 'es',
+  metaTitle: 'Entrar — Estudiemos Juntos · Emilse Rios',
+  brandSmall: 'Membresía',
+  ovl: 'Acceso de miembros',
+  h1: 'Entrar',
+  sub: 'Entra con tu correo y tu contraseña.',
+  labelEmail: 'Tu correo', phEmail: 'tucorreo@email.com',
+  labelPass: 'Tu contraseña', phPass: 'Tu contraseña',
+  remember: 'Mantener la sesión iniciada',
+  submit: 'Entrar',
+  altQ: '¿Primera vez o olvidaste tu contraseña?',
+  resetLink: 'Crea o restablece tu contraseña',
+  back: '← Volver a la membresía',
+};
+---
+<!DOCTYPE html>
+<html lang={t.htmlLang}>
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{t.metaTitle}</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
+<link rel="stylesheet" href="/colors_and_type.css" />
+<link rel="stylesheet" href="/membresia-ui.css" />
+<style is:inline>
+  /* Paleta, cursor y botones vienen de /membresia-ui.css (identidad de la carta). */
+  :root { --edge: clamp(20px, 5vw, 64px); }
+  body { min-height: 100svh; display: grid; place-items: center; padding: var(--edge); }
+  .display { font-family: var(--font-display); font-weight: var(--weight-semibold);
+             letter-spacing: -0.03em; line-height: 1; }
+  .ovl { font-family: var(--font-body); font-size: var(--text-sm); font-weight: var(--weight-semibold);
+         letter-spacing: 0.16em; text-transform: uppercase; color: var(--color-text-soft); }
+  .card { width: 100%; max-width: 400px; }
+  h1 { font-size: var(--text-3xl); margin: var(--space-3) 0 var(--space-2); }
+  .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.5; }
+  .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
+  .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
+  .field input { font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
+                 padding: 13px 15px; border: 1px solid var(--color-border); border-radius: var(--radius); background: var(--surface); }
+  .field input:focus { outline: none; border-color: var(--ink); background: var(--paper); }
+  .header { text-align: center; margin: 0 0 var(--space-6); }
+  .brand-logo { display: flex; flex-direction: column; align-items: center; gap: 8px;
+                margin: 0 auto var(--space-4); }
+  /* logo_emi_trim.png = el logo sin el margen transparente del PNG original.
+     El ancho se recalcula (× ~0.64) para que el glifo se vea del mismo tamaño
+     que antes, ahora que la caja no incluye aire vacío a los lados. */
+  .brand-logo__img { height: auto; width: clamp(121px, 37vw, 191px); }
+  .brand-logo small { font-size: 13px; }
+  /* Casilla "mantener sesión iniciada" */
+  .remember { display: flex; align-items: center; gap: 10px; margin: 0 0 var(--space-4);
+              font-size: var(--text-sm); color: var(--color-text-soft); cursor: pointer; user-select: none; }
+  .remember input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); cursor: pointer; }
+  /* Enlace secundario (crear / restablecer contraseña) */
+  .alt { margin-top: var(--space-4); font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.5; }
+  .alt a { color: var(--ink); font-weight: var(--weight-semibold); text-decoration: underline;
+           text-underline-offset: 3px; cursor: pointer; }
+  .msg { margin-top: var(--space-4); font-size: var(--text-base); line-height: 1.5; }
+  .msg.ok { color: var(--ink); }
+  .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
+  .msg[hidden] { display: none; }
+  .back { display: inline-block; margin-top: var(--space-6); color: var(--color-text-soft);
+          font-size: var(--text-sm); text-decoration: none; }
+  .back:hover { color: var(--ink); }
+
+  /* Píldora de idioma — fija, esquina superior derecha. Solo EN/ES. Mismo estilo
+     que la carta de ventas (Landing.astro). */
+  .langpill { position: fixed; top: clamp(14px, 2.6vw, 22px); right: clamp(14px, 2.6vw, 22px); z-index: 50;
+              display: inline-flex; align-items: center; gap: 2px;
+              background: rgba(250, 247, 241, 0.72);
+              -webkit-backdrop-filter: blur(14px) saturate(1.4); backdrop-filter: blur(14px) saturate(1.4);
+              border: 1px solid rgba(23, 20, 15, 0.10); border-radius: 999px; padding: 4px 5px;
+              box-shadow: 0 6px 22px rgba(23, 20, 15, 0.09); }
+  .langpill a { text-decoration: none; color: var(--color-text-soft); font-size: 0.82rem; font-weight: 600;
+                letter-spacing: 0.04em; line-height: 1; padding: 6px 12px; border-radius: 999px;
+                transition: color 200ms ease, background 200ms ease; }
+  .langpill a:hover { color: var(--ink); }
+  .langpill a[aria-current="true"] { color: var(--ink); background: rgba(23, 20, 15, 0.06); }
+</style>
+</head>
+<body data-page-lang={lang}>
+  <nav class="langpill" aria-label="Idioma / Language">
+    <a href="/entrar/" aria-current={(!isEN).toString()}>ES</a>
+    <a href="/entrar/en/" aria-current={isEN.toString()}>EN</a>
+  </nav>
+
+  <div class="card">
+    <div class="header">
+      <a class="brand-logo" href="/">
+        <img class="brand-logo__img" src="/img/logo_emi_trim.png" alt="Emilse Rios"
+             onerror="this.style.display='none';var f=this.parentNode.querySelector('.brand-logo__fallback');if(f)f.hidden=false;" />
+        <span class="brand-logo__fallback" hidden>Emilse Rios</span>
+        <small>{t.brandSmall}</small>
+      </a>
+      <span class="ovl">{t.ovl}</span>
+    </div>
+    <h1 class="display">{t.h1}</h1>
+    <p class="sub">{t.sub}</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">{t.labelEmail}</label>
+        <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+               spellcheck="false" placeholder={t.phEmail} required />
+      </div>
+      <div class="field">
+        <label for="password">{t.labelPass}</label>
+        <input id="password" type="password" autocomplete="current-password"
+               placeholder={t.phPass} required />
+      </div>
+      <label class="remember" for="remember">
+        <input id="remember" type="checkbox" checked />
+        {t.remember}
+      </label>
+      <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
+        <span class="btn__label" id="submitLabel">{t.submit}</span>
+        <span class="btn__ar" aria-hidden="true">→</span>
+      </button>
+    </form>
+
+    <p class="alt">
+      {t.altQ}
+      <a id="resetLink" role="button" tabindex="0">{t.resetLink}</a>
+    </p>
+
+    <p class="msg ok" id="msgOk" hidden></p>
+    <p class="msg err" id="msgErr" hidden></p>
+    <p class="msg" id="sessionNote" hidden></p>
+
+    <a class="back" href="/">{t.back}</a>
+  </div>
+
+<script>
+  import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+
+  const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
+  const EN = pageLang === 'en';
+
+  // Textos del lado del cliente (mensajes, estados de botón). El markup ya viene
+  // traducido desde el server; esto cubre lo que se genera/actualiza en JS.
+  const T = {
+    submit: EN ? 'Log in' : 'Entrar',
+    entering: EN ? 'Signing in…' : 'Entrando…',
+    resetLink: EN ? 'Create or reset your password' : 'Crea o restablece tu contraseña',
+    sending: EN ? 'Sending…' : 'Enviando…',
+    noConfig: EN
+      ? 'The .env file is not configured (PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are missing). Create it in the project root and restart the server.'
+      : 'Falta configurar el archivo .env (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY). Créalo en la raíz del proyecto y reinicia el servidor.',
+    expiredLink: EN
+      ? 'That link has expired or was already used (it’s single-use). Use “Create or reset your password” to request a new one.'
+      : 'Ese enlace ya caducó o ya se usó (es de un solo uso). Usa «Crea o restablece tu contraseña» para pedir uno nuevo.',
+    continueError: EN ? 'Could not continue: ' : 'No se pudo continuar: ',
+    invalidCreds: EN
+      ? 'Wrong email or password. If it’s your first time, create your password with the link below.'
+      : 'Correo o contraseña incorrectos. Si es tu primera vez, crea tu contraseña con el enlace de abajo.',
+    notConfirmed: EN
+      ? 'Your email isn’t confirmed yet. Use “Create or reset your password” to activate it.'
+      : 'Tu correo aún no está confirmado. Usa «Crea o restablece tu contraseña» para activarlo.',
+    loginErrorPrefix: EN ? 'Could not log in: ' : 'No se pudo entrar: ',
+    typeEmail: EN
+      ? 'Type your email above and press the link again.'
+      : 'Escribe tu correo arriba y vuelve a pulsar el enlace.',
+    resetSent: EN
+      ? 'Done. We sent you an email with a link to create your password. If you don’t see it in a few minutes, check spam or promotions (it sometimes lands there).'
+      : 'Listo. Te enviamos un correo con un enlace para crear tu contraseña. Si no lo ves en unos minutos, mira en spam o promociones (a veces llega ahí).',
+    resetError: EN ? 'Could not send the email: ' : 'No se pudo enviar el correo: ',
+    sessionAs: EN ? 'You’re already signed in as ' : 'Ya tienes una sesión iniciada como ',
+    goSpace: EN ? 'Go to your space' : 'Ir a tu espacio',
+    logout: EN ? 'Log out' : 'Salir',
+    aula: EN ? '/aula/en/' : '/aula/',
+    unknownError: EN ? 'unknown error' : 'error desconocido',
+  };
+
+  const form = document.getElementById('loginForm');
+  const email = document.getElementById('email');
+  const password = document.getElementById('password');
+  const remember = document.getElementById('remember');
+  const btn = document.getElementById('submitBtn');
+  const submitLabel = document.getElementById('submitLabel');
+  const resetLink = document.getElementById('resetLink');
+  // Cambia solo el texto del botón sin borrar el relleno/flecha (spans inyectados).
+  const setBtnLabel = (txt) => { if (submitLabel) submitLabel.textContent = txt; else btn.textContent = txt; };
+  const msgOk = document.getElementById('msgOk');
+  const msgErr = document.getElementById('msgErr');
+  const sessionNote = document.getElementById('sessionNote');
+
+  if (!isSupabaseConfigured) {
+    msgErr.textContent = T.noConfig;
+    msgErr.hidden = false;
+    btn.disabled = true;
+  }
+
+  // Si un enlace de crear/restablecer contraseña cae aquí (fallback al Site URL de
+  // Supabase) en vez de en /nueva-clave/, reenvíalo allí, que sí sabe fijar la clave.
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  if (hashParams.get('type') === 'recovery' || (hashParams.get('access_token') && hashParams.get('type') !== 'signup')) {
+    window.location.replace('/nueva-clave/' + window.location.hash);
+  }
+  // Otros errores en el hash (enlace caducado o ya usado): muéstralo claro.
+  if (hashParams.get('error_code') || hashParams.get('error')) {
+    msgErr.textContent = hashParams.get('error_code') === 'otp_expired'
+      ? T.expiredLink
+      : T.continueError + (hashParams.get('error_description') || hashParams.get('error_code') || hashParams.get('error'));
+    msgErr.hidden = false;
+    history.replaceState(null, '', window.location.pathname);
+  }
+
+  async function routeByRole() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+    const { data: profile } = await supabase
+      .from('profiles').select('role').eq('id', session.user.id).single();
+    window.location.href = profile && profile.role === 'admin'
+      ? '/panel/'
+      : T.aula;
+  }
+
+  // Solo enrutamos tras un inicio de sesión REAL (enviar el formulario).
+  // Si ya había sesión al cargar (INITIAL_SESSION), NO expulsamos: así se puede
+  // cambiar de cuenta o salir. Mostramos un aviso con opciones.
+  supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' && session) routeByRole();
+  });
+
+  async function showSessionNote() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { sessionNote.hidden = true; return; }
+    sessionNote.replaceChildren();
+    sessionNote.append(document.createTextNode(`${T.sessionAs}${session.user.email}. `));
+    const go = document.createElement('a');
+    go.href = '#'; go.textContent = T.goSpace;
+    go.style.textDecoration = 'underline'; go.style.fontWeight = 'var(--weight-semibold)';
+    go.addEventListener('click', (e) => { e.preventDefault(); routeByRole(); });
+    const out = document.createElement('a');
+    out.href = '#'; out.textContent = T.logout;
+    out.style.textDecoration = 'underline'; out.style.fontWeight = 'var(--weight-semibold)';
+    out.addEventListener('click', async (e) => {
+      e.preventDefault();
+      await supabase.auth.signOut();
+      sessionNote.hidden = true;
+      email.focus();
+    });
+    sessionNote.append(go, document.createTextNode(' · '), out);
+    sessionNote.hidden = false;
+  }
+  showSessionNote();
+
+  // Extrae un texto legible de cualquier forma de error (Supabase/fetch).
+  // Los AuthError de supabase-js guardan el texto en .message, que NO es
+  // enumerable: por eso JSON.stringify(error) daba "{}" y no veíamos nada.
+  // GoTrue además manda a veces .code / .error_code / .msg / .status.
+  function describeError(err) {
+    if (!err) return T.unknownError;
+    if (typeof err === 'string') return err;
+    const parts = [];
+    const msg = err.message || err.error_description || err.msg || err.error || err.hint;
+    if (msg) parts.push(msg);
+    const code = err.code || err.error_code;
+    if (code) parts.push((EN ? 'code ' : 'código ') + code);
+    if (err.status) parts.push('HTTP ' + err.status);
+    if (parts.length) return parts.join(' · ');
+    // Último recurso: volcar TODAS las propiedades, incluidas las no enumerables.
+    try {
+      const own = {};
+      for (const k of Object.getOwnPropertyNames(err)) own[k] = err[k];
+      const s = JSON.stringify(own);
+      if (s && s !== '{}') return s;
+    } catch (_) { /* ignore */ }
+    return err.name || String(err) || T.unknownError;
+  }
+
+  // Traduce los errores de login más comunes a un mensaje claro.
+  function loginErrorMessage(err) {
+    const raw = describeError(err).toLowerCase();
+    if (raw.includes('invalid login credentials')) return T.invalidCreds;
+    if (raw.includes('email not confirmed')) return T.notConfirmed;
+    return T.loginErrorPrefix + describeError(err);
+  }
+
+  function showError(err) {
+    try { console.error('[login] error:', err, JSON.stringify(err, Object.getOwnPropertyNames(err || {}))); }
+    catch (_) { console.error('[login] error:', err); }
+    msgErr.textContent = loginErrorMessage(err);
+    msgErr.hidden = false;
+    btn.disabled = false; setBtnLabel(T.submit);
+  }
+
+  // Iniciar sesión con correo + contraseña. La casilla "mantener sesión iniciada"
+  // se guarda ANTES del login para que el token quede en el almacén correcto
+  // (localStorage si se recuerda, sessionStorage si no).
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    msgOk.hidden = true; msgErr.hidden = true;
+    const mail = email.value.trim();
+    const pass = password.value;
+    if (!mail || !pass) return;
+    try { localStorage.setItem('erm_remember', remember.checked ? '1' : '0'); } catch (_) {}
+    btn.disabled = true; setBtnLabel(T.entering);
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email: mail, password: pass });
+      if (error) { showError(error); return; }
+      setBtnLabel(T.entering);
+      // onAuthStateChange (SIGNED_IN) enruta por rol; routeByRole es la red de seguridad.
+      routeByRole();
+    } catch (err) {
+      showError(err);
+    }
+  });
+
+  // Crear / restablecer contraseña: envía un correo con un enlace de un solo uso a
+  // /nueva-clave/. Sirve para la PRIMERA vez (cuenta creada al pagar, sin clave) y
+  // para recuperar el acceso. Por privacidad, respondemos igual exista o no el
+  // correo, así que mostramos el mismo aviso siempre. Pasa por el endpoint del
+  // servidor (no resetPasswordForEmail directo) para que el correo salga por
+  // Resend con el copy bilingüe de Emi, igual que la bienvenida automática, en
+  // vez de la plantilla nativa de Supabase. El idioma del correo sigue al de la página.
+  async function sendReset() {
+    const mail = email.value.trim();
+    msgOk.hidden = true; msgErr.hidden = true;
+    if (!mail) {
+      msgErr.textContent = T.typeEmail;
+      msgErr.hidden = false; email.focus(); return;
+    }
+    resetLink.textContent = T.sending;
+    try {
+      const res = await fetch('/api/send-access-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: mail, lang: pageLang }),
+      });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      msgOk.textContent = T.resetSent;
+      msgOk.hidden = false;
+    } catch (err) {
+      msgErr.textContent = T.resetError + describeError(err);
+      msgErr.hidden = false;
+    } finally {
+      resetLink.textContent = T.resetLink;
+    }
+  }
+  resetLink?.addEventListener('click', sendReset);
+  resetLink?.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sendReset(); } });
+</script>
+<script src="/membresia-ui.js" defer></script>
+</body>
+</html>
