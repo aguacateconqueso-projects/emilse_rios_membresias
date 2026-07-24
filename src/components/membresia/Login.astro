@@ -35,8 +35,8 @@ const t = isEN ? {
   submit: 'Log in',
   forgot: 'Forgot your password?',
   firstBtn: 'Send me the code',
-  firstNote: 'We’ll email you a 6-digit code — type it here, no need to leave this page.',
-  labelCode: 'Code from your email', phCode: '6-digit code',
+  firstNote: 'We’ll email you an 8-digit code — type it here, no need to leave this page.',
+  labelCode: 'Code from your email', phCode: '8-digit code',
   firstLabelPass: 'Your new password', firstPhPass: 'Create a password (min. 8 characters)',
   firstLabelPass2: 'Repeat your password', firstPhPass2: 'Repeat your password',
   codeBtn: 'Create password and go in',
@@ -59,8 +59,8 @@ const t = isEN ? {
   submit: 'Entrar',
   forgot: '¿Olvidaste tu contraseña?',
   firstBtn: 'Enviarme el código',
-  firstNote: 'Te mandamos por correo un código de 6 dígitos — lo escribes aquí, sin salir de esta página.',
-  labelCode: 'Código de tu correo', phCode: 'Código de 6 dígitos',
+  firstNote: 'Te mandamos por correo un código de 8 dígitos — lo escribes aquí, sin salir de esta página.',
+  labelCode: 'Código de tu correo', phCode: 'Código de 8 dígitos',
   firstLabelPass: 'Tu nueva contraseña', firstPhPass: 'Crea una contraseña (mín. 8 caracteres)',
   firstLabelPass2: 'Repite la contraseña', firstPhPass2: 'Repite la contraseña',
   codeBtn: 'Crear contraseña y entrar',
@@ -231,7 +231,7 @@ const t = isEN ? {
         <div class="field">
           <label for="code">{t.labelCode}</label>
           <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code"
-                 pattern="[0-9]*" maxlength="6" placeholder={t.phCode} />
+                 pattern="[0-9]*" maxlength="8" placeholder={t.phCode} />
         </div>
         <div class="field">
           <label for="newPass">{t.firstLabelPass}</label>
@@ -281,10 +281,10 @@ const t = isEN ? {
     codeBtn: EN ? 'Create password and go in' : 'Crear contraseña y entrar',
     creating: EN ? 'Creating…' : 'Creando…',
     codeSent: EN
-      ? 'We sent a 6-digit code to your email. Type it below to create your password. Check spam or promotions if you don’t see it.'
-      : 'Te enviamos un código de 6 dígitos a tu correo. Escríbelo aquí abajo para crear tu contraseña. Si no lo ves, mira en spam o promociones.',
+      ? 'We sent an 8-digit code to your email. Type it below to create your password. Check spam or promotions if you don’t see it.'
+      : 'Te enviamos un código de 8 dígitos a tu correo. Escríbelo aquí abajo para crear tu contraseña. Si no lo ves, mira en spam o promociones.',
     needEmail: EN ? 'Type your email first.' : 'Escribe primero tu correo.',
-    needCode: EN ? 'Type the 6-digit code from your email.' : 'Escribe el código de 6 dígitos de tu correo.',
+    needCode: EN ? 'Type the 8-digit code from your email.' : 'Escribe el código de 8 dígitos de tu correo.',
     weakPass: EN ? 'Your password must be at least 8 characters.' : 'La contraseña debe tener al menos 8 caracteres.',
     passMismatch: EN ? 'The passwords don’t match.' : 'Las contraseñas no coinciden.',
     badCode: EN
@@ -515,7 +515,7 @@ const t = isEN ? {
 
   // Modo "es mi primera vez": crear la contraseña en la MISMA pantalla, sin ir al
   // correo y volver. Dos pasos:
-  //   Paso 1 (requestCode): pide un CÓDIGO de 6 dígitos al correo (Resend con el copy
+  //   Paso 1 (requestCode): pide un CÓDIGO de un solo uso al correo (Resend con el copy
   //     de Emi, vía POST /api/send-access-code). Por privacidad responde igual exista
   //     o no el correo (si no existe, no llega ningún código).
   //   Paso 2 (setPasswordWithCode): el miembro teclea ese código + su contraseña; se
@@ -557,6 +557,8 @@ const t = isEN ? {
     const mail = email2.value.trim();
     const token = (codeInput.value || '').trim();
     const p1 = newPass.value; const p2 = newPass2.value;
+    // Longitud mínima como red: la longitud real del código la fija Supabase (hoy 8);
+    // maxlength=8 en el input evita truncarlo. verifyOtp es quien valida de verdad.
     if (token.length < 6) { msgErr.textContent = T.needCode; msgErr.hidden = false; codeInput.focus(); return; }
     if (p1.length < 8) { msgErr.textContent = T.weakPass; msgErr.hidden = false; newPass.focus(); return; }
     if (p1 !== p2) { msgErr.textContent = T.passMismatch; msgErr.hidden = false; newPass2.focus(); return; }

@@ -78,7 +78,8 @@ export async function findOrCreateUser(
   return { userId: null, created: false };
 }
 
-// Genera (SIN enviar correo) el CÓDIGO de un solo uso (6 dígitos, `email_otp`) para
+// Genera (SIN enviar correo) el CÓDIGO de un solo uso (`email_otp`, la longitud la
+// fija Supabase — hoy 8 dígitos) para
 // crear/restablecer la contraseña. Mismo mecanismo que generatePasswordSetupLink,
 // pero devuelve el código en vez del enlace: lo usa el flujo "primera vez en la
 // misma pantalla" de /entrar — el miembro teclea el código sin salir de la página
