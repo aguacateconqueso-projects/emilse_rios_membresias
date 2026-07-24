@@ -3,9 +3,17 @@
 // mágico). Componente bilingüe (prop lang: 'es' | 'en'). Rutas: /entrar/ (es) y
 // /entrar/en/ (en), con una píldora EN/ES arriba a la derecha para cambiar de
 // idioma (mismo estilo que la carta de ventas). Casilla "mantener sesión iniciada"
-// (localStorage vs sessionStorage). La primera contraseña / recuperación se hace
-// con un enlace de un solo uso por correo que lleva a /nueva-clave/. Al iniciar
-// sesión enruta: admin → panel, miembro → aula (en su idioma).
+// (localStorage vs sessionStorage). Al iniciar sesión enruta: admin → panel,
+// miembro → aula (en su idioma).
+//
+// TOGGLE de dos modos (control segmentado arriba de la tarjeta): la cuenta se crea
+// SIN contraseña al pagar, así que el que entra por primera vez tiene que pedir un
+// enlace para crearla. Antes eso era un link chico al pie que la gente no veía. Ahora
+// es una decisión explícita y grande:
+//   · "Ya tengo contraseña" → correo + contraseña (signInWithPassword).
+//   · "Es mi primera vez"    → solo correo + botón que envía el enlace de un solo uso
+//                              a /nueva-clave/ (POST /api/send-access-email). Sirve
+//                              igual para "olvidé mi contraseña".
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
@@ -15,28 +23,38 @@ const t = isEN ? {
   metaTitle: 'Log in — Let’s Study Together · Emilse Rios',
   brandSmall: 'Membership',
   ovl: 'Members access',
-  h1: 'Log in',
-  sub: 'Log in with your email and password.',
+  toggleLogin: 'I have a password',
+  toggleFirst: 'First time here',
+  h1Login: 'Log in',
+  subLogin: 'Log in with your email and password.',
+  h1First: 'Create your password',
+  subFirst: 'Did you just join, or haven’t set a password yet? Type your email and we’ll send you a link to create it. Use this if you forgot it too.',
   labelEmail: 'Your email', phEmail: 'youremail@email.com',
   labelPass: 'Your password', phPass: 'Your password',
   remember: 'Keep me signed in',
   submit: 'Log in',
-  altQ: 'First time or forgot your password?',
-  resetLink: 'Create or reset your password',
+  forgot: 'Forgot your password?',
+  firstBtn: 'Send me my access',
+  firstNote: 'We’ll email you a secure one-time link to set your password and get in.',
   back: '← Back to the membership',
 } : {
   htmlLang: 'es',
   metaTitle: 'Entrar — Estudiemos Juntos · Emilse Rios',
   brandSmall: 'Membresía',
   ovl: 'Acceso de miembros',
-  h1: 'Entrar',
-  sub: 'Entra con tu correo y tu contraseña.',
+  toggleLogin: 'Ya tengo contraseña',
+  toggleFirst: 'Es mi primera vez',
+  h1Login: 'Entrar',
+  subLogin: 'Entra con tu correo y tu contraseña.',
+  h1First: 'Crea tu contraseña',
+  subFirst: '¿Te acabas de unir o aún no creaste tu contraseña? Escribe tu correo y te enviamos un enlace para crearla. Úsalo también si la olvidaste.',
   labelEmail: 'Tu correo', phEmail: 'tucorreo@email.com',
   labelPass: 'Tu contraseña', phPass: 'Tu contraseña',
   remember: 'Mantener la sesión iniciada',
   submit: 'Entrar',
-  altQ: '¿Primera vez o olvidaste tu contraseña?',
-  resetLink: 'Crea o restablece tu contraseña',
+  forgot: '¿Olvidaste tu contraseña?',
+  firstBtn: 'Enviarme mi acceso',
+  firstNote: 'Te mandamos por correo un enlace seguro de un solo uso para crear tu contraseña y entrar.',
   back: '← Volver a la membresía',
 };
 ---
@@ -74,14 +92,36 @@ const t = isEN ? {
      que antes, ahora que la caja no incluye aire vacío a los lados. */
   .brand-logo__img { height: auto; width: clamp(121px, 37vw, 191px); }
   .brand-logo small { font-size: 13px; }
+
+  /* Control segmentado (Ya tengo contraseña / Es mi primera vez). Estilo editorial:
+     pista hundida sobre el lienzo crema; la pestaña activa "sube" en papel. */
+  .switch { display: grid; grid-template-columns: 1fr 1fr; gap: 5px;
+            margin: 0 0 var(--space-5); padding: 5px;
+            background: rgba(23, 20, 15, 0.05); border: 1px solid var(--color-border);
+            border-radius: var(--radius); }
+  .switch button { font-family: var(--font-body); font-size: var(--text-sm);
+                   font-weight: var(--weight-semibold); color: var(--color-text-soft);
+                   background: transparent; border: 0; border-radius: calc(var(--radius) - 3px);
+                   padding: 11px 8px; cursor: pointer; line-height: 1.15;
+                   transition: background 180ms ease, color 180ms ease, box-shadow 180ms ease; }
+  .switch button:hover { color: var(--ink); }
+  .switch button[aria-selected="true"] { background: var(--paper); color: var(--ink);
+                   box-shadow: 0 1px 4px rgba(23, 20, 15, 0.12); }
+
+  /* Paneles de cada modo. [hidden] tiene que ganarle a display:block por si algún
+     estilo compartido lo pisa (patrón ya visto en el resto de la app). */
+  .panel[hidden] { display: none; }
+
   /* Casilla "mantener sesión iniciada" */
   .remember { display: flex; align-items: center; gap: 10px; margin: 0 0 var(--space-4);
               font-size: var(--text-sm); color: var(--color-text-soft); cursor: pointer; user-select: none; }
   .remember input { width: 18px; height: 18px; margin: 0; accent-color: var(--ink); cursor: pointer; }
-  /* Enlace secundario (crear / restablecer contraseña) */
+  /* Enlace secundario (olvidé mi contraseña → salta al modo "primera vez") */
   .alt { margin-top: var(--space-4); font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.5; }
   .alt a { color: var(--ink); font-weight: var(--weight-semibold); text-decoration: underline;
            text-underline-offset: 3px; cursor: pointer; }
+  /* Nota bajo el botón del modo "primera vez" */
+  .note { margin-top: var(--space-3); font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.5; }
   .msg { margin-top: var(--space-4); font-size: var(--text-base); line-height: 1.5; }
   .msg.ok { color: var(--ink); }
   .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
@@ -121,34 +161,57 @@ const t = isEN ? {
       </a>
       <span class="ovl">{t.ovl}</span>
     </div>
-    <h1 class="display">{t.h1}</h1>
-    <p class="sub">{t.sub}</p>
 
-    <form id="loginForm">
+    <div class="switch" role="tablist" aria-label={isEN ? 'Log in or create password' : 'Entrar o crear contraseña'}>
+      <button type="button" id="tabLogin" role="tab" aria-selected="false" aria-controls="panelLogin">{t.toggleLogin}</button>
+      <button type="button" id="tabFirst" role="tab" aria-selected="true" aria-controls="panelFirst">{t.toggleFirst}</button>
+    </div>
+
+    <h1 class="display" id="h1">{t.h1First}</h1>
+    <p class="sub" id="sub">{t.subFirst}</p>
+
+    <!-- Modo: ya tengo contraseña -->
+    <div class="panel" id="panelLogin" role="tabpanel" aria-labelledby="tabLogin" hidden>
+      <form id="loginForm">
+        <div class="field">
+          <label for="email">{t.labelEmail}</label>
+          <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+                 spellcheck="false" placeholder={t.phEmail} required />
+        </div>
+        <div class="field">
+          <label for="password">{t.labelPass}</label>
+          <input id="password" type="password" autocomplete="current-password"
+                 placeholder={t.phPass} required />
+        </div>
+        <label class="remember" for="remember">
+          <input id="remember" type="checkbox" checked />
+          {t.remember}
+        </label>
+        <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
+          <span class="btn__label" id="submitLabel">{t.submit}</span>
+          <span class="btn__ar" aria-hidden="true">→</span>
+        </button>
+      </form>
+      <p class="alt">
+        <a id="forgotLink" role="button" tabindex="0">{t.forgot}</a>
+      </p>
+    </div>
+
+    <!-- Modo: es mi primera vez / crear contraseña (modo por defecto: el que llega
+         a /entrar casi siempre acaba de pagar y aún no tiene contraseña; los que ya
+         la tienen y marcaron "mantener sesión" no vuelven a ver esta pantalla). -->
+    <div class="panel" id="panelFirst" role="tabpanel" aria-labelledby="tabFirst">
       <div class="field">
-        <label for="email">{t.labelEmail}</label>
-        <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
-               spellcheck="false" placeholder={t.phEmail} required />
+        <label for="email2">{t.labelEmail}</label>
+        <input id="email2" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+               spellcheck="false" placeholder={t.phEmail} />
       </div>
-      <div class="field">
-        <label for="password">{t.labelPass}</label>
-        <input id="password" type="password" autocomplete="current-password"
-               placeholder={t.phPass} required />
-      </div>
-      <label class="remember" for="remember">
-        <input id="remember" type="checkbox" checked />
-        {t.remember}
-      </label>
-      <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
-        <span class="btn__label" id="submitLabel">{t.submit}</span>
+      <button class="btn btn--solid btn--block" type="button" id="firstBtn">
+        <span class="btn__label" id="firstLabel">{t.firstBtn}</span>
         <span class="btn__ar" aria-hidden="true">→</span>
       </button>
-    </form>
-
-    <p class="alt">
-      {t.altQ}
-      <a id="resetLink" role="button" tabindex="0">{t.resetLink}</a>
-    </p>
+      <p class="note">{t.firstNote}</p>
+    </div>
 
     <p class="msg ok" id="msgOk" hidden></p>
     <p class="msg err" id="msgErr" hidden></p>
@@ -163,30 +226,37 @@ const t = isEN ? {
   const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
   const EN = pageLang === 'en';
 
-  // Textos del lado del cliente (mensajes, estados de botón). El markup ya viene
-  // traducido desde el server; esto cubre lo que se genera/actualiza en JS.
+  // Textos del lado del cliente (mensajes, estados de botón, y los textos que cambian
+  // al alternar de modo). El markup ya viene traducido desde el server; esto cubre lo
+  // que se genera/actualiza en JS.
   const T = {
+    h1Login: EN ? 'Log in' : 'Entrar',
+    subLogin: EN ? 'Log in with your email and password.' : 'Entra con tu correo y tu contraseña.',
+    h1First: EN ? 'Create your password' : 'Crea tu contraseña',
+    subFirst: EN
+      ? 'Did you just join, or haven’t set a password yet? Type your email and we’ll send you a link to create it. Use this if you forgot it too.'
+      : '¿Te acabas de unir o aún no creaste tu contraseña? Escribe tu correo y te enviamos un enlace para crearla. Úsalo también si la olvidaste.',
     submit: EN ? 'Log in' : 'Entrar',
     entering: EN ? 'Signing in…' : 'Entrando…',
-    resetLink: EN ? 'Create or reset your password' : 'Crea o restablece tu contraseña',
+    firstBtn: EN ? 'Send me my access' : 'Enviarme mi acceso',
     sending: EN ? 'Sending…' : 'Enviando…',
     noConfig: EN
       ? 'The .env file is not configured (PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are missing). Create it in the project root and restart the server.'
       : 'Falta configurar el archivo .env (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY). Créalo en la raíz del proyecto y reinicia el servidor.',
     expiredLink: EN
-      ? 'That link has expired or was already used (it’s single-use). Use “Create or reset your password” to request a new one.'
-      : 'Ese enlace ya caducó o ya se usó (es de un solo uso). Usa «Crea o restablece tu contraseña» para pedir uno nuevo.',
+      ? 'That link has expired or was already used (it’s single-use). Use “First time here” to request a new one.'
+      : 'Ese enlace ya caducó o ya se usó (es de un solo uso). Usa «Es mi primera vez» para pedir uno nuevo.',
     continueError: EN ? 'Could not continue: ' : 'No se pudo continuar: ',
     invalidCreds: EN
-      ? 'Wrong email or password. If it’s your first time, create your password with the link below.'
-      : 'Correo o contraseña incorrectos. Si es tu primera vez, crea tu contraseña con el enlace de abajo.',
+      ? 'Wrong email or password. If it’s your first time, switch to “First time here” to create your password.'
+      : 'Correo o contraseña incorrectos. Si es tu primera vez, cambia a «Es mi primera vez» para crear tu contraseña.',
     notConfirmed: EN
-      ? 'Your email isn’t confirmed yet. Use “Create or reset your password” to activate it.'
-      : 'Tu correo aún no está confirmado. Usa «Crea o restablece tu contraseña» para activarlo.',
+      ? 'Your email isn’t confirmed yet. Use “First time here” to activate it.'
+      : 'Tu correo aún no está confirmado. Usa «Es mi primera vez» para activarlo.',
     loginErrorPrefix: EN ? 'Could not log in: ' : 'No se pudo entrar: ',
     typeEmail: EN
-      ? 'Type your email above and press the link again.'
-      : 'Escribe tu correo arriba y vuelve a pulsar el enlace.',
+      ? 'Type your email above and press the button again.'
+      : 'Escribe tu correo arriba y vuelve a pulsar el botón.',
     resetSent: EN
       ? 'Done. We sent you an email with a link to create your password. If you don’t see it in a few minutes, check spam or promotions (it sometimes lands there).'
       : 'Listo. Te enviamos un correo con un enlace para crear tu contraseña. Si no lo ves en unos minutos, mira en spam o promociones (a veces llega ahí).',
@@ -204,17 +274,64 @@ const t = isEN ? {
   const remember = document.getElementById('remember');
   const btn = document.getElementById('submitBtn');
   const submitLabel = document.getElementById('submitLabel');
-  const resetLink = document.getElementById('resetLink');
-  // Cambia solo el texto del botón sin borrar el relleno/flecha (spans inyectados).
-  const setBtnLabel = (txt) => { if (submitLabel) submitLabel.textContent = txt; else btn.textContent = txt; };
   const msgOk = document.getElementById('msgOk');
   const msgErr = document.getElementById('msgErr');
   const sessionNote = document.getElementById('sessionNote');
+
+  // Toggle de modo
+  const tabLogin = document.getElementById('tabLogin');
+  const tabFirst = document.getElementById('tabFirst');
+  const panelLogin = document.getElementById('panelLogin');
+  const panelFirst = document.getElementById('panelFirst');
+  const forgotLink = document.getElementById('forgotLink');
+  const email2 = document.getElementById('email2');
+  const firstBtn = document.getElementById('firstBtn');
+  const firstLabel = document.getElementById('firstLabel');
+  const h1El = document.getElementById('h1');
+  const subEl = document.getElementById('sub');
+
+  // Cambia solo el texto de un botón sin borrar el relleno/flecha (spans inyectados
+  // por membresia-ui.js).
+  const setLabel = (span, hostBtn, txt) => { if (span) span.textContent = txt; else hostBtn.textContent = txt; };
+  const setBtnLabel = (txt) => setLabel(submitLabel, btn, txt);
+  const setFirstLabel = (txt) => setLabel(firstLabel, firstBtn, txt);
+
+  // Alterna entre "ya tengo contraseña" y "es mi primera vez". Copia el correo
+  // escrito de un modo al otro para no obligar a re-tipearlo.
+  function setMode(mode) {
+    const login = mode === 'login';
+    tabLogin.setAttribute('aria-selected', String(login));
+    tabFirst.setAttribute('aria-selected', String(!login));
+    panelLogin.hidden = !login;
+    panelFirst.hidden = login;
+    h1El.textContent = login ? T.h1Login : T.h1First;
+    subEl.textContent = login ? T.subLogin : T.subFirst;
+    const shared = email.value || email2.value;
+    if (shared) { email.value = shared; email2.value = shared; }
+    msgOk.hidden = true; msgErr.hidden = true;
+    (login ? email : email2).focus();
+  }
+  tabLogin.addEventListener('click', () => setMode('login'));
+  tabFirst.addEventListener('click', () => setMode('first'));
+  // Flechas ← → para moverse entre pestañas (accesibilidad básica de tablist).
+  [tabLogin, tabFirst].forEach((tab) => {
+    tab.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setMode(tab === tabLogin ? 'first' : 'login');
+        (tab === tabLogin ? tabFirst : tabLogin).focus();
+      }
+    });
+  });
+  // "¿Olvidaste tu contraseña?" abre el mismo modo de crear/restablecer.
+  forgotLink?.addEventListener('click', () => setMode('first'));
+  forgotLink?.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setMode('first'); } });
 
   if (!isSupabaseConfigured) {
     msgErr.textContent = T.noConfig;
     msgErr.hidden = false;
     btn.disabled = true;
+    firstBtn.disabled = true;
   }
 
   // Si un enlace de crear/restablecer contraseña cae aquí (fallback al Site URL de
@@ -334,21 +451,21 @@ const t = isEN ? {
     }
   });
 
-  // Crear / restablecer contraseña: envía un correo con un enlace de un solo uso a
-  // /nueva-clave/. Sirve para la PRIMERA vez (cuenta creada al pagar, sin clave) y
-  // para recuperar el acceso. Por privacidad, respondemos igual exista o no el
-  // correo, así que mostramos el mismo aviso siempre. Pasa por el endpoint del
-  // servidor (no resetPasswordForEmail directo) para que el correo salga por
-  // Resend con el copy bilingüe de Emi, igual que la bienvenida automática, en
-  // vez de la plantilla nativa de Supabase. El idioma del correo sigue al de la página.
+  // Crear / restablecer contraseña (modo "es mi primera vez"): envía un correo con un
+  // enlace de un solo uso a /nueva-clave/. Sirve para la PRIMERA vez (cuenta creada al
+  // pagar, sin clave) y para recuperar el acceso. Por privacidad respondemos igual
+  // exista o no el correo, así que mostramos el mismo aviso siempre. Pasa por el
+  // endpoint del servidor (no resetPasswordForEmail directo) para que el correo salga
+  // por Resend con el copy bilingüe de Emi, igual que la bienvenida automática, en vez
+  // de la plantilla nativa de Supabase. El idioma del correo sigue al de la página.
   async function sendReset() {
-    const mail = email.value.trim();
+    const mail = email2.value.trim();
     msgOk.hidden = true; msgErr.hidden = true;
     if (!mail) {
       msgErr.textContent = T.typeEmail;
-      msgErr.hidden = false; email.focus(); return;
+      msgErr.hidden = false; email2.focus(); return;
     }
-    resetLink.textContent = T.sending;
+    firstBtn.disabled = true; setFirstLabel(T.sending);
     try {
       const res = await fetch('/api/send-access-email', {
         method: 'POST',
@@ -362,11 +479,10 @@ const t = isEN ? {
       msgErr.textContent = T.resetError + describeError(err);
       msgErr.hidden = false;
     } finally {
-      resetLink.textContent = T.resetLink;
+      firstBtn.disabled = false; setFirstLabel(T.firstBtn);
     }
   }
-  resetLink?.addEventListener('click', sendReset);
-  resetLink?.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); sendReset(); } });
+  firstBtn?.addEventListener('click', sendReset);
 </script>
 <script src="/membresia-ui.js" defer></script>
 </body>
