@@ -35,9 +35,12 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
       // Tras pagar, el comprador aún no tiene sesión: lo mandamos a la página de
-      // agradecimiento (bilingüe) a pedir su acceso con el MISMO correo con el que
-      // pagó (punto 9 del checklist).
-      success_url: `${origin}/gracias/${lang === 'en' ? 'en/' : ''}`,
+      // agradecimiento (bilingüe). El `{CHECKOUT_SESSION_ID}` (placeholder que
+      // Stripe rellena) le permite a /gracias verificar el pago contra Stripe y
+      // dejar que el comprador CREE su contraseña ahí mismo y entre, sin correo
+      // (ver /api/claim-account). Si falta el session_id, /gracias cae al flujo
+      // de "enviarme mi acceso" por correo.
+      success_url: `${origin}/gracias/${lang === 'en' ? 'en/' : ''}?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/${lang === 'en' ? 'en/' : ''}`,
     });
   } catch (err: any) {

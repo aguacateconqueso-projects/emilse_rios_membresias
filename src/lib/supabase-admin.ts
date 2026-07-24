@@ -44,6 +44,40 @@ export async function generatePasswordSetupLink(email: string, redirectTo: strin
   return { link, error: link ? null : new Error('generateLink no devolvió action_link') };
 }
 
+// Busca el perfil por correo; si no existe, crea el usuario (sin contraseña; el
+// trigger de la BD crea el profile) y lo marca como recién creado (para disparar
+// el correo de bienvenida en el webhook). Así, al pagar, la cuenta ya existe y el
+// comprador solo tiene que crear su contraseña. Compartido entre el webhook de
+// Stripe y /api/claim-account (contraseña al pagar), para que ambos caminos den
+// de alta la cuenta con EXACTAMENTE el mismo criterio.
+export async function findOrCreateUser(
+  admin: SupabaseClient,
+  email: string | null
+): Promise<{ userId: string | null; created: boolean }> {
+  if (!email) return { userId: null, created: false };
+  const lower = email.trim().toLowerCase();
+
+  // GoTrue guarda los correos en minúsculas y el trigger los copia tal cual al
+  // perfil, así que un match exacto (eq) es correcto y evita comodines de LIKE.
+  const { data: prof } = await admin.from('profiles').select('id').eq('email', lower).maybeSingle();
+  if (prof?.id) return { userId: prof.id, created: false };
+
+  const { data: created, error } = await admin.auth.admin.createUser({
+    email: lower,
+    email_confirm: true,
+  });
+  if (created?.user?.id) return { userId: created.user.id, created: true };
+
+  // Si ya existía en auth pero sin perfil, ubícalo por correo (no es alta nueva).
+  if (error) {
+    const { data: list } = await admin.auth.admin.listUsers();
+    const u = list?.users?.find((x) => (x.email || '').toLowerCase() === lower);
+    if (u) return { userId: u.id, created: false };
+    console.error('[supabase-admin] no se pudo crear/encontrar usuario para', lower, error.message);
+  }
+  return { userId: null, created: false };
+}
+
 // Valida el token de Supabase que manda el navegador (Authorization: Bearer …)
 // y devuelve el usuario. Se usa en /api/portal (miembro autenticado en el aula).
 export async function getUserFromRequest(request: Request) {

@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import type Stripe from 'stripe';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { stripe, siteOrigin } from '../../lib/stripe';
-import { supabaseAdmin } from '../../lib/supabase-admin';
+import { supabaseAdmin, findOrCreateUser } from '../../lib/supabase-admin';
 import { writeSubscriptionRow } from '../../lib/stripe-sync';
 import { sendAccessEmail } from '../../lib/welcome-email';
 
@@ -117,36 +117,4 @@ async function upsertSub(
   }
 
   await writeSubscriptionRow(admin, sub, userId);
-}
-
-// Busca el perfil por correo; si no existe, crea el usuario (sin contraseña; el
-// trigger de la BD crea el profile) y lo marca como recién creado para disparar
-// el correo de bienvenida. Así, al pagar, la cuenta ya existe y el comprador solo
-// tiene que crear su contraseña con el enlace del correo.
-async function findOrCreateUser(
-  admin: SupabaseClient,
-  email: string | null
-): Promise<{ userId: string | null; created: boolean }> {
-  if (!email) return { userId: null, created: false };
-  const lower = email.trim().toLowerCase();
-
-  // GoTrue guarda los correos en minúsculas y el trigger los copia tal cual al
-  // perfil, así que un match exacto (eq) es correcto y evita comodines de LIKE.
-  const { data: prof } = await admin.from('profiles').select('id').eq('email', lower).maybeSingle();
-  if (prof?.id) return { userId: prof.id, created: false };
-
-  const { data: created, error } = await admin.auth.admin.createUser({
-    email: lower,
-    email_confirm: true,
-  });
-  if (created?.user?.id) return { userId: created.user.id, created: true };
-
-  // Si ya existía en auth pero sin perfil, ubícalo por correo (no es alta nueva).
-  if (error) {
-    const { data: list } = await admin.auth.admin.listUsers();
-    const u = list?.users?.find((x) => (x.email || '').toLowerCase() === lower);
-    if (u) return { userId: u.id, created: false };
-    console.error('[stripe-webhook] no se pudo crear/encontrar usuario para', lower, error.message);
-  }
-  return { userId: null, created: false };
 }
