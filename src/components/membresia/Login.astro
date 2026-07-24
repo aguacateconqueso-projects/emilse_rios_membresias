@@ -163,15 +163,15 @@ const t = isEN ? {
     </div>
 
     <div class="switch" role="tablist" aria-label={isEN ? 'Log in or create password' : 'Entrar o crear contraseña'}>
-      <button type="button" id="tabLogin" role="tab" aria-selected="true" aria-controls="panelLogin">{t.toggleLogin}</button>
-      <button type="button" id="tabFirst" role="tab" aria-selected="false" aria-controls="panelFirst">{t.toggleFirst}</button>
+      <button type="button" id="tabLogin" role="tab" aria-selected="false" aria-controls="panelLogin">{t.toggleLogin}</button>
+      <button type="button" id="tabFirst" role="tab" aria-selected="true" aria-controls="panelFirst">{t.toggleFirst}</button>
     </div>
 
-    <h1 class="display" id="h1">{t.h1Login}</h1>
-    <p class="sub" id="sub">{t.subLogin}</p>
+    <h1 class="display" id="h1">{t.h1First}</h1>
+    <p class="sub" id="sub">{t.subFirst}</p>
 
     <!-- Modo: ya tengo contraseña -->
-    <div class="panel" id="panelLogin" role="tabpanel" aria-labelledby="tabLogin">
+    <div class="panel" id="panelLogin" role="tabpanel" aria-labelledby="tabLogin" hidden>
       <form id="loginForm">
         <div class="field">
           <label for="email">{t.labelEmail}</label>
@@ -197,8 +197,10 @@ const t = isEN ? {
       </p>
     </div>
 
-    <!-- Modo: es mi primera vez / crear contraseña -->
-    <div class="panel" id="panelFirst" role="tabpanel" aria-labelledby="tabFirst" hidden>
+    <!-- Modo: es mi primera vez / crear contraseña (modo por defecto: el que llega
+         a /entrar casi siempre acaba de pagar y aún no tiene contraseña; los que ya
+         la tienen y marcaron "mantener sesión" no vuelven a ver esta pantalla). -->
+    <div class="panel" id="panelFirst" role="tabpanel" aria-labelledby="tabFirst">
       <div class="field">
         <label for="email2">{t.labelEmail}</label>
         <input id="email2" type="email" inputmode="email" autocomplete="email" autocapitalize="none"

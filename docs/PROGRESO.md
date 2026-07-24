@@ -13,10 +13,11 @@
 > **Fix (solo UI, sin BD ni migración):** en `Login.astro` se convirtió esa decisión en un
 > **control segmentado grande arriba de la tarjeta** (estilo editorial, pista hundida sobre el
 > crema + pestaña activa en papel), con dos modos:
-> - **«Ya tengo contraseña»** (por defecto): el formulario de siempre (correo + contraseña +
->   «Mantener la sesión» + Entrar). Debajo, «¿Olvidaste tu contraseña?» ahora **salta al otro
->   modo** en vez de disparar el correo directo.
-> - **«Es mi primera vez»**: solo pide el correo + botón **«Enviarme mi acceso»**, que usa el
+> - **«Ya tengo contraseña»**: el formulario de siempre (correo + contraseña + «Mantener la
+>   sesión» + Entrar). Debajo, «¿Olvidaste tu contraseña?» ahora **salta al otro modo** en vez
+>   de disparar el correo directo.
+> - **«Es mi primera vez» (modo por defecto)**: solo pide el correo + botón **«Enviarme mi
+>   acceso»**, que usa el
 >   MISMO camino de antes (`POST /api/send-access-email` → Resend con el copy bilingüe de Emi →
 >   `/nueva-clave/`). Sirve igual para «olvidé mi contraseña».
 > - El correo escrito se **copia entre los dos modos** al alternar (no hay que re-tipearlo). El
@@ -25,12 +26,13 @@
 > - Deliberadamente **NO** se usó la palabra «Registrarse»: la cuenta ya existe (se creó al
 >   pagar); el usuario solo **crea su contraseña**. Para la audiencia menos técnica «Es mi
 >   primera vez» es más claro.
+> **Default = «Es mi primera vez»** (decisión de Adrián): el que llega directo a `/entrar` casi
+> siempre acaba de pagar y aún no tiene contraseña; y quien ya la tiene y marcó «Mantener la
+> sesión iniciada» no vuelve a ver esta pantalla. Así el modo por defecto atiende al caso más
+> común. El que ya tiene clave cambia con un clic a «Ya tengo contraseña».
 > Verificado con `npm run build` + volcado del HTML (ES/EN: toggle, ambos paneles, botón) y
 > **capturas headless** de los dos modos (layout y copy correctos). Rama
 > `claude/signup-login-first-visit-zqrt3b`.
-> **Pendiente opcional (decisión de Adrián):** hoy el modo por defecto es «Ya tengo contraseña».
-> Si la mayoría del tráfico directo a `/entrar` son recién-pagados, se puede invertir el default
-> a «Es mi primera vez» con un cambio mínimo.
 
 ## 🗓️ 24 jul 2026 — RESUELTO: "Acá te unes" daba 500 — era `prod_` en vez de `price_`
 > **Síntoma:** el botón **"Acá te unes"** (`/api/checkout`) devolvía un **500 genérico de Vercel**
