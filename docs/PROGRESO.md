@@ -45,10 +45,13 @@
 >   de un navegador compartido), podría re-fijar esa contraseña. Exposición baja (el id vive en la
 >   URL de `/gracias` de esa persona). Se puede endurecer más adelante (p. ej. permitirlo solo si
 >   la cuenta aún no tiene contraseña).
-> - **Pendiente OPCIONAL (parte 2 de la opción elegida, NO hecha):** acortar también el respaldo de
->   `/entrar → «Es mi primera vez»` a un **código de 6 dígitos** en pantalla. Se dejó fuera porque
->   un OTP de Supabase reintroduce su **plantilla nativa** de correo (justo lo que se evitó en el
->   punto 8c a favor del copy de Emi por Resend). A decidir con Adrián si vale la pena.
+> - **Código de 6 dígitos en `/entrar` — DESCARTADO (decisión de Adrián, 24 jul):** se evaluó
+>   acortar también el respaldo de `/entrar → «Es mi primera vez»` a un **código de 6 dígitos** en
+>   pantalla, pero implicaba usar el **OTP nativo de Supabase**, que reintroduce su plantilla de
+>   correo (justo lo que se evitó en el punto 8c a favor del copy de Emi por Resend). Adrián prefirió
+>   **conservar el copy de Emi**, así que `/entrar` sigue con el enlace por correo (Resend, copy de
+>   Emi → `/nueva-clave/`) tal cual. El caso principal (recién pagado) ya no pasa por ahí: entra sin
+>   correo desde `/gracias`.
 
 ## 🗓️ 24 jul 2026 — `/entrar`: toggle «Ya tengo contraseña» / «Es mi primera vez»
 > **Problema (Adrián):** la gente que paga y entra por primera vez **no crea su contraseña**.
