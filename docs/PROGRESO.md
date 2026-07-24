@@ -3,27 +3,38 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 24 jul 2026 — Diagnóstico: "Acá te unes" no conecta con Stripe
-> El precio sigue en **$80** (el cambio a $90 fue un typo y se revirtió). El síntoma real: el
-> botón **"Acá te unes"** no llega a Stripe. Es un problema de **configuración (Vercel/Stripe),
-> no de código** — el checkout (`src/pages/api/checkout.ts`) está bien.
+## 🗓️ 24 jul 2026 — RESUELTO: "Acá te unes" daba 500 — era `prod_` en vez de `price_`
+> **Síntoma:** el botón **"Acá te unes"** (`/api/checkout`) devolvía un **500 genérico de Vercel**
+> ("This page isn't working"). El precio sigue en **$80** (el cambio a $90 fue un typo y se revirtió).
 >
-> **Causa:** ayer 23 jul cerró la ventana de fundador
-> (`STRIPE_FOUNDER_UNTIL = 2026-07-23T23:59:59+02:00`), así que desde hoy el checkout usa
-> **`STRIPE_PRICE_STANDARD`** en vez de `STRIPE_PRICE_FOUNDER`. El endpoint devuelve 500 (el
-> botón "no conecta") si esa variable está **vacía, apunta a un Price archivado/borrado, o es
-> de un modo (test/live) distinto al de `STRIPE_SECRET_KEY`**. El texto del error identifica cuál:
-> - `"Falta configurar el precio de Stripe."` → `STRIPE_PRICE_STANDARD` vacía en Vercel.
-> - `"Stripe no está configurado."` → falta `STRIPE_SECRET_KEY`.
-> - Redirige a un error de Stripe / "No such price" → el Price ID es de otro modo (test vs
->   live) o está archivado.
+> **Causa raíz (confirmada por logs):** en Vercel, **`STRIPE_PRICE_STANDARD` tenía un Product ID
+> (`prod_...`) en vez de un Price ID (`price_...`)**. El log de la función lo dijo literal:
+> `Error: No such price: 'prod_Uw9RfwxN3nyh8X'`. Stripe Checkout (`line_items[].price`) exige el
+> **Price ID** (`price_...`), no el Product ID (`prod_...`). **NO era** test/live ni la Secret Key
+> (esa ya funcionaba). Salió a la luz ahora porque ayer 23 jul cerró la ventana de fundador
+> (`STRIPE_FOUNDER_UNTIL = 2026-07-23T23:59:59+02:00`) y el checkout pasó a usar `STRIPE_PRICE_STANDARD`.
 >
-> **Qué verificar/arreglar (Emi + Adrián, en Vercel → Settings → Environment Variables, Production):**
-> 1. **`STRIPE_PRICE_STANDARD`** existe y apunta a un **Price de $80/mes activo** (recurrente).
-> 2. **`STRIPE_SECRET_KEY`** y ese Price ID son **del mismo modo** (ambos LIVE: `sk_live_...`
->    + `price_...` creado en live). Este suele ser el error tras pasar de test a producción.
-> 3. **`STRIPE_WEBHOOK_SECRET`** y **`PUBLIC_SITE_URL`** presentes (para el post-pago).
-> 4. **Redeploy** tras cualquier cambio. (Config; no requiere tocar código.)
+> **Fix (solo config, sin código):** en Stripe → Products → el producto → sección **Pricing** →
+> copiar el **`price_...`** de la fila del precio de $80/mes (NO el `prod_...` grande de la
+> cabecera) → pegarlo en **`STRIPE_PRICE_STANDARD`** en Vercel (Production) → **Redeploy**.
+> Verificado: el botón vuelve a llevar a Stripe Checkout.
+>
+> **Aprendizajes / trampas para la próxima:**
+> 1. **`prod_...` ≠ `price_...`.** El `prod_` es el producto; el `price_` es cada precio que
+>    cuelga de él. Las variables `STRIPE_PRICE_*` SIEMPRE llevan `price_...`. Stripe muestra el
+>    `prod_` más visible en la cabecera → es fácil copiar el equivocado. (Revisar también
+>    `STRIPE_PRICE_FOUNDER` por si tiene el mismo error.)
+> 2. **El monto mostrado (carta) y el monto cobrado (Price de Stripe) son independientes.**
+>    Cambiar la carta no cambia el cobro; para subir el precio real hay que crear un Price NUEVO
+>    en Stripe (los precios son inmutables) y repuntar `STRIPE_PRICE_STANDARD`.
+> 3. **Un 500 genérico de Vercel = excepción no capturada**; los distintos (texto plano
+>    "Falta configurar el precio…") son guardas del propio código. El motivo real siempre está
+>    en **Vercel → Logs** de la función.
+>
+> **Cambio de código de esta sesión:** `src/pages/api/checkout.ts` ahora envuelve
+> `stripe.checkout.sessions.create` en **try/catch**: registra el detalle en los logs y devuelve
+> el motivo de Stripe (sin secretos) en vez de un 500 pelón, para diagnosticar más rápido la
+> próxima vez. (Rama `claude/por-que-apareceria-esto-wpkw8d`.)
 
 ## 🗓️ 23 jul 2026 — Precio estándar $77 → $80 + precio dinámico en la carta
 > Emi subió el precio estándar (el de después del fundador) de **$77 a $80/mes** y quiere
