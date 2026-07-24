@@ -131,7 +131,7 @@ ${t.ps2}`;
 // -----------------------------------------------------------------------------
 // Correo con CÓDIGO de acceso (crear contraseña en la misma pantalla de /entrar).
 // Mismo estilo de carta y paleta que el de bienvenida, pero en vez de un enlace
-// muestra un código de 6 dígitos que el miembro teclea sin salir de la página.
+// muestra un código de un solo uso que el miembro teclea sin salir de la página.
 // Copy en la voz de Emi (provisional; Adrián lo afina si hace falta).
 // -----------------------------------------------------------------------------
 export function accessCodeEmailContent(lang: 'es' | 'en', code: string): { subject: string; html: string; text: string } {

@@ -3,7 +3,7 @@ import { siteOrigin } from '../../lib/stripe';
 import { sendAccessCode } from '../../lib/welcome-email';
 
 // POST /api/send-access-code  { email, lang } — envía un CÓDIGO de un solo uso
-// (6 dígitos) al correo, con el copy de Emi por Resend. Lo usa /entrar → «Es mi
+// al correo, con el copy de Emi por Resend. Lo usa /entrar → «Es mi
 // primera vez»: el miembro teclea el código en la MISMA pantalla (sin ir a otra
 // página) junto con su contraseña, que se fija tras verificar el código con
 // supabase.auth.verifyOtp({ type: 'recovery' }).

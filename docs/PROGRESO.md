@@ -3,7 +3,17 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 24 jul 2026 — `/entrar → «Es mi primera vez»`: crear la contraseña EN LA MISMA pantalla (código de 6 dígitos)
+## 🗓️ 24 jul 2026 — Fix: el código de acceso es de **8 dígitos**, no 6 (copy + truncado)
+> Al probar el flujo nuevo, Adrián vio que el código que llega es de **8 dígitos**, no 6. Dos
+> problemas: (1) el copy decía "6 dígitos" y (2) —más grave— el input tenía `maxlength="6"`, así
+> que **cortaba el código a 6 y `verifyOtp` siempre fallaba** (el flujo estaba roto en prod).
+> **Fix:** el input pasa a `maxlength="8"` (ya no trunca) y todo el copy visible dice "8 dígitos"
+> (ES/EN: subtítulo, placeholder, aviso al enviar, mensajes de error). La longitud real la fija la
+> config de Supabase (hoy 8); los comentarios del código quedan sin número para no volver a
+> desalinearse, y la guarda de longitud es solo una red — `verifyOtp` es quien valida. Sin BD ni
+> variables. Rama `claude/signup-login-first-visit-zqrt3b`.
+
+## 🗓️ 24 jul 2026 — `/entrar → «Es mi primera vez»`: crear la contraseña EN LA MISMA pantalla (código por correo)
 > **Pedido de Adrián:** que en «Es mi primera vez» se pueda **crear la contraseña ahí mismo**, sin
 > el ida-y-vuelta de "te mando un enlace → abrís el correo → clic → caes en otra página → creás la
 > clave". Seguía con el enlace por correo → se rehízo.
