@@ -78,6 +78,27 @@ export async function findOrCreateUser(
   return { userId: null, created: false };
 }
 
+// Genera (SIN enviar correo) el CÓDIGO de un solo uso (6 dígitos, `email_otp`) para
+// crear/restablecer la contraseña. Mismo mecanismo que generatePasswordSetupLink,
+// pero devuelve el código en vez del enlace: lo usa el flujo "primera vez en la
+// misma pantalla" de /entrar — el miembro teclea el código sin salir de la página
+// y luego lo verifica con supabase.auth.verifyOtp({ type: 'recovery' }). El correo
+// con el código lo mandamos por Resend con el copy de Emi. `generateLink` falla si
+// la cuenta no existe (nunca pagó) → devolvemos { code: null } y no se envía nada
+// (el endpoint responde igual por privacidad). Devuelve { code, error }.
+export async function generatePasswordSetupOtp(email: string, redirectTo: string) {
+  if (!url || !serviceKey) return { code: null as string | null, error: new Error('Supabase (service role) no configurado') };
+  const admin = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: 'recovery',
+    email,
+    options: { redirectTo },
+  });
+  if (error) return { code: null as string | null, error };
+  const code = (data as any)?.properties?.email_otp || null;
+  return { code, error: code ? null : new Error('generateLink no devolvió email_otp') };
+}
+
 // Valida el token de Supabase que manda el navegador (Authorization: Bearer …)
 // y devuelve el usuario. Se usa en /api/portal (miembro autenticado en el aula).
 export async function getUserFromRequest(request: Request) {
