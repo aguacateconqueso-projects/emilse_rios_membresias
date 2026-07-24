@@ -3,6 +3,56 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 24 jul 2026 — "Contraseña al pagar" en `/gracias` (cero correo para el recién pagado)
+> **Problema (Adrián):** el flujo de primera vez era largo — pagar → escribir el correo →
+> esperar el correo → abrir el enlace → volver a la plataforma → crear contraseña → recién
+> entrar. Para "gente medio bruta" son demasiados pasos y muchos se caían en el camino.
+>
+> **Decisión de diseño (clave):** el correo con enlace no es solo fricción, es la **prueba de
+> identidad** (que quien teclea es el dueño del buzón). Stripe contesta "¿este correo pagó?"
+> pero NO "¿quién teclea es el dueño?". Si en `/entrar` dejáramos crear contraseña solo
+> verificando "¿pagó?", cualquiera que sepa el correo de un miembro podría tomarle la cuenta.
+> **El único punto donde se puede saltar el correo sin ese riesgo es JUSTO al pagar**, porque
+> ahí Stripe nos redirige con la **sesión de checkout**, que sí prueba que *esa* persona pagó
+> (nadie más tiene ese id). Adrián eligió esta vía.
+>
+> **Qué se hizo (solo código, sin BD ni migración):**
+> 1. **`checkout.ts`:** el `success_url` ahora lleva `?session_id={CHECKOUT_SESSION_ID}`
+>    (placeholder que Stripe rellena).
+> 2. **Nuevo `POST /api/claim-account`** `{ session_id, password }`: pide la sesión a Stripe,
+>    verifica que sea una suscripción **completada y pagada**, saca el **correo del propio
+>    checkout** (no lo teclea el usuario → no hay toma de cuentas), crea/encuentra la cuenta
+>    (mismo criterio que el webhook) y **fija la contraseña** con `updateUserById` (service_role).
+>    Además **espeja la suscripción** en la BD por si el webhook aún no llegó, para que el aula
+>    lo deje pasar de inmediato.
+> 3. **`Gracias.astro` (dos modos):** si la URL trae `session_id` (el caso normal al venir de
+>    Stripe), muestra un cuadro **«Crea tu contraseña → Entrar»** (sin el aviso rojo de "no
+>    cierres la pestaña", ya no hay que esperar nada). Al enviar: `claim-account` fija la clave →
+>    el navegador hace `signInWithPassword` con el correo del pago + esa clave → **entra directo
+>    al aula**. Cero correo. Si NO hay `session_id` (o el comprador toca «¿Prefieres recibir el
+>    acceso por correo?»), cae al **flujo de correo de siempre**, con el copy definitivo de Emi
+>    intacto. Un script inline decide el modo antes de pintar (sin parpadeo).
+> 4. Se **extrajo `findOrCreateUser`** del webhook a `supabase-admin.ts` (compartido) para que el
+>    webhook y `claim-account` den de alta la cuenta con EXACTAMENTE el mismo criterio.
+> Sin variables nuevas (usa `SUPABASE_SERVICE_ROLE_KEY` y las claves de Stripe que ya están).
+> **Requiere redeploy** para que los nuevos checkouts salgan con el `session_id` en el
+> `success_url`. Verificado con `npm run build` + capturas headless de los dos modos (contraseña
+> y respaldo por correo, ES/EN). Rama `claude/signup-login-first-visit-zqrt3b` (mismo PR que el
+> toggle de `/entrar`).
+> - **Copy del modo contraseña:** provisional en la voz de la marca; Adrián lo ajusta si hace falta.
+> - **Cabo suelto de seguridad (menor, anotado):** la autorización de `claim-account` es "tener un
+>   `session_id` de Stripe pagado". Si alguien consiguiera un `session_id` ajeno (p. ej. historial
+>   de un navegador compartido), podría re-fijar esa contraseña. Exposición baja (el id vive en la
+>   URL de `/gracias` de esa persona). Se puede endurecer más adelante (p. ej. permitirlo solo si
+>   la cuenta aún no tiene contraseña).
+> - **Código de 6 dígitos en `/entrar` — DESCARTADO (decisión de Adrián, 24 jul):** se evaluó
+>   acortar también el respaldo de `/entrar → «Es mi primera vez»` a un **código de 6 dígitos** en
+>   pantalla, pero implicaba usar el **OTP nativo de Supabase**, que reintroduce su plantilla de
+>   correo (justo lo que se evitó en el punto 8c a favor del copy de Emi por Resend). Adrián prefirió
+>   **conservar el copy de Emi**, así que `/entrar` sigue con el enlace por correo (Resend, copy de
+>   Emi → `/nueva-clave/`) tal cual. El caso principal (recién pagado) ya no pasa por ahí: entra sin
+>   correo desde `/gracias`.
+
 ## 🗓️ 24 jul 2026 — `/entrar`: toggle «Ya tengo contraseña» / «Es mi primera vez»
 > **Problema (Adrián):** la gente que paga y entra por primera vez **no crea su contraseña**.
 > La cuenta se crea SIN clave al pagar, así que la primera vez hay que pedir un enlace de un

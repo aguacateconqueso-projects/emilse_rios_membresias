@@ -1,11 +1,17 @@
 ---
 // Página de agradecimiento tras el pago (punto 9 del checklist) — componente
 // bilingüe (prop lang: 'es' | 'en'). Rutas: /gracias/ (es) y /gracias/en/ (en).
-// Stripe redirige aquí (success_url) en vez de a /entrar/?pago=ok. El comprador
-// aún no tiene sesión ni contraseña (pago anónimo, ver docs/PROGRESO.md punto 8);
-// aquí pide su enlace de acceso con el MISMO correo con el que pagó
-// (resetPasswordForEmail → /nueva-clave/, mismo flujo que /entrar).
-// Copy definitivo de Emi, jul 2026.
+// Stripe redirige aquí (success_url) con ?session_id={CHECKOUT_SESSION_ID}.
+//
+// DOS MODOS:
+//  · "Contraseña al pagar" (con session_id, el caso normal al venir de Stripe): el
+//    comprador CREA su contraseña aquí mismo y entra directo al aula, SIN correo. La
+//    sesión de checkout prueba el pago (ver /api/claim-account); el correo sale del
+//    propio pago, no lo teclea el usuario.
+//  · Respaldo por correo (sin session_id, o si el comprador lo prefiere): el flujo de
+//    siempre — escribe su correo y le llega el enlace de acceso (→ /nueva-clave/).
+// Copy del respaldo por correo = definitivo de Emi. Copy del modo contraseña =
+// provisional (Adrián lo ajusta si hace falta).
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
@@ -17,6 +23,13 @@ const t = isEN ? {
   warn: 'Don’t close this tab',
   h1a: 'Thank you for joining',
   h1b: 'We’re almost in.',
+  // Modo contraseña (con session_id)
+  paidSub: 'Choose your password and go straight into the classroom. No email, no waiting.',
+  labelPass: 'Your password', phPass: 'Create a password (min. 8 characters)',
+  labelPass2: 'Repeat your password', phPass2: 'Repeat your password',
+  paidSubmit: 'Create password and go in',
+  toEmail: 'Prefer to get your access by email instead?',
+  // Modo correo (respaldo)
   sub: 'Type the email you used for your payment and the link to the platform will arrive there. This tab will go away, but you can always come back to your email — it will stay saved there.',
   label: 'Your email', ph: 'youremail@email.com',
   submit: 'Send me my access', sending: 'Sending…',
@@ -36,6 +49,13 @@ const t = isEN ? {
   warn: 'No cierres esta pestaña',
   h1a: 'Gracias por unirte.',
   h1b: 'Ya casi estamos dentro.',
+  // Modo contraseña (con session_id)
+  paidSub: 'Elige tu contraseña y entra directo al aula. Sin correo, sin esperas.',
+  labelPass: 'Tu contraseña', phPass: 'Crea una contraseña (mín. 8 caracteres)',
+  labelPass2: 'Repite la contraseña', phPass2: 'Repite la contraseña',
+  paidSubmit: 'Crear contraseña y entrar',
+  toEmail: '¿Prefieres recibir el acceso por correo?',
+  // Modo correo (respaldo)
   sub: 'Escribe el correo con el que realizaste tu pago y te llegará el link de acceso a la plataforma. Esta pestaña se va, pero a tu correo puedes volver siempre — ahí quedará guardado.',
   label: 'Tu correo', ph: 'tucorreo@email.com',
   submit: 'Enviarme mi acceso', sending: 'Enviando…',
@@ -60,6 +80,15 @@ const t = isEN ? {
 <link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
 <link rel="stylesheet" href="/colors_and_type.css" />
 <link rel="stylesheet" href="/membresia-ui.css" />
+<!-- Decide el modo ANTES de pintar para no mostrar el flujo de correo un instante
+     cuando el comprador viene de Stripe (con session_id). -->
+<script is:inline>
+  try {
+    if (new URLSearchParams(location.search).get('session_id')) {
+      document.documentElement.classList.add('has-session');
+    }
+  } catch (_) { /* sin URL: modo correo por defecto */ }
+</script>
 <style is:inline>
   /* Paleta, cursor y botones vienen de /membresia-ui.css (identidad de la carta). */
   :root { --edge: clamp(20px, 5vw, 64px); }
@@ -86,7 +115,7 @@ const t = isEN ? {
   }
   @media (prefers-reduced-motion: reduce) { .warn { animation: none; } }
   h1 { font-size: var(--text-2xl); margin: 0; text-align: center; }
-  .sub { color: var(--color-text-soft); font-size: var(--text-base); margin-bottom: var(--space-5); line-height: 1.55; }
+  .sub { color: var(--color-text-soft); font-size: var(--text-base); margin: var(--space-4) 0 var(--space-5); line-height: 1.55; }
   .field { display: flex; flex-direction: column; gap: 7px; margin-bottom: var(--space-4); }
   .field label { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
   .field input { font-family: var(--font-body); font-size: var(--text-base); color: var(--ink);
@@ -96,6 +125,9 @@ const t = isEN ? {
   .msg.ok { color: var(--ink); }
   .msg.err { color: #8a2e2e; font-weight: var(--weight-semibold); }
   .msg[hidden] { display: none; }
+  .alt { margin-top: var(--space-4); font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.5; }
+  .alt a { color: var(--ink); font-weight: var(--weight-semibold); text-decoration: underline;
+           text-underline-offset: 3px; cursor: pointer; }
   .note, .direct, .closing { font-size: var(--text-sm); color: var(--color-text-soft); line-height: 1.55; }
   .note { margin-top: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
   .note strong { display: block; margin-top: 6px; color: var(--ink); font-weight: var(--weight-semibold); }
@@ -103,6 +135,14 @@ const t = isEN ? {
   .direct a { color: var(--ink); font-weight: var(--weight-semibold); word-break: break-all; }
   .closing { margin-top: var(--space-5); }
   .closing a { color: var(--ink); font-weight: var(--weight-semibold); }
+
+  /* Modo: por defecto se ve el respaldo por correo; con session_id (recién pagado)
+     se ve el cuadro de crear contraseña y se oculta el aviso de "no cierres la
+     pestaña" (ya no hay que esperar ningún correo). */
+  #paidPanel { display: none; }
+  :root.has-session #paidPanel { display: block; }
+  :root.has-session #emailPanel { display: none; }
+  :root.has-session .warn { display: none; }
 </style>
 </head>
 <body data-page-lang={lang}>
@@ -119,47 +159,83 @@ const t = isEN ? {
       <h1 class="display">{t.h1a}<br />{t.h1b}</h1>
     </div>
 
-    <p class="sub">{t.sub}</p>
+    <!-- Modo contraseña (con session_id): crea la contraseña y entra directo -->
+    <div id="paidPanel">
+      <p class="sub">{t.paidSub}</p>
+      <form id="pwForm">
+        <div class="field">
+          <label for="pass">{t.labelPass}</label>
+          <input id="pass" type="password" autocomplete="new-password" minlength="8"
+                 placeholder={t.phPass} required />
+        </div>
+        <div class="field">
+          <label for="pass2">{t.labelPass2}</label>
+          <input id="pass2" type="password" autocomplete="new-password" minlength="8"
+                 placeholder={t.phPass2} required />
+        </div>
+        <button class="btn btn--solid btn--block" type="submit" id="pwBtn">
+          <span class="btn__label" id="pwLabel">{t.paidSubmit}</span>
+          <span class="btn__ar" aria-hidden="true">→</span>
+        </button>
+      </form>
+      <p class="msg ok" id="pMsgOk" hidden></p>
+      <p class="msg err" id="pMsgErr" hidden></p>
+      <p class="alt"><a id="toEmail" role="button" tabindex="0">{t.toEmail}</a></p>
+    </div>
 
-    <form id="accessForm">
-      <div class="field">
-        <label for="email">{t.label}</label>
-        <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
-               spellcheck="false" placeholder={t.ph} required />
-      </div>
-      <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
-        <span class="btn__label" id="submitLabel">{t.submit}</span>
-        <span class="btn__ar" aria-hidden="true">→</span>
-      </button>
-    </form>
+    <!-- Modo correo (respaldo): flujo de siempre -->
+    <div id="emailPanel">
+      <p class="sub">{t.sub}</p>
+      <form id="accessForm">
+        <div class="field">
+          <label for="email">{t.label}</label>
+          <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+                 spellcheck="false" placeholder={t.ph} required />
+        </div>
+        <button class="btn btn--solid btn--block" type="submit" id="submitBtn">
+          <span class="btn__label" id="submitLabel">{t.submit}</span>
+          <span class="btn__ar" aria-hidden="true">→</span>
+        </button>
+      </form>
 
-    <p class="msg ok" id="msgOk" hidden></p>
-    <p class="msg err" id="msgErr" hidden></p>
+      <p class="msg ok" id="msgOk" hidden></p>
+      <p class="msg err" id="msgErr" hidden></p>
 
-    <p class="note">{t.noteIntro}<strong>«{t.subject}»</strong></p>
+      <p class="note">{t.noteIntro}<strong>«{t.subject}»</strong></p>
 
-    <p class="direct">{t.directIntro}<br /><a href={t.directUrl}>{t.directUrl}</a></p>
+      <p class="direct">{t.directIntro}<br /><a href={t.directUrl}>{t.directUrl}</a></p>
 
-    <p class="closing">{t.closing1} <a href={`mailto:${t.contactEmail}`}>{t.contactEmail}</a> {t.closing2}</p>
+      <p class="closing">{t.closing1} <a href={`mailto:${t.contactEmail}`}>{t.contactEmail}</a> {t.closing2}</p>
+    </div>
   </div>
 
 <script>
+  import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+
   const pageLang = document.body.dataset.pageLang === 'en' ? 'en' : 'es';
   const EN = pageLang === 'en';
   const $ = (id: string) => document.getElementById(id) as HTMLElement;
-  const form = $('accessForm') as HTMLFormElement;
-  const email = $('email') as HTMLInputElement;
-  const btn = $('submitBtn') as HTMLButtonElement;
-  const submitLabel = $('submitLabel');
-  const setBtnLabel = (txt: string) => { if (submitLabel) submitLabel.textContent = txt; else btn.textContent = txt; };
-  const msgOk = $('msgOk');
-  const msgErr = $('msgErr');
 
   const T = {
     sending: EN ? 'Sending…' : 'Enviando…',
     submit: EN ? 'Send me my access' : 'Enviarme mi acceso',
     sent: EN ? 'Done! Check your inbox — it should arrive in a moment.' : '¡Listo! Revisa tu bandeja, llega en un momento.',
     sendError: EN ? 'Could not send it: ' : 'No se pudo enviar: ',
+    paidSubmit: EN ? 'Create password and go in' : 'Crear contraseña y entrar',
+    entering: EN ? 'Signing in…' : 'Entrando…',
+    errWeak: EN ? 'Your password must be at least 8 characters.' : 'La contraseña debe tener al menos 8 caracteres.',
+    errMatch: EN ? 'The passwords don’t match.' : 'Las contraseñas no coinciden.',
+    errNotPaid: EN
+      ? 'We couldn’t confirm your payment from this link. Use “get your access by email” below.'
+      : 'No pudimos confirmar tu pago desde este enlace. Usa «recibir el acceso por correo» aquí abajo.',
+    signinFail: EN
+      ? 'Your password was set, but we couldn’t sign you in automatically. Go to “Log in” and enter with your email and this password.'
+      : 'Tu contraseña quedó creada, pero no pudimos iniciar tu sesión automáticamente. Ve a «Entrar» e ingresa con tu correo y esta contraseña.',
+    errGeneric: EN ? 'Could not create your password: ' : 'No se pudo crear tu contraseña: ',
+    noConfig: EN
+      ? 'The site is not fully configured yet. Use “get your access by email” below.'
+      : 'El sitio aún no está del todo configurado. Usa «recibir el acceso por correo» aquí abajo.',
+    aula: EN ? '/aula/en/' : '/aula/',
   };
 
   function describeError(err: any): string {
@@ -176,34 +252,97 @@ const t = isEN ? {
     return err.name || String(err) || 'error desconocido';
   }
 
-  // Mismo flujo que /entrar → «Crea o restablece tu contraseña»: al pagar la
-  // cuenta ya existe (creada por el webhook) pero sin clave, así que este enlace
-  // de un solo uso sirve igual para fijarla por primera vez. Pasa por el
-  // endpoint del servidor (no resetPasswordForEmail directo) para que el correo
-  // salga por Resend con el copy bilingüe de Emi, igual que la bienvenida
-  // automática, en vez de la plantilla nativa de Supabase.
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    msgOk.hidden = true; msgErr.hidden = true;
-    const mail = email.value.trim();
-    if (!mail) return;
-    btn.disabled = true; setBtnLabel(T.sending);
-    try {
-      const res = await fetch('/api/send-access-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: mail, lang: pageLang }),
-      });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      msgOk.textContent = T.sent;
-      msgOk.hidden = false;
-    } catch (err) {
-      msgErr.textContent = T.sendError + describeError(err);
-      msgErr.hidden = false;
-    } finally {
-      btn.disabled = false; setBtnLabel(T.submit);
-    }
-  });
+  // ----- Modo contraseña (con session_id): crear clave + entrar directo ----------
+  const pwForm = $('pwForm') as HTMLFormElement | null;
+  const pass = $('pass') as HTMLInputElement | null;
+  const pass2 = $('pass2') as HTMLInputElement | null;
+  const pwBtn = $('pwBtn') as HTMLButtonElement | null;
+  const pwLabel = $('pwLabel');
+  const pMsgOk = $('pMsgOk');
+  const pMsgErr = $('pMsgErr');
+  const toEmail = $('toEmail');
+  const setPwLabel = (txt: string) => { if (pwLabel) pwLabel.textContent = txt; else if (pwBtn) pwBtn.textContent = txt; };
+  const showPwErr = (txt: string) => { if (pMsgOk) pMsgOk.hidden = true; if (pMsgErr) { pMsgErr.textContent = txt; pMsgErr.hidden = false; } };
+
+  // Enlace "prefiero por correo": revela el flujo de correo (respaldo).
+  function revealEmail() {
+    document.documentElement.classList.remove('has-session');
+    const email = $('email') as HTMLInputElement | null;
+    email?.focus();
+  }
+  toEmail?.addEventListener('click', revealEmail);
+  toEmail?.addEventListener('keydown', (e: KeyboardEvent) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); revealEmail(); } });
+
+  if (pwForm && pass && pass2 && pwBtn) {
+    pwForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (pMsgOk) pMsgOk.hidden = true; if (pMsgErr) pMsgErr.hidden = true;
+      const p1 = pass.value; const p2 = pass2.value;
+      if (p1.length < 8) { showPwErr(T.errWeak); return; }
+      if (p1 !== p2) { showPwErr(T.errMatch); return; }
+      const sid = new URLSearchParams(location.search).get('session_id');
+      if (!sid) { revealEmail(); return; }
+      if (!isSupabaseConfigured) { showPwErr(T.noConfig); return; }
+
+      // Al pagar, mantener la sesión iniciada (guarda el token en localStorage).
+      try { localStorage.setItem('erm_remember', '1'); } catch (_) {}
+      pwBtn.disabled = true; setPwLabel(T.entering);
+      try {
+        const res = await fetch('/api/claim-account', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ session_id: sid, password: p1 }),
+        });
+        const data = await res.json().catch(() => ({} as any));
+        if (!res.ok || !data?.ok) {
+          if (data?.error === 'not_paid') showPwErr(T.errNotPaid);
+          else if (data?.error === 'weak_password') showPwErr(T.errWeak);
+          else showPwErr(T.errGeneric + (data?.detail || ('HTTP ' + res.status)));
+          pwBtn.disabled = false; setPwLabel(T.paidSubmit);
+          return;
+        }
+        // Contraseña puesta: inicia sesión con el correo del pago + esa contraseña.
+        const { error } = await supabase.auth.signInWithPassword({ email: data.email, password: p1 });
+        if (error) { showPwErr(T.signinFail); pwBtn.disabled = false; setPwLabel(T.paidSubmit); return; }
+        window.location.href = T.aula;
+      } catch (err) {
+        showPwErr(T.errGeneric + describeError(err));
+        pwBtn.disabled = false; setPwLabel(T.paidSubmit);
+      }
+    });
+  }
+
+  // ----- Modo correo (respaldo): mismo flujo de siempre --------------------------
+  const form = $('accessForm') as HTMLFormElement | null;
+  const email = $('email') as HTMLInputElement | null;
+  const btn = $('submitBtn') as HTMLButtonElement | null;
+  const submitLabel = $('submitLabel');
+  const setBtnLabel = (txt: string) => { if (submitLabel) submitLabel.textContent = txt; else if (btn) btn.textContent = txt; };
+  const msgOk = $('msgOk');
+  const msgErr = $('msgErr');
+
+  if (form && email && btn) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (msgOk) msgOk.hidden = true; if (msgErr) msgErr.hidden = true;
+      const mail = email.value.trim();
+      if (!mail) return;
+      btn.disabled = true; setBtnLabel(T.sending);
+      try {
+        const res = await fetch('/api/send-access-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: mail, lang: pageLang }),
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        if (msgOk) { msgOk.textContent = T.sent; msgOk.hidden = false; }
+      } catch (err) {
+        if (msgErr) { msgErr.textContent = T.sendError + describeError(err); msgErr.hidden = false; }
+      } finally {
+        btn.disabled = false; setBtnLabel(T.submit);
+      }
+    });
+  }
 </script>
 <script src="/membresia-ui.js" defer></script>
 </body>
