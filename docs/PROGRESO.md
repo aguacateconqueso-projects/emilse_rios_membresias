@@ -3,6 +3,35 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 24 jul 2026 — `/entrar`: toggle «Ya tengo contraseña» / «Es mi primera vez»
+> **Problema (Adrián):** la gente que paga y entra por primera vez **no crea su contraseña**.
+> La cuenta se crea SIN clave al pagar, así que la primera vez hay que pedir un enlace de un
+> solo uso (→ `/nueva-clave/`). Eso vivía en un **link chico al pie** («Crea o restablece tu
+> contraseña») que los usuarios menos técnicos no veían: intentaban entrar con una contraseña
+> que nunca fijaron y se trababan.
+>
+> **Fix (solo UI, sin BD ni migración):** en `Login.astro` se convirtió esa decisión en un
+> **control segmentado grande arriba de la tarjeta** (estilo editorial, pista hundida sobre el
+> crema + pestaña activa en papel), con dos modos:
+> - **«Ya tengo contraseña»** (por defecto): el formulario de siempre (correo + contraseña +
+>   «Mantener la sesión» + Entrar). Debajo, «¿Olvidaste tu contraseña?» ahora **salta al otro
+>   modo** en vez de disparar el correo directo.
+> - **«Es mi primera vez»**: solo pide el correo + botón **«Enviarme mi acceso»**, que usa el
+>   MISMO camino de antes (`POST /api/send-access-email` → Resend con el copy bilingüe de Emi →
+>   `/nueva-clave/`). Sirve igual para «olvidé mi contraseña».
+> - El correo escrito se **copia entre los dos modos** al alternar (no hay que re-tipearlo). El
+>   `h1`/subtítulo cambian por modo. Bilingüe ES/EN. Los mensajes de error de login que antes
+>   decían «usa el enlace de abajo» ahora dicen «cambia a “Es mi primera vez”».
+> - Deliberadamente **NO** se usó la palabra «Registrarse»: la cuenta ya existe (se creó al
+>   pagar); el usuario solo **crea su contraseña**. Para la audiencia menos técnica «Es mi
+>   primera vez» es más claro.
+> Verificado con `npm run build` + volcado del HTML (ES/EN: toggle, ambos paneles, botón) y
+> **capturas headless** de los dos modos (layout y copy correctos). Rama
+> `claude/signup-login-first-visit-zqrt3b`.
+> **Pendiente opcional (decisión de Adrián):** hoy el modo por defecto es «Ya tengo contraseña».
+> Si la mayoría del tráfico directo a `/entrar` son recién-pagados, se puede invertir el default
+> a «Es mi primera vez» con un cambio mínimo.
+
 ## 🗓️ 24 jul 2026 — RESUELTO: "Acá te unes" daba 500 — era `prod_` en vez de `price_`
 > **Síntoma:** el botón **"Acá te unes"** (`/api/checkout`) devolvía un **500 genérico de Vercel**
 > ("This page isn't working"). El precio sigue en **$80** (el cambio a $90 fue un typo y se revirtió).
