@@ -28,14 +28,19 @@ const t = isEN ? {
   h1Login: 'Log in',
   subLogin: 'Log in with your email and password.',
   h1First: 'Create your password',
-  subFirst: 'Did you just join, or haven’t set a password yet? Type your email and we’ll send you a link to create it. Use this if you forgot it too.',
+  subFirst: 'Did you just join, or haven’t set a password yet? Type your email and we’ll send you a code to create your password right here. Use this if you forgot it too.',
   labelEmail: 'Your email', phEmail: 'youremail@email.com',
   labelPass: 'Your password', phPass: 'Your password',
   remember: 'Keep me signed in',
   submit: 'Log in',
   forgot: 'Forgot your password?',
-  firstBtn: 'Send me my access',
-  firstNote: 'We’ll email you a secure one-time link to set your password and get in.',
+  firstBtn: 'Send me the code',
+  firstNote: 'We’ll email you a 6-digit code — type it here, no need to leave this page.',
+  labelCode: 'Code from your email', phCode: '6-digit code',
+  firstLabelPass: 'Your new password', firstPhPass: 'Create a password (min. 8 characters)',
+  firstLabelPass2: 'Repeat your password', firstPhPass2: 'Repeat your password',
+  codeBtn: 'Create password and go in',
+  resend: 'Send a new code',
   back: '← Back to the membership',
 } : {
   htmlLang: 'es',
@@ -47,14 +52,19 @@ const t = isEN ? {
   h1Login: 'Entrar',
   subLogin: 'Entra con tu correo y tu contraseña.',
   h1First: 'Crea tu contraseña',
-  subFirst: '¿Te acabas de unir o aún no creaste tu contraseña? Escribe tu correo y te enviamos un enlace para crearla. Úsalo también si la olvidaste.',
+  subFirst: '¿Te acabas de unir o aún no creaste tu contraseña? Escribe tu correo y te enviamos un código para crearla aquí mismo. Úsalo también si la olvidaste.',
   labelEmail: 'Tu correo', phEmail: 'tucorreo@email.com',
   labelPass: 'Tu contraseña', phPass: 'Tu contraseña',
   remember: 'Mantener la sesión iniciada',
   submit: 'Entrar',
   forgot: '¿Olvidaste tu contraseña?',
-  firstBtn: 'Enviarme mi acceso',
-  firstNote: 'Te mandamos por correo un enlace seguro de un solo uso para crear tu contraseña y entrar.',
+  firstBtn: 'Enviarme el código',
+  firstNote: 'Te mandamos por correo un código de 6 dígitos — lo escribes aquí, sin salir de esta página.',
+  labelCode: 'Código de tu correo', phCode: 'Código de 6 dígitos',
+  firstLabelPass: 'Tu nueva contraseña', firstPhPass: 'Crea una contraseña (mín. 8 caracteres)',
+  firstLabelPass2: 'Repite la contraseña', firstPhPass2: 'Repite la contraseña',
+  codeBtn: 'Crear contraseña y entrar',
+  resend: 'Enviar un código nuevo',
   back: '← Volver a la membresía',
 };
 ---
@@ -111,6 +121,7 @@ const t = isEN ? {
   /* Paneles de cada modo. [hidden] tiene que ganarle a display:block por si algún
      estilo compartido lo pisa (patrón ya visto en el resto de la app). */
   .panel[hidden] { display: none; }
+  .step[hidden] { display: none; }
 
   /* Casilla "mantener sesión iniciada" */
   .remember { display: flex; align-items: center; gap: 10px; margin: 0 0 var(--space-4);
@@ -201,16 +212,43 @@ const t = isEN ? {
          a /entrar casi siempre acaba de pagar y aún no tiene contraseña; los que ya
          la tienen y marcaron "mantener sesión" no vuelven a ver esta pantalla). -->
     <div class="panel" id="panelFirst" role="tabpanel" aria-labelledby="tabFirst">
-      <div class="field">
-        <label for="email2">{t.labelEmail}</label>
-        <input id="email2" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
-               spellcheck="false" placeholder={t.phEmail} />
-      </div>
-      <button class="btn btn--solid btn--block" type="button" id="firstBtn">
-        <span class="btn__label" id="firstLabel">{t.firstBtn}</span>
-        <span class="btn__ar" aria-hidden="true">→</span>
-      </button>
-      <p class="note">{t.firstNote}</p>
+      <!-- Paso 1: pedir el código a su correo -->
+      <form id="codeReqForm" class="step">
+        <div class="field">
+          <label for="email2">{t.labelEmail}</label>
+          <input id="email2" type="email" inputmode="email" autocomplete="email" autocapitalize="none"
+                 spellcheck="false" placeholder={t.phEmail} required />
+        </div>
+        <button class="btn btn--solid btn--block" type="submit" id="firstBtn">
+          <span class="btn__label" id="firstLabel">{t.firstBtn}</span>
+          <span class="btn__ar" aria-hidden="true">→</span>
+        </button>
+        <p class="note">{t.firstNote}</p>
+      </form>
+
+      <!-- Paso 2: teclear el código + crear la contraseña, sin salir de la página -->
+      <form id="codeSetForm" class="step" hidden>
+        <div class="field">
+          <label for="code">{t.labelCode}</label>
+          <input id="code" type="text" inputmode="numeric" autocomplete="one-time-code"
+                 pattern="[0-9]*" maxlength="6" placeholder={t.phCode} />
+        </div>
+        <div class="field">
+          <label for="newPass">{t.firstLabelPass}</label>
+          <input id="newPass" type="password" autocomplete="new-password" minlength="8"
+                 placeholder={t.firstPhPass} />
+        </div>
+        <div class="field">
+          <label for="newPass2">{t.firstLabelPass2}</label>
+          <input id="newPass2" type="password" autocomplete="new-password" minlength="8"
+                 placeholder={t.firstPhPass2} />
+        </div>
+        <button class="btn btn--solid btn--block" type="submit" id="codeBtn">
+          <span class="btn__label" id="codeLabel">{t.codeBtn}</span>
+          <span class="btn__ar" aria-hidden="true">→</span>
+        </button>
+        <p class="alt"><a id="resendLink" role="button" tabindex="0">{t.resend}</a></p>
+      </form>
     </div>
 
     <p class="msg ok" id="msgOk" hidden></p>
@@ -234,12 +272,25 @@ const t = isEN ? {
     subLogin: EN ? 'Log in with your email and password.' : 'Entra con tu correo y tu contraseña.',
     h1First: EN ? 'Create your password' : 'Crea tu contraseña',
     subFirst: EN
-      ? 'Did you just join, or haven’t set a password yet? Type your email and we’ll send you a link to create it. Use this if you forgot it too.'
-      : '¿Te acabas de unir o aún no creaste tu contraseña? Escribe tu correo y te enviamos un enlace para crearla. Úsalo también si la olvidaste.',
+      ? 'Did you just join, or haven’t set a password yet? Type your email and we’ll send you a code to create your password right here. Use this if you forgot it too.'
+      : '¿Te acabas de unir o aún no creaste tu contraseña? Escribe tu correo y te enviamos un código para crearla aquí mismo. Úsalo también si la olvidaste.',
     submit: EN ? 'Log in' : 'Entrar',
     entering: EN ? 'Signing in…' : 'Entrando…',
-    firstBtn: EN ? 'Send me my access' : 'Enviarme mi acceso',
+    firstBtn: EN ? 'Send me the code' : 'Enviarme el código',
     sending: EN ? 'Sending…' : 'Enviando…',
+    codeBtn: EN ? 'Create password and go in' : 'Crear contraseña y entrar',
+    creating: EN ? 'Creating…' : 'Creando…',
+    codeSent: EN
+      ? 'We sent a 6-digit code to your email. Type it below to create your password. Check spam or promotions if you don’t see it.'
+      : 'Te enviamos un código de 6 dígitos a tu correo. Escríbelo aquí abajo para crear tu contraseña. Si no lo ves, mira en spam o promociones.',
+    needEmail: EN ? 'Type your email first.' : 'Escribe primero tu correo.',
+    needCode: EN ? 'Type the 6-digit code from your email.' : 'Escribe el código de 6 dígitos de tu correo.',
+    weakPass: EN ? 'Your password must be at least 8 characters.' : 'La contraseña debe tener al menos 8 caracteres.',
+    passMismatch: EN ? 'The passwords don’t match.' : 'Las contraseñas no coinciden.',
+    badCode: EN
+      ? 'That code is wrong or expired. Ask for a new one and try again.'
+      : 'Ese código es incorrecto o venció. Pide uno nuevo e inténtalo de nuevo.',
+    setPassFail: EN ? 'Could not set your password: ' : 'No se pudo crear tu contraseña: ',
     noConfig: EN
       ? 'The .env file is not configured (PUBLIC_SUPABASE_URL and PUBLIC_SUPABASE_ANON_KEY are missing). Create it in the project root and restart the server.'
       : 'Falta configurar el archivo .env (PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY). Créalo en la raíz del proyecto y reinicia el servidor.',
@@ -289,12 +340,22 @@ const t = isEN ? {
   const firstLabel = document.getElementById('firstLabel');
   const h1El = document.getElementById('h1');
   const subEl = document.getElementById('sub');
+  // Panel "primera vez": paso 1 (pedir código) y paso 2 (código + contraseña).
+  const codeReqForm = document.getElementById('codeReqForm');
+  const codeSetForm = document.getElementById('codeSetForm');
+  const codeInput = document.getElementById('code');
+  const newPass = document.getElementById('newPass');
+  const newPass2 = document.getElementById('newPass2');
+  const codeBtn = document.getElementById('codeBtn');
+  const codeLabel = document.getElementById('codeLabel');
+  const resendLink = document.getElementById('resendLink');
 
   // Cambia solo el texto de un botón sin borrar el relleno/flecha (spans inyectados
   // por membresia-ui.js).
   const setLabel = (span, hostBtn, txt) => { if (span) span.textContent = txt; else hostBtn.textContent = txt; };
   const setBtnLabel = (txt) => setLabel(submitLabel, btn, txt);
   const setFirstLabel = (txt) => setLabel(firstLabel, firstBtn, txt);
+  const setCodeLabel = (txt) => setLabel(codeLabel, codeBtn, txt);
 
   // Alterna entre "ya tengo contraseña" y "es mi primera vez". Copia el correo
   // escrito de un modo al otro para no obligar a re-tipearlo.
@@ -309,6 +370,7 @@ const t = isEN ? {
     const shared = email.value || email2.value;
     if (shared) { email.value = shared; email2.value = shared; }
     msgOk.hidden = true; msgErr.hidden = true;
+    if (!login) showStep1(); // al volver a "primera vez", arranca pidiendo el código
     (login ? email : email2).focus();
   }
   tabLogin.addEventListener('click', () => setMode('login'));
@@ -451,30 +513,36 @@ const t = isEN ? {
     }
   });
 
-  // Crear / restablecer contraseña (modo "es mi primera vez"): envía un correo con un
-  // enlace de un solo uso a /nueva-clave/. Sirve para la PRIMERA vez (cuenta creada al
-  // pagar, sin clave) y para recuperar el acceso. Por privacidad respondemos igual
-  // exista o no el correo, así que mostramos el mismo aviso siempre. Pasa por el
-  // endpoint del servidor (no resetPasswordForEmail directo) para que el correo salga
-  // por Resend con el copy bilingüe de Emi, igual que la bienvenida automática, en vez
-  // de la plantilla nativa de Supabase. El idioma del correo sigue al de la página.
-  async function sendReset() {
-    const mail = email2.value.trim();
+  // Modo "es mi primera vez": crear la contraseña en la MISMA pantalla, sin ir al
+  // correo y volver. Dos pasos:
+  //   Paso 1 (requestCode): pide un CÓDIGO de 6 dígitos al correo (Resend con el copy
+  //     de Emi, vía POST /api/send-access-code). Por privacidad responde igual exista
+  //     o no el correo (si no existe, no llega ningún código).
+  //   Paso 2 (setPasswordWithCode): el miembro teclea ese código + su contraseña; se
+  //     verifica con supabase.auth.verifyOtp({ type: 'recovery' }) — que además inicia
+  //     la sesión — y se fija la clave con updateUser. Luego entra al aula por rol.
+  // Así el correo (código) sigue probando que el buzón es suyo (sin ese código nadie
+  // puede tomar la cuenta), pero la persona nunca sale de /entrar.
+  function showStep1() { if (codeReqForm) codeReqForm.hidden = false; if (codeSetForm) codeSetForm.hidden = true; }
+  function showStep2() { if (codeReqForm) codeReqForm.hidden = true; if (codeSetForm) codeSetForm.hidden = false; }
+
+  async function requestCode(ev) {
+    if (ev) ev.preventDefault();
     msgOk.hidden = true; msgErr.hidden = true;
-    if (!mail) {
-      msgErr.textContent = T.typeEmail;
-      msgErr.hidden = false; email2.focus(); return;
-    }
+    const mail = email2.value.trim();
+    if (!mail) { msgErr.textContent = T.needEmail; msgErr.hidden = false; email2.focus(); return; }
+    if (!isSupabaseConfigured) { msgErr.textContent = T.noConfig; msgErr.hidden = false; return; }
     firstBtn.disabled = true; setFirstLabel(T.sending);
     try {
-      const res = await fetch('/api/send-access-email', {
+      const res = await fetch('/api/send-access-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: mail, lang: pageLang }),
       });
       if (!res.ok) throw new Error('HTTP ' + res.status);
-      msgOk.textContent = T.resetSent;
-      msgOk.hidden = false;
+      showStep2();
+      msgOk.textContent = T.codeSent; msgOk.hidden = false;
+      codeInput?.focus();
     } catch (err) {
       msgErr.textContent = T.resetError + describeError(err);
       msgErr.hidden = false;
@@ -482,7 +550,36 @@ const t = isEN ? {
       firstBtn.disabled = false; setFirstLabel(T.firstBtn);
     }
   }
-  firstBtn?.addEventListener('click', sendReset);
+
+  async function setPasswordWithCode(ev) {
+    if (ev) ev.preventDefault();
+    msgOk.hidden = true; msgErr.hidden = true;
+    const mail = email2.value.trim();
+    const token = (codeInput.value || '').trim();
+    const p1 = newPass.value; const p2 = newPass2.value;
+    if (token.length < 6) { msgErr.textContent = T.needCode; msgErr.hidden = false; codeInput.focus(); return; }
+    if (p1.length < 8) { msgErr.textContent = T.weakPass; msgErr.hidden = false; newPass.focus(); return; }
+    if (p1 !== p2) { msgErr.textContent = T.passMismatch; msgErr.hidden = false; newPass2.focus(); return; }
+    // Recién creada la cuenta: mantener la sesión iniciada (token en localStorage).
+    try { localStorage.setItem('erm_remember', '1'); } catch (_) {}
+    codeBtn.disabled = true; setCodeLabel(T.creating);
+    try {
+      const { error: vErr } = await supabase.auth.verifyOtp({ email: mail, token, type: 'recovery' });
+      if (vErr) { msgErr.textContent = T.badCode; msgErr.hidden = false; codeBtn.disabled = false; setCodeLabel(T.codeBtn); return; }
+      const { error: uErr } = await supabase.auth.updateUser({ password: p1 });
+      if (uErr) { msgErr.textContent = T.setPassFail + describeError(uErr); msgErr.hidden = false; codeBtn.disabled = false; setCodeLabel(T.codeBtn); return; }
+      // verifyOtp ya dejó la sesión iniciada + clave puesta → al aula por rol.
+      routeByRole();
+    } catch (err) {
+      msgErr.textContent = T.setPassFail + describeError(err);
+      msgErr.hidden = false; codeBtn.disabled = false; setCodeLabel(T.codeBtn);
+    }
+  }
+
+  codeReqForm?.addEventListener('submit', requestCode);
+  codeSetForm?.addEventListener('submit', setPasswordWithCode);
+  resendLink?.addEventListener('click', requestCode);
+  resendLink?.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); requestCode(); } });
 </script>
 <script src="/membresia-ui.js" defer></script>
 </body>

@@ -3,6 +3,41 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 24 jul 2026 — `/entrar → «Es mi primera vez»`: crear la contraseña EN LA MISMA pantalla (código de 6 dígitos)
+> **Pedido de Adrián:** que en «Es mi primera vez» se pueda **crear la contraseña ahí mismo**, sin
+> el ida-y-vuelta de "te mando un enlace → abrís el correo → clic → caes en otra página → creás la
+> clave". Seguía con el enlace por correo → se rehízo.
+>
+> **Por qué no basta "solo correo + contraseña" (sin correo):** en `/entrar` no hay prueba de que
+> quien teclea el correo es su dueño (a diferencia de `/gracias`, que tiene la sesión de Stripe).
+> Para que fuera seguro habría que limitar el atajo a "cuentas sin contraseña aún", pero **Supabase
+> no expone de forma fiable si una cuenta ya tiene contraseña**, así que no se puede acotar → sería
+> un agujero permanente de robo de cuenta (cualquiera que sepa un correo resetea esa clave). Se
+> descartó.
+>
+> **Solución (inline con código, seguro y con el copy de Emi):**
+> - **Paso 1:** el miembro escribe su correo → **`POST /api/send-access-code`** genera un **código
+>   de un solo uso** (`admin.generateLink({type:'recovery'})` → se toma el `email_otp`, sin enviar
+>   el correo nativo) y lo manda **por Resend con el copy de Emi** (nueva plantilla
+>   `accessCodeEmailContent`, muestra el código grande). Por privacidad responde igual exista o no
+>   el correo.
+> - **Paso 2 (misma pantalla, no navega a ningún lado):** teclea el código + su contraseña →
+>   `supabase.auth.verifyOtp({ type: 'recovery' })` (verifica el código **e inicia la sesión**) →
+>   `supabase.auth.updateUser({ password })` fija la clave → entra al aula por rol.
+> - El código sigue probando que el buzón es suyo (seguridad intacta), pero **nunca sale de
+>   `/entrar`**. Bilingüe ES/EN, casilla "mantener sesión" implícita (`erm_remember='1'`).
+> - Piezas: `Login.astro` (panel «primera vez» en dos pasos + enlace «Enviar un código nuevo»),
+>   `send-access-code.ts` (endpoint), `welcome-email.ts` (`sendAccessCode`), `email.ts`
+>   (`accessCodeEmailContent`), `supabase-admin.ts` (`generatePasswordSetupOtp`).
+> **Esto reemplaza el enlace por correo SOLO en `/entrar`;** el correo de bienvenida automático (al
+> pagar, webhook) y `/gracias` no cambian. Sin BD ni variables nuevas (usa Resend + service_role
+> ya existentes). ⚠️ **Requiere Resend configurado** (si falta, no sale el código). Verificado con
+> `npm run build` + capturas headless de los dos pasos (ES). Rama `claude/signup-login-first-visit-zqrt3b`.
+> - **Corrige la decisión del 24 jul:** antes se había "descartado" el código de 6 dígitos porque se
+>   asumió que obligaba a la **plantilla nativa de Supabase**. No es así: `generateLink` devuelve el
+>   `email_otp` sin enviar correo, así que el código se manda por **Resend con el copy de Emi**. Con
+>   eso se resuelve la objeción y se pudo hacer inline.
+
 ## 🗓️ 24 jul 2026 — "Contraseña al pagar" en `/gracias` (cero correo para el recién pagado) ✅ MERGEADO (PR #62)
 > **Problema (Adrián):** el flujo de primera vez era largo — pagar → escribir el correo →
 > esperar el correo → abrir el enlace → volver a la plataforma → crear contraseña → recién
@@ -47,13 +82,11 @@
 >   de un navegador compartido), podría re-fijar esa contraseña. Exposición baja (el id vive en la
 >   URL de `/gracias` de esa persona). Se puede endurecer más adelante (p. ej. permitirlo solo si
 >   la cuenta aún no tiene contraseña).
-> - **Código de 6 dígitos en `/entrar` — DESCARTADO (decisión de Adrián, 24 jul):** se evaluó
->   acortar también el respaldo de `/entrar → «Es mi primera vez»` a un **código de 6 dígitos** en
->   pantalla, pero implicaba usar el **OTP nativo de Supabase**, que reintroduce su plantilla de
->   correo (justo lo que se evitó en el punto 8c a favor del copy de Emi por Resend). Adrián prefirió
->   **conservar el copy de Emi**, así que `/entrar` sigue con el enlace por correo (Resend, copy de
->   Emi → `/nueva-clave/`) tal cual. El caso principal (recién pagado) ya no pasa por ahí: entra sin
->   correo desde `/gracias`.
+> - **Código de 6 dígitos en `/entrar` — REACTIVADO y hecho (ver la entrada de arriba del 24 jul).**
+>   Primero se "descartó" creyendo que obligaba a la plantilla nativa de Supabase; luego se vio que
+>   `generateLink` da el `email_otp` sin enviar correo, así que el código se manda por Resend con el
+>   copy de Emi. Con eso `/entrar → «Es mi primera vez»` **crea la contraseña en la misma pantalla**
+>   (correo → código → clave → adentro), sin el enlace/ida-y-vuelta.
 
 ## 🗓️ 24 jul 2026 — `/entrar`: toggle «Ya tengo contraseña» / «Es mi primera vez» ✅ MERGEADO (PR #61)
 > **Problema (Adrián):** la gente que paga y entra por primera vez **no crea su contraseña**.

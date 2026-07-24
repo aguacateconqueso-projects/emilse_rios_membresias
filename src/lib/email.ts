@@ -127,3 +127,75 @@ ${t.ps2}`;
 
   return { subject: t.subject, html, text };
 }
+
+// -----------------------------------------------------------------------------
+// Correo con CÓDIGO de acceso (crear contraseña en la misma pantalla de /entrar).
+// Mismo estilo de carta y paleta que el de bienvenida, pero en vez de un enlace
+// muestra un código de 6 dígitos que el miembro teclea sin salir de la página.
+// Copy en la voz de Emi (provisional; Adrián lo afina si hace falta).
+// -----------------------------------------------------------------------------
+export function accessCodeEmailContent(lang: 'es' | 'en', code: string): { subject: string; html: string; text: string } {
+  const isEN = lang === 'en';
+  const t = isEN
+    ? {
+        subject: 'Your access code',
+        preheader: 'Type this code on the page to create your password.',
+        p1: 'Welcome.',
+        p2: 'Here is your code to create your password and get into the platform. Type it on the page where you asked for it:',
+        expires: 'The code works for one hour. If it expires, just ask for a new one.',
+        p3: 'See you inside.',
+        sign: 'Emilse',
+        ps1: 'PS: If something doesn’t work or you have any question, write to info@emilserios.com and it comes straight to me.',
+      }
+    : {
+        subject: 'Tu código de acceso',
+        preheader: 'Escribe este código en la página para crear tu contraseña.',
+        p1: 'Bienvenido/a.',
+        p2: 'Este es tu código para crear tu contraseña y entrar a la plataforma. Escríbelo en la página donde lo pediste:',
+        expires: 'El código sirve por una hora. Si se vence, pide uno nuevo sin problema.',
+        p3: 'Nos vemos dentro.',
+        sign: 'Emilse',
+        ps1: 'PD: Si algo no funciona o tienes cualquier duda, escribe a info@emilserios.com y me llega directo a mí.',
+      };
+
+  // Espaciado del código para que se lea dígito a dígito.
+  const spaced = String(code).split('').join(' ');
+
+  const html = `<!DOCTYPE html>
+<html lang="${isEN ? 'en' : 'es'}">
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
+<body style="margin:0;background:#faf7f1;color:#17140f;font-family:'Hanken Grotesk',Helvetica,Arial,sans-serif;">
+  <span style="display:none;max-height:0;overflow:hidden;opacity:0;">${t.preheader}</span>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#faf7f1;padding:32px 16px;">
+    <tr><td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#fffdf8;border:1px solid #e7e0d4;border-radius:8px;">
+        <tr><td style="padding:36px 40px;">
+          <p style="margin:0 0 28px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;font-size:12px;color:#6f6a61;">Emilse Rios · ${isEN ? 'Membership' : 'Membresía'}</p>
+          <p style="margin:0 0 16px;font-size:16px;line-height:1.6;color:#17140f;">${t.p1}</p>
+          <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#17140f;">${t.p2}</p>
+          <p style="margin:0 0 20px;font-size:34px;line-height:1.2;font-weight:700;letter-spacing:0.24em;color:#17140f;">${spaced}</p>
+          <p style="margin:0 0 24px;font-size:13px;line-height:1.55;color:#6f6a61;">${t.expires}</p>
+          <p style="margin:0 0 4px;font-size:16px;line-height:1.6;color:#17140f;">${t.p3}</p>
+          <p style="margin:0 0 28px;font-size:16px;line-height:1.6;font-style:italic;color:#17140f;">${t.sign}</p>
+          <p style="margin:0;font-size:13px;line-height:1.55;color:#6f6a61;font-style:italic;">${t.ps1}</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const text = `${t.p1}
+${t.p2}
+
+${spaced}
+
+${t.expires}
+
+${t.p3}
+${t.sign}
+
+${t.ps1}`;
+
+  return { subject: t.subject, html, text };
+}
