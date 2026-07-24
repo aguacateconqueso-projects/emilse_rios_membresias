@@ -3,37 +3,27 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 24 jul 2026 — Precio estándar $80 → $90 + diagnóstico "Acá te unes no conecta"
-> Emi sube el precio estándar de **$80 a $90/mes**. Mismo mecanismo que la vez pasada: el
-> monto que se **muestra** en la carta vive en código, pero el monto que se **cobra** lo fija
-> un **Price de Stripe** que el checkout lee de `STRIPE_PRICE_STANDARD` (Vercel). Los dos son
-> independientes: cambiar la carta NO cambia el cobro, y viceversa.
+## 🗓️ 24 jul 2026 — Diagnóstico: "Acá te unes" no conecta con Stripe
+> El precio sigue en **$80** (el cambio a $90 fue un typo y se revirtió). El síntoma real: el
+> botón **"Acá te unes"** no llega a Stripe. Es un problema de **configuración (Vercel/Stripe),
+> no de código** — el checkout (`src/pages/api/checkout.ts`) está bien.
 >
-> **Lo que se hizo en código (este PR):** en `src/components/membresia/Landing.astro`,
-> `priceAmountStd` y `priceInBoxLeadStd` (ES y EN) pasaron de **$80 → $90**. Se actualizaron
-> comentarios desfasados de $80/$77 en `.env.example`, `src/lib/stripe.ts` y
-> `src/pages/api/checkout.ts`. No se tocó la lógica del checkout ni la BD (el enum sigue
-> siendo `standard_77`, etiqueta heredada).
->
-> **Lo que hace Emi + Adrián (config, NO código) — imprescindible para que cobre $90:**
-> 1. En Stripe (LIVE) los precios son **inmutables**: NO se edita el de $80. Emi **crea un
->    Price NUEVO de $90/mes** (recurrente, mensual) sobre el mismo producto y copia su `price_...`.
-> 2. En Vercel → Settings → Environment Variables (Production): **`STRIPE_PRICE_STANDARD`** =
->    el nuevo Price ID de $90. **Redeploy**. Los que ya pagan menos **siguen igual** (Stripe
->    congela el precio de cada suscripción activa).
->
-> **Por qué "Acá te unes" no conecta con Stripe (24 jul):** ayer 23 jul cerró la ventana de
-> fundador (`STRIPE_FOUNDER_UNTIL = 2026-07-23T23:59:59+02:00`), así que desde hoy el checkout
-> usa **`STRIPE_PRICE_STANDARD`** en vez de `STRIPE_PRICE_FOUNDER`. El botón devuelve 500 si esa
-> variable está **vacía, apunta a un Price archivado/borrado, o es de modo test estando el
-> `STRIPE_SECRET_KEY` en modo live** (o al revés). El texto del error lo dice:
+> **Causa:** ayer 23 jul cerró la ventana de fundador
+> (`STRIPE_FOUNDER_UNTIL = 2026-07-23T23:59:59+02:00`), así que desde hoy el checkout usa
+> **`STRIPE_PRICE_STANDARD`** en vez de `STRIPE_PRICE_FOUNDER`. El endpoint devuelve 500 (el
+> botón "no conecta") si esa variable está **vacía, apunta a un Price archivado/borrado, o es
+> de un modo (test/live) distinto al de `STRIPE_SECRET_KEY`**. El texto del error identifica cuál:
 > - `"Falta configurar el precio de Stripe."` → `STRIPE_PRICE_STANDARD` vacía en Vercel.
 > - `"Stripe no está configurado."` → falta `STRIPE_SECRET_KEY`.
 > - Redirige a un error de Stripe / "No such price" → el Price ID es de otro modo (test vs
 >   live) o está archivado.
-> **Fix = los mismos 2 pasos de config de arriba** (crear el Price de $90 LIVE + apuntar
-> `STRIPE_PRICE_STANDARD` a él con la Secret Key LIVE, y redeploy). Verificar que `STRIPE_SECRET_KEY`
-> y el Price ID sean **ambos LIVE** (`sk_live_...` + `price_...` creado en modo live).
+>
+> **Qué verificar/arreglar (Emi + Adrián, en Vercel → Settings → Environment Variables, Production):**
+> 1. **`STRIPE_PRICE_STANDARD`** existe y apunta a un **Price de $80/mes activo** (recurrente).
+> 2. **`STRIPE_SECRET_KEY`** y ese Price ID son **del mismo modo** (ambos LIVE: `sk_live_...`
+>    + `price_...` creado en live). Este suele ser el error tras pasar de test a producción.
+> 3. **`STRIPE_WEBHOOK_SECRET`** y **`PUBLIC_SITE_URL`** presentes (para el post-pago).
+> 4. **Redeploy** tras cualquier cambio. (Config; no requiere tocar código.)
 
 ## 🗓️ 23 jul 2026 — Precio estándar $77 → $80 + precio dinámico en la carta
 > Emi subió el precio estándar (el de después del fundador) de **$77 a $80/mes** y quiere
