@@ -3,7 +3,7 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 24 jul 2026 — "Contraseña al pagar" en `/gracias` (cero correo para el recién pagado)
+## 🗓️ 24 jul 2026 — "Contraseña al pagar" en `/gracias` (cero correo para el recién pagado) ✅ MERGEADO (PR #62)
 > **Problema (Adrián):** el flujo de primera vez era largo — pagar → escribir el correo →
 > esperar el correo → abrir el enlace → volver a la plataforma → crear contraseña → recién
 > entrar. Para "gente medio bruta" son demasiados pasos y muchos se caían en el camino.
@@ -37,8 +37,10 @@
 > Sin variables nuevas (usa `SUPABASE_SERVICE_ROLE_KEY` y las claves de Stripe que ya están).
 > **Requiere redeploy** para que los nuevos checkouts salgan con el `session_id` en el
 > `success_url`. Verificado con `npm run build` + capturas headless de los dos modos (contraseña
-> y respaldo por correo, ES/EN). Rama `claude/signup-login-first-visit-zqrt3b` (mismo PR que el
-> toggle de `/entrar`).
+> y respaldo por correo, ES/EN). Rama `claude/signup-login-first-visit-zqrt3b`, **PR #62** (aparte
+> del toggle de `/entrar`, que se mergeó antes en el PR #61).
+> ⚠️ **Config al mergear:** hacer **redeploy en Vercel** para que los checkouts nuevos salgan con
+> el `session_id` en el `success_url` (sin eso, `/gracias` sigue cayendo al modo correo).
 > - **Copy del modo contraseña:** provisional en la voz de la marca; Adrián lo ajusta si hace falta.
 > - **Cabo suelto de seguridad (menor, anotado):** la autorización de `claim-account` es "tener un
 >   `session_id` de Stripe pagado". Si alguien consiguiera un `session_id` ajeno (p. ej. historial
@@ -53,7 +55,7 @@
 >   Emi → `/nueva-clave/`) tal cual. El caso principal (recién pagado) ya no pasa por ahí: entra sin
 >   correo desde `/gracias`.
 
-## 🗓️ 24 jul 2026 — `/entrar`: toggle «Ya tengo contraseña» / «Es mi primera vez»
+## 🗓️ 24 jul 2026 — `/entrar`: toggle «Ya tengo contraseña» / «Es mi primera vez» ✅ MERGEADO (PR #61)
 > **Problema (Adrián):** la gente que paga y entra por primera vez **no crea su contraseña**.
 > La cuenta se crea SIN clave al pagar, así que la primera vez hay que pedir un enlace de un
 > solo uso (→ `/nueva-clave/`). Eso vivía en un **link chico al pie** («Crea o restablece tu
