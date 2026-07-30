@@ -92,12 +92,31 @@ buena.
 
 ### 3. Enviar el sitemap
 
-Search Console → **Sitemaps** → escribe `sitemap.xml` → **Enviar**.
-Debe quedar en "Correcto" con **2 URLs descubiertas**.
+> **Antes de nada: esto solo funciona con el PR ya mergeado y desplegado.** El
+> `sitemap.xml` se genera en el build, así que hasta que Vercel despliegue la
+> rama esa URL responde **404** y Search Console contesta *"No se ha podido
+> obtener el sitemap"*. Comprueba primero en el navegador que
+> <https://www.emilseriosacademy.com/sitemap.xml> muestra el XML con las 2 URLs.
+
+Search Console → **Sitemaps** → **Añadir un sitemap**. Qué escribir depende del
+tipo de propiedad, y es fácil equivocarse:
+
+| Tipo de propiedad | Qué muestra el campo | Qué escribir |
+|---|---|---|
+| **Dominio** (la recomendada) | Solo "Introduce la URL del sitemap", sin prefijo | La URL **completa**: `https://www.emilseriosacademy.com/sitemap.xml` |
+| **Prefijo de URL** | El dominio en gris a la izquierda | Solo `sitemap.xml` |
+
+Si el campo no lleva el dominio en gris delante, hay que poner la URL entera con
+`https://` y con `www` — escribir solo `sitemap.xml` ahí da error.
+
+Debe quedar en "Correcto" con **2 URLs descubiertas**. Si dice *"No se ha podido
+obtener"*, abre la URL en el navegador: si carga bien, suele bastar con esperar y
+pulsar de nuevo; si da 404, es que aún no está desplegada.
 
 ### 4. Pedir la indexación de las dos páginas
 
-No hace falta esperar a que Google pase solo. En la barra superior de Search
+No hace falta esperar a que Google pase solo. También requiere el deploy hecho
+(si la página no carga, Google no la indexa). En la barra superior de Search
 Console (**Inspección de URLs**), pega cada una y pulsa **Solicitar indexación**:
 
 - `https://www.emilseriosacademy.com/`
