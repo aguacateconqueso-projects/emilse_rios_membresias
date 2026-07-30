@@ -1,0 +1,26 @@
+# robots.txt — membresía "Estudiemos Juntos" (www.emilseriosacademy.com)
+#
+# Solo la carta de ventas es pública e indexable: / (ES) y /en/ (EN).
+# Todo lo demás es zona privada de miembros o maquinaria interna: además de
+# llevar <meta name="robots" content="noindex"> en su propio <head>, se bloquea
+# aquí para que Google ni gaste rastreo en ello.
+#
+# Ojo: Disallow impide RASTREAR, no indexar — una URL bloqueada puede aparecer
+# igual en Google si alguien la enlaza. Por eso las privadas llevan las dos
+# cosas: noindex en la página y Disallow acá.
+
+User-agent: *
+Allow: /
+
+# Zona de miembros y flujos de cuenta
+Disallow: /aula/
+Disallow: /panel/
+Disallow: /entrar/
+Disallow: /nueva-clave/
+Disallow: /gracias/
+Disallow: /salir/
+
+# Endpoints (checkout, webhook de Stripe, correos, admin)
+Disallow: /api/
+
+Sitemap: https://www.emilseriosacademy.com/sitemap.xml
