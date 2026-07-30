@@ -151,11 +151,84 @@ Y para la tarjeta al compartir y los datos estructurados:
 
 ---
 
+## Analítica (quién visita la carta y quién paga)
+
+Hay **dos sistemas a la vez, con papeles distintos**. Está hecho así a propósito,
+y por eso sus números **no van a cuadrar**:
+
+| | Vercel Web Analytics | Google Analytics 4 |
+|---|---|---|
+| Cookies | No | Sí |
+| Consentimiento | No hace falta | Obligatorio (banner) |
+| A quién mide | **A todos** | Solo a quien acepta |
+| Para qué | El dato honesto de cuánta gente llega | El detalle: fuentes, embudos, y enlazable con Search Console |
+
+Si un día Vercel dice 100 visitas y GA4 dice 60, la diferencia no es un fallo:
+son las 40 personas que rechazaron las cookies.
+
+### Cómo trata el consentimiento
+
+Google **no se carga en absoluto** hasta que alguien pulsa "Aceptar". No se usa
+el Consent Mode en `denied` (que aun así manda pings a Google): sencillamente no
+se descarga el script. Es lo más estricto y lo más fácil de explicar — sin
+aceptar, Google no se entera de la visita. La elección se guarda en
+`localStorage` (`erm_consent`) y no se vuelve a preguntar.
+
+**Si no hay `PUBLIC_GA_MEASUREMENT_ID`, el banner no se pinta.** Sin cookies no
+hay nada que consentir. Así el sitio puede vivir solo con Vercel, sin banner.
+
+### Dónde se mide
+
+Solo la superficie pública: la carta (`/`, `/en/`) y `/gracias` (la conversión).
+El aula, el panel y los flujos de cuenta se dejan **limpios a propósito**: son el
+producto ya pagado, no hace falta perseguir a miembros con un banner, y lo que
+pasa dentro lo cuenta Supabase mucho mejor. Para medir alguna página más, basta
+con importar `src/components/Analitica.astro` en ella.
+
+### Eventos
+
+| Evento | Cuándo | Nota |
+|---|---|---|
+| `inicio_checkout` | Clic en cualquiera de los 3 botones de pago de la carta | Lleva el idioma |
+| `purchase` | Llegada a `/gracias` **con** `session_id` | El `session_id` de Stripe prueba el cobro; sin él se llega también por el respaldo por correo, y eso no es una venta nueva |
+| `consentimiento` | Al aceptar o rechazar | Solo a Vercel; sirve para saber cuánta gente acepta |
+
+`purchase` va **sin importe**: el precio es dinámico (fundador/estándar) y la
+página de gracias no sabe cuál se cobró. En GA4 verás la conversión pero
+ingresos 0 — el dinero real está en Stripe, que es la fuente de verdad. Mejor sin
+dato que con uno inventado.
+
+### Puesta en marcha
+
+**Vercel:** nada que configurar en el código. En el proyecto de Vercel →
+**Analytics** → activarlo. Empieza a recoger datos en el siguiente deploy.
+
+**GA4:**
+1. <https://analytics.google.com> → crear propiedad → flujo de datos **Web** con
+   `https://www.emilseriosacademy.com`.
+2. Copiar el **ID de medición** (`G-XXXXXXXXXX`).
+3. Vercel → **Settings → Environment Variables** → `PUBLIC_GA_MEASUREMENT_ID`.
+4. **Redeploy** (se hornea en el build).
+5. Opcional pero recomendado: en GA4, **Administrar → Enlaces de Search
+   Console**. Es la ventaja real de tener GA4 además de Vercel: ver qué se busca
+   en Google y qué hace después esa gente.
+
+### ⚠️ Pendiente legal: no hay página de política de privacidad
+
+El footer de la carta tiene "Política de privacidad" y "Términos" como **enlaces
+muertos** (`href="#"`), y eso ya venía de antes. Con GA4 activo deja de ser un
+detalle: el RGPD exige poder consultar qué se recoge y quién lo trata. El banner
+explica lo esencial en un desplegable ("¿Qué exactamente?"), pero **no sustituye
+a la política**. Es texto legal sobre el negocio de Emi, así que lo tiene que
+decidir ella; cuando exista la página, hay que enlazarla desde el footer y desde
+el banner.
+
+---
+
 ## Fuera de alcance (decisiones de Emi, no de código)
 
-- **Google Analytics / Tag Manager**: no se instaló nada. Meter analítica
-  implica consentimiento de cookies (RGPD) y ese es otro trabajo. Search Console
-  ya da datos de búsqueda sin cookies ni banner.
+- **Google Tag Manager**: no se instaló. GA4 va directo; GTM solo compensa cuando
+  hay muchas etiquetas de terceros que gestionar sin tocar código.
 - **Google Business Profile**: es para negocios locales con dirección; una
   membresía online no aplica.
 - **Anuncios**: nada que ver con esto; el registro en Search Console es gratis y

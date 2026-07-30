@@ -14,6 +14,8 @@
 // NOTA: los botones de pago ya apuntan al checkout real de Stripe
 // (/api/checkout?lang=es|en, GET que redirige a la página de pago). El newsletter
 // apunta al alta real (Klaviyo/kmail).
+import Analitica from '../Analitica.astro';
+
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
@@ -946,5 +948,6 @@ const jsonLd = {
     });
   })();
 </script>
+<Analitica lang={lang} />
 </body>
 </html>

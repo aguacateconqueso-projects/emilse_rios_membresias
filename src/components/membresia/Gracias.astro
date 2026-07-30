@@ -12,6 +12,8 @@
 //    siempre — escribe su correo y le llega el enlace de acceso (→ /nueva-clave/).
 // Copy del respaldo por correo = definitivo de Emi. Copy del modo contraseña =
 // provisional (Adrián lo ajusta si hace falta).
+import Analitica from '../Analitica.astro';
+
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
@@ -345,5 +347,6 @@ const t = isEN ? {
   }
 </script>
 <script src="/membresia-ui.js" defer></script>
+<Analitica lang={lang} />
 </body>
 </html>

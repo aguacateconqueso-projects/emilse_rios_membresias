@@ -1,0 +1,216 @@
+---
+// Analítica de la carta de ventas — componente único, bilingüe (prop lang).
+//
+// DOS SISTEMAS, A PROPÓSITO, CON PAPELES DISTINTOS:
+//
+//   1. Vercel Web Analytics — SIEMPRE activo. No usa cookies ni guarda nada en el
+//      navegador, así que no necesita consentimiento y mide al 100% de las
+//      visitas. Es el dato honesto de "cuánta gente llega".
+//
+//   2. Google Analytics 4 — SOLO tras un "Aceptar" explícito. Usa cookies, así
+//      que en la UE hace falta consentimiento previo. Aquí no se carga con
+//      Consent Mode en "denied" (que igual manda pings): sencillamente NO se
+//      descarga el script de Google hasta que alguien acepta. Es lo más estricto
+//      y lo más fácil de razonar: sin aceptar, Google no se entera de la visita.
+//
+// Por eso los números de Vercel y los de GA4 NO van a cuadrar, y está bien:
+// Vercel ve a todos, GA4 solo a quien acepta. Si un día bailan mucho, la
+// diferencia es justo la gente que rechaza.
+//
+// Si no hay `PUBLIC_GA_MEASUREMENT_ID` configurada, GA4 no existe y el banner de
+// cookies NO se pinta: sin cookies no hay nada que consentir. Así el sitio puede
+// vivir perfectamente solo con Vercel.
+//
+// Dónde se incluye: solo en la superficie pública de marketing — la carta
+// (`/`, `/en/`) y la página de gracias (la conversión). El aula y el panel se
+// dejan limpios a propósito: son el producto ya pagado, ahí no hace falta
+// perseguir a nadie con un banner, y lo que pasa dentro lo cuenta Supabase.
+// Para medir alguna más, basta con importar este componente en su página.
+import Analytics from '@vercel/analytics/astro';
+
+interface Props { lang?: 'es' | 'en'; }
+const { lang = 'es' } = Astro.props;
+const isEN = lang === 'en';
+
+// ID de medición de GA4 (G-XXXXXXXXXX). Va con prefijo PUBLIC_ porque se usa en
+// el navegador; no es un secreto (se ve en el HTML de cualquier web con GA).
+const GA_ID =
+  import.meta.env.PUBLIC_GA_MEASUREMENT_ID || process.env.PUBLIC_GA_MEASUREMENT_ID || '';
+
+const t = isEN ? {
+  text: 'We use our own cookies to understand how people find this page. Nothing is stored until you choose.',
+  detailsSummary: 'What exactly?',
+  detailsBody: 'If you accept, Google Analytics stores a cookie in your browser to tell repeat visits apart. If you decline, nothing is stored. Either way we count anonymous visits with Vercel, which uses no cookies and cannot identify you.',
+  accept: 'Accept',
+  reject: 'Decline',
+} : {
+  text: 'Usamos cookies para entender cómo llega la gente a esta página. No se guarda nada hasta que elijas.',
+  detailsSummary: '¿Qué exactamente?',
+  detailsBody: 'Si aceptas, Google Analytics guarda una cookie en tu navegador para distinguir visitas repetidas. Si rechazas, no se guarda nada. En ambos casos contamos visitas anónimas con Vercel, que no usa cookies y no puede identificarte.',
+  accept: 'Aceptar',
+  reject: 'Rechazar',
+};
+---
+
+{/* Vercel: sin cookies, siempre. No depende del consentimiento. */}
+<Analytics />
+
+{/* Puente con el script: lleva el ID de GA aunque no haya banner. */}
+<span id="erm-analytics" data-ga={GA_ID} hidden></span>
+
+{GA_ID && (
+  <div id="erm-cc" class="erm-cc" role="dialog" aria-live="polite" aria-label="Cookies" hidden>
+    <div class="erm-cc__box">
+      <div class="erm-cc__body">
+        <p class="erm-cc__txt">{t.text}</p>
+        <details class="erm-cc__more">
+          <summary>{t.detailsSummary}</summary>
+          <p>{t.detailsBody}</p>
+        </details>
+      </div>
+      <div class="erm-cc__btns">
+        <button type="button" class="erm-cc__btn erm-cc__btn--ghost" data-erm-consent="denied">{t.reject}</button>
+        <button type="button" class="erm-cc__btn" data-erm-consent="granted">{t.accept}</button>
+      </div>
+    </div>
+  </div>
+)}
+
+<style is:inline>
+  /* Paleta de la carta (tinta/crema/terracota). Estilos propios y con prefijo
+     `erm-cc` porque este componente entra en páginas con CSS distinto. */
+  .erm-cc {
+    position: fixed; inset: auto 0 0 0; z-index: 80;
+    padding: clamp(12px, 3vw, 20px);
+    display: flex; justify-content: center;
+    font-family: var(--font-body, system-ui, sans-serif);
+  }
+  .erm-cc[hidden] { display: none; }
+  .erm-cc__box {
+    width: min(720px, 100%);
+    background: #faf7f1; color: #17140f;
+    border: 1px solid rgba(23, 20, 15, .18);
+    box-shadow: 0 10px 34px rgba(23, 20, 15, .16);
+    padding: clamp(14px, 2.4vw, 20px);
+    display: flex; flex-wrap: wrap; gap: 12px 18px;
+    align-items: center; justify-content: space-between;
+  }
+  .erm-cc__body { flex: 1 1 340px; min-width: 0; }
+  .erm-cc__txt { margin: 0; font-size: .9375rem; line-height: 1.5; }
+  .erm-cc__more { margin-top: 6px; font-size: .8125rem; color: #6f6a61; }
+  .erm-cc__more summary { cursor: pointer; }
+  .erm-cc__more p { margin: 6px 0 0; line-height: 1.5; }
+  .erm-cc__btns { display: flex; gap: 10px; flex: 0 0 auto; }
+  .erm-cc__btn {
+    font: inherit; font-size: .875rem; font-weight: 600;
+    padding: 10px 18px; border: 1px solid #a94f2b;
+    background: #a94f2b; color: #faf7f1; cursor: pointer;
+    border-radius: 0; transition: background .18s ease, color .18s ease;
+  }
+  .erm-cc__btn:hover { background: #8f4222; border-color: #8f4222; }
+  .erm-cc__btn--ghost { background: transparent; color: #17140f; border-color: rgba(23, 20, 15, .32); }
+  .erm-cc__btn--ghost:hover { background: rgba(23, 20, 15, .07); color: #17140f; }
+  .erm-cc__btn:focus-visible { outline: 2px solid #17140f; outline-offset: 2px; }
+  @media (max-width: 520px) {
+    .erm-cc__box { flex-direction: column; align-items: stretch; }
+    /* En columna, el `flex: 1 1 340px` del texto pasaría a gobernar la ALTURA y
+       estiraría la caja media pantalla. Aquí la altura la manda el contenido. */
+    .erm-cc__body { flex: 0 0 auto; }
+    .erm-cc__btns { justify-content: stretch; }
+    .erm-cc__btn { flex: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) { .erm-cc__btn { transition: none; } }
+</style>
+
+<script>
+  // Este script SÍ lo empaqueta Astro (no lleva is:inline), para poder importar
+  // el `track` oficial de Vercel en vez de tocar internos como `window.va`.
+  import { track } from '@vercel/analytics';
+
+  const CONSENT_KEY = 'erm_consent';           // 'granted' | 'denied'
+  const bridge = document.getElementById('erm-analytics');
+  const GA_ID = bridge?.dataset.ga || '';
+
+  // --- GA4: se descarga solo si hay consentimiento -------------------------
+  let gaReady = false;
+  function loadGA() {
+    if (gaReady || !GA_ID) return;
+    gaReady = true;
+    const s = document.createElement('script');
+    s.async = true;
+    s.src = `https://www.googletagmanager.com/gtag/js?id=${GA_ID}`;
+    document.head.appendChild(s);
+    // @ts-expect-error gtag se define aquí, no hay tipos
+    window.dataLayer = window.dataLayer || [];
+    // @ts-expect-error idem
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    // @ts-expect-error idem
+    window.gtag('js', new Date());
+    // @ts-expect-error idem
+    window.gtag('config', GA_ID, { anonymize_ip: true });
+    // Los eventos ocurridos antes de aceptar se quedan sin mandar a Google, a
+    // propósito: no se puede reconstruir a posteriori lo que no se consintió.
+  }
+
+  function consent(): string | null {
+    try { return localStorage.getItem(CONSENT_KEY); } catch { return null; }
+  }
+
+  // --- Un solo punto de envío para los dos sistemas ------------------------
+  // Vercel recibe SIEMPRE (no usa cookies); Google solo si se aceptó.
+  function ev(name: string, params: Record<string, any> = {}) {
+    try { track(name, params); } catch {}
+    if (gaReady) {
+      try { (window as any).gtag('event', name, params); } catch {}
+    }
+  }
+
+  // --- Banner --------------------------------------------------------------
+  const banner = document.getElementById('erm-cc');
+  if (GA_ID) {
+    const choice = consent();
+    if (choice === 'granted') loadGA();
+    else if (choice !== 'denied' && banner) banner.hidden = false;
+
+    banner?.addEventListener('click', (e) => {
+      const btn = (e.target as HTMLElement)?.closest<HTMLElement>('[data-erm-consent]');
+      if (!btn) return;
+      const value = btn.dataset.ermConsent === 'granted' ? 'granted' : 'denied';
+      try { localStorage.setItem(CONSENT_KEY, value); } catch {}
+      banner.hidden = true;
+      if (value === 'granted') loadGA();
+      // El propio consentimiento se registra en Vercel (sin cookies): así se ve
+      // cuánta gente acepta y se entiende el hueco entre los dos sistemas.
+      ev('consentimiento', { valor: value });
+    });
+  }
+
+  // --- Eventos del embudo --------------------------------------------------
+  // 1. Clic en cualquier botón de pago de la carta (los tres apuntan al
+  //    checkout). Se escucha delegado porque el enlace navega fuera.
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement)?.closest<HTMLAnchorElement>('a[href*="/api/checkout"]');
+    if (!a) return;
+    ev('inicio_checkout', { idioma: document.documentElement.lang || 'es' });
+  });
+
+  // 2. Llegada a /gracias CON session_id: es la prueba de que Stripe cobró.
+  //    Sin session_id se llega también por el respaldo por correo, y eso no es
+  //    una venta nueva — por eso no cuenta.
+  if (location.pathname.startsWith('/gracias')) {
+    const sessionId = new URLSearchParams(location.search).get('session_id');
+    if (sessionId) {
+      // Guarda contra recargas de la misma pestaña: un pago, un evento.
+      const guard = `erm_purchase_${sessionId}`;
+      let alreadySent = false;
+      try { alreadySent = sessionStorage.getItem(guard) === '1'; } catch {}
+      if (!alreadySent) {
+        try { sessionStorage.setItem(guard, '1'); } catch {}
+        // Sin `value`: el precio es dinámico (fundador/estándar) y la página de
+        // gracias no sabe cuál se cobró. El importe real vive en Stripe, que es
+        // la fuente de verdad; mejor sin dato que con uno inventado.
+        ev('purchase', { transaction_id: sessionId, currency: 'USD' });
+      }
+    }
+  }
+</script>

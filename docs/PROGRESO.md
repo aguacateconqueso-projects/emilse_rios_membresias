@@ -3,7 +3,55 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 30 jul 2026 — Registro de la web en Google (la web NUNCA se dio de alta)
+## 🗓️ 30 jul 2026 — Analítica: Vercel (sin cookies) + GA4 (con consentimiento)
+> Segundo paso tras el registro en Google. **Dos sistemas a la vez, a propósito**, porque miden
+> cosas distintas:
+> - **Vercel Web Analytics** — siempre activo, sin cookies, no necesita consentimiento → mide al
+>   **100%** de las visitas. Es el dato honesto de "cuánta gente llega".
+> - **GA4** — solo tras un "Aceptar" explícito. Más detalle (fuentes, embudos) y **enlazable con
+>   Search Console**, que es la ventaja real de tenerlo además de Vercel: ver qué se busca en
+>   Google y qué hace después esa gente.
+>
+> **Sus números NO van a cuadrar y está bien:** si Vercel dice 100 y GA4 dice 60, esos 40 son
+> quienes rechazaron. Conviene saberlo antes de asustarse.
+>
+> **Decisión sobre el consentimiento:** Google **no se descarga en absoluto** hasta aceptar. NO se
+> usó Consent Mode en `denied` (que aun así manda pings a Google): sin aceptar, Google no se entera
+> de la visita. Más estricto y mucho más fácil de explicar. La elección va en `localStorage`
+> (`erm_consent`) y no se vuelve a preguntar.
+>
+> **Interruptor:** sin `PUBLIC_GA_MEASUREMENT_ID` **no hay GA4 y el banner NO se pinta** (sin
+> cookies no hay nada que consentir). El sitio puede vivir solo con Vercel, sin banner.
+>
+> **Dónde se mide:** solo la carta (`/`, `/en/`) y `/gracias` (la conversión). Aula, panel y flujos
+> de cuenta se dejan **limpios a propósito**: es el producto ya pagado, no hay por qué perseguir a
+> los miembros con un banner, y lo de dentro lo cuenta Supabase mejor. Para añadir una página,
+> basta importar `src/components/Analitica.astro`.
+>
+> **Eventos:** `inicio_checkout` (clic en los botones de pago), `purchase` (llegada a `/gracias`
+> **con** `session_id` — sin él se llega por el respaldo por correo y eso no es venta nueva; guarda
+> en `sessionStorage` contra recargas) y `consentimiento` (solo a Vercel, para ver cuánta gente
+> acepta). `purchase` va **sin importe**: el precio es dinámico y `/gracias` no sabe cuál se cobró
+> → en GA4 se verá la conversión con ingresos 0, y el dinero real vive en Stripe. Mejor sin dato
+> que con uno inventado.
+>
+> **Probado en navegador de verdad** (Chromium), 17 comprobaciones: banner ES/EN, que Google **no**
+> cargue antes de aceptar, que **sí** cargue al aceptar, que **nunca** cargue tras rechazar (ni al
+> recargar), que no vuelva a preguntar, que el aula no lleve banner, y que la compra se cuente solo
+> con `session_id` y una sola vez. **Bug encontrado y arreglado en el proceso:** en móvil la caja
+> se estiraba media pantalla — al pasar a columna, el `flex: 1 1 340px` del texto gobernaba la
+> ALTURA.
+>
+> **⬜ Falta que lo haga Adrián:** activar Analytics en el proyecto de Vercel, crear la propiedad
+> GA4 y poner `PUBLIC_GA_MEASUREMENT_ID` en Vercel + redeploy (sin eso no hay GA4 ni banner), y
+> opcionalmente enlazar GA4 con Search Console. Paso a paso en `docs/GOOGLE.md`.
+>
+> **⚠️ Cabo suelto legal (ya venía de antes, ahora importa más):** el footer de la carta tiene
+> "Política de privacidad" y "Términos" como **enlaces muertos** (`href="#"`). Con GA4 activo el
+> RGPD pide poder consultar qué se recoge y quién lo trata. El banner lo explica en un desplegable,
+> pero **no sustituye a la política**. Es texto legal sobre el negocio de Emi → lo decide ella.
+
+## 🗓️ 30 jul 2026 — Registro de la web en Google (la web NUNCA se dio de alta) ✅ MERGEADO (PR #67)
 > **Se nos había pasado:** el sitio nunca se registró en Google. No había `robots.txt`, ni
 > sitemap, ni `canonical`, ni `hreflang`, ni propiedad en Search Console. Google podía llegar
 > solo, pero sin saber cuál es el dominio bueno, cuál es la versión ES y cuál la EN, ni qué
