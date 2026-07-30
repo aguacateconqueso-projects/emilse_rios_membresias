@@ -3,6 +3,58 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 30 jul 2026 — Registro de la web en Google (la web NUNCA se dio de alta)
+> **Se nos había pasado:** el sitio nunca se registró en Google. No había `robots.txt`, ni
+> sitemap, ni `canonical`, ni `hreflang`, ni propiedad en Search Console. Google podía llegar
+> solo, pero sin saber cuál es el dominio bueno, cuál es la versión ES y cuál la EN, ni qué
+> páginas son privadas.
+>
+> **Bomba encontrada de paso:** `astro.config.mjs` seguía con `site:
+> 'https://membresias.emilserios.com'`, el dominio **abandonado** (era el cabo suelto anotado el
+> 18 jul). De ahí salen canonical y sitemap → estaba listo para pedirle a Google que indexara un
+> dominio que ni existe. Ahora apunta al canónico **`https://www.emilseriosacademy.com`**, con
+> `www` (el ápice pelado responde 308 en Vercel; misma trampa que tumbó el webhook de Stripe).
+> Se corrigieron también el `README.md` y el `PUBLIC_SITE_URL` de `.env.example`, que aún
+> repetían el dominio viejo / el ápice sin `www`.
+>
+> **Lo que hace el código ahora:**
+> - `public/robots.txt` — abre `/` y `/en/`; cierra `/aula/`, `/panel/`, `/entrar/`, `/gracias/`,
+>   `/nueva-clave/`, `/salir/` y `/api/`; declara el sitemap. (Las privadas ya llevaban `noindex`
+>   en su `<head>`; se dejan **las dos** cosas porque `Disallow` impide rastrear, no indexar.)
+> - `src/pages/sitemap.xml.ts` — sitemap a mano, horneado en el build (endpoint estático, sin
+>   función serverless). Solo las 2 URLs públicas, cada una declarando los `hreflang` de ambas +
+>   `x-default`. No se usó `@astrojs/sitemap` porque metería todas las páginas privadas salvo que
+>   se filtren una a una, y no da los alternates.
+> - `Landing.astro` — `canonical`, `hreflang` es/en/x-default, `robots: index, follow,
+>   max-image-preview:large`, Open Graph + Twitter (tarjeta con la foto de Emi al compartir) y
+>   **JSON-LD**: `WebSite` + `Person` (Emilse) + `FAQPage` con las 9 preguntas frecuentes que ya
+>   están en la carta (reutiliza el texto visible; si no coincide, Google lo descarta).
+> - `GOOGLE_SITE_VERIFICATION` (opcional, en Vercel) → pinta el meta de verificación de propiedad.
+>
+> **Decisión: NO se marcó el precio** (`Product`/`Offer`). La carta cambia el precio sola en el
+> cliente al vencer la ventana de fundador, sin redeploy; un precio horneado en el build quedaría
+> desfasado, y datos estructurados con precio distinto al visible es justo lo que Google penaliza
+> (puede costar la elegibilidad de TODOS los resultados enriquecidos). Si algún día el precio deja
+> de ser dinámico, se añade.
+>
+> **Parte manual** (no se puede desde el repo: exige cuenta de Google + DNS). Paso a paso en
+> **`docs/GOOGLE.md`**. (1) Propiedad creada en Search Console y (2) **✅ verificada por DNS TXT**
+> el 30 jul — como se verificó por DNS, la variable `GOOGLE_SITE_VERIFICATION` **no hace falta**
+> (queda vacía en Vercel y el meta simplemente no se pinta). ⚠️ No borrar el registro TXT: Google
+> lo revisa cada tanto y si desaparece se pierde el acceso a la propiedad. **⬜ Falta, ya con el
+> deploy hecho:** (3) enviar el sitemap, (4) pedir indexación de `/` y `/en/`, (5) revisar a la
+> semana.
+>
+> ⚠️ **Trampa del paso 3** (nos mordió al primer intento): el `sitemap.xml` se genera en el
+> **build**, así que antes del deploy esa URL da 404 y Search Console responde "No se ha podido
+> obtener el sitemap". Y en una propiedad de tipo **Dominio** el campo no lleva el dominio en gris
+> delante, así que hay que escribir la **URL completa**
+> (`https://www.emilseriosacademy.com/sitemap.xml`); escribir solo `sitemap.xml` —que es lo que
+> vale en las propiedades de tipo *Prefijo de URL*— da error.
+>
+> Verificado en build local: las 2 URLs salen en el sitemap, las 7 páginas privadas siguen con
+> `noindex` y el JSON-LD parsea en ES y EN. Rama `claude/google-web-registration-ztpemk`.
+
 ## 🗓️ 24 jul 2026 — Fix: el código de acceso es de **8 dígitos**, no 6 (copy + truncado) ✅ MERGEADO (PR #65)
 > Al probar el flujo nuevo, Adrián vio que el código que llega es de **8 dígitos**, no 6. Dos
 > problemas: (1) el copy decía "6 dígitos" y (2) —más grave— el input tenía `maxlength="6"`, así
@@ -246,6 +298,7 @@
 > `site: 'https://membresias.emilserios.com'` (el dominio abandonado). No afecta el webhook
 > —`siteOrigin()`/`PUBLIC_SITE_URL` resuelven el host real— pero conviene actualizarlo al
 > dominio canónico `www.emilseriosacademy.com` para canonical/sitemap.
+> **✅ RESUELTO el 30 jul** con el registro en Google (ver la entrada de ese día).
 
 ## 🗓️ Trabajo de hoy (16 jul 2026) — checklist en curso
 > Un cambio por rama/PR desde `main`, según el flujo con Adrián. La marca del checklist

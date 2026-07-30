@@ -8,7 +8,7 @@
 | Tema | Decisión |
 |---|---|
 | Arquitectura | App propia e independiente. WordPress + Tutor LMS **no se tocan**. |
-| URL | `membresias.emilserios.com` (subdominio, CNAME hacia Vercel). |
+| URL | `www.emilseriosacademy.com` (dominio propio; `www` es el canónico, el ápice responde 308). Se abandonó `membresias.emilserios.com`. |
 | Frontend | Astro (este repo). |
 | Backend / BD / Auth / Archivos | Supabase (Postgres + Auth + Storage). |
 | Pagos | Stripe (suscripción recurrente + portal de cliente + webhooks). |

@@ -20,6 +20,25 @@ const isEN = lang === 'en';
 const other = isEN ? '/' : '/en/';
 const newsHref = 'https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=SaE8Px';
 
+// ---------------------------------------------------------------------------
+// SEO — lo que Google necesita para indexar esta carta (ver docs/GOOGLE.md).
+// El origen sale de `site` en astro.config.mjs (canónico CON `www`; el ápice
+// pelado responde 308 en Vercel). Las rutas se derivan del idioma en vez de
+// leer Astro.url para que no dependan de la barra final.
+// ---------------------------------------------------------------------------
+const SITE = Astro.site?.origin ?? 'https://www.emilseriosacademy.com';
+const urlES = `${SITE}/`;
+const urlEN = `${SITE}/en/`;
+const canonical = isEN ? urlEN : urlES;
+// Imagen de las tarjetas al compartir (WhatsApp, X, Facebook…). Es el retrato
+// de Emi que ya usa el hero: vertical, así que las redes lo recortan al centro.
+const ogImage = `${SITE}/img/foto.jpg`;
+// Token de propiedad de Google Search Console. Se pone en Vercel como
+// GOOGLE_SITE_VERIFICATION (solo el `content` del meta, no la etiqueta entera).
+// Si falta, no se pinta nada: la verificación por DNS TXT no necesita esto.
+const googleVerification =
+  process.env.GOOGLE_SITE_VERIFICATION || import.meta.env.GOOGLE_SITE_VERIFICATION || '';
+
 // Fin de la ventana del precio de fundador. Es la MISMA variable que usa el
 // checkout (src/lib/stripe.ts): así la carta y el cobro real deciden con el
 // mismo dato. El valor se hornea en el HTML en el build; el flip visual entre
@@ -234,6 +253,54 @@ const t = isEN ? {
   footLegal: '© 2026 Emilse Rios',
   enter: 'Entrar',
 };
+
+// ---------------------------------------------------------------------------
+// Datos estructurados (JSON-LD). Le explican a Google QUÉ es esta página:
+//   · WebSite  → el sitio y su idioma.
+//   · Person   → Emilse, la autora, enlazada a su web principal.
+//   · FAQPage  → las preguntas frecuentes que ya están en la carta. Es la única
+//     que puede ganar un resultado enriquecido (las preguntas desplegables bajo
+//     el enlace en Google), y por eso reutiliza EXACTAMENTE el mismo texto
+//     visible: si el marcado no coincide con lo que se ve, Google lo descarta.
+//
+// A propósito NO se marca el precio (Product/Offer): la carta lo cambia sola en
+// el cliente cuando vence la ventana de fundador, sin redeploy, así que un
+// precio horneado aquí quedaría desfasado — y un precio que no coincide con el
+// visible es justo lo que Google castiga. Ver docs/GOOGLE.md.
+const faqEntries = t.faq.filter((f: any) => typeof f.a === 'string');
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE}/#website`,
+      url: canonical,
+      name: t.metaTitle,
+      description: t.metaDesc,
+      inLanguage: t.htmlLang,
+      publisher: { '@id': `${SITE}/#emilse` },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${SITE}/#emilse`,
+      name: 'Emilse Rios',
+      jobTitle: isEN ? 'Double bassist and teacher' : 'Contrabajista y profesora',
+      image: ogImage,
+      url: 'https://emilserios.com',
+      sameAs: ['https://emilserios.com'],
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${canonical}#faq`,
+      inLanguage: t.htmlLang,
+      mainEntity: faqEntries.map((f: any) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
 ---
 <!DOCTYPE html>
 <html lang={t.htmlLang}>
@@ -264,6 +331,37 @@ const t = isEN ? {
 <title>{t.metaTitle}</title>
 <meta name="description" content={t.metaDesc} />
 <link rel="icon" href="https://emilserios.com/wp-content/uploads/2025/06/cropped-emilserios-32x32.png" sizes="32x32" />
+
+<!-- ---------------------------------------------------------------------
+     Registro en Google. Esta carta (/ en ES y /en/ en EN) es LA única página
+     pública del sitio; el resto lleva noindex. Ver docs/GOOGLE.md.
+     --------------------------------------------------------------------- -->
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<link rel="canonical" href={canonical} />
+<!-- Las dos versiones son la misma página en dos idiomas, no contenido
+     duplicado. Cada una declara a las dos (Google lo exige) + x-default. -->
+<link rel="alternate" hreflang="es" href={urlES} />
+<link rel="alternate" hreflang="en" href={urlEN} />
+<link rel="alternate" hreflang="x-default" href={urlES} />
+{googleVerification && <meta name="google-site-verification" content={googleVerification} />}
+
+<!-- Tarjeta al compartir el enlace (WhatsApp, X, Facebook, LinkedIn…) -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Estudiemos Juntos" />
+<meta property="og:title" content={t.metaTitle} />
+<meta property="og:description" content={t.metaDesc} />
+<meta property="og:url" content={canonical} />
+<meta property="og:image" content={ogImage} />
+<meta property="og:image:alt" content={t.photoAlt} />
+<meta property="og:locale" content={isEN ? 'en_US' : 'es_ES'} />
+<meta property="og:locale:alternate" content={isEN ? 'es_ES' : 'en_US'} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={t.metaTitle} />
+<meta name="twitter:description" content={t.metaDesc} />
+<meta name="twitter:image" content={ogImage} />
+
+<script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
+
 <link rel="stylesheet" href="/colors_and_type.css" />
 <style is:inline>
   /* ---------------------------------------------------------------------------
