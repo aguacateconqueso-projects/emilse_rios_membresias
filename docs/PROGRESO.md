@@ -37,15 +37,25 @@
 > (puede costar la elegibilidad de TODOS los resultados enriquecidos). Si algún día el precio deja
 > de ser dinámico, se añade.
 >
-> **⬜ Falta que lo haga Adrián a mano** (no se puede desde el repo: exige cuenta de Google + DNS).
-> Paso a paso en **`docs/GOOGLE.md`**: (1) crear la propiedad en Search Console —tipo **Dominio**,
-> que cubre `www` y ápice— (2) verificarla por **DNS TXT** (recomendado; la alternativa es la
-> variable `GOOGLE_SITE_VERIFICATION` + redeploy), (3) enviar `sitemap.xml`, (4) pedir indexación
-> de `/` y `/en/`, (5) revisar a la semana. Verificado en build local: las 2 URLs salen en el
-> sitemap, las 7 páginas privadas siguen con `noindex` y el JSON-LD parsea en ES y EN.
-> Rama `claude/google-web-registration-ztpemk`.
+> **Parte manual** (no se puede desde el repo: exige cuenta de Google + DNS). Paso a paso en
+> **`docs/GOOGLE.md`**. (1) Propiedad creada en Search Console y (2) **✅ verificada por DNS TXT**
+> el 30 jul — como se verificó por DNS, la variable `GOOGLE_SITE_VERIFICATION` **no hace falta**
+> (queda vacía en Vercel y el meta simplemente no se pinta). ⚠️ No borrar el registro TXT: Google
+> lo revisa cada tanto y si desaparece se pierde el acceso a la propiedad. **⬜ Falta, ya con el
+> deploy hecho:** (3) enviar el sitemap, (4) pedir indexación de `/` y `/en/`, (5) revisar a la
+> semana.
+>
+> ⚠️ **Trampa del paso 3** (nos mordió al primer intento): el `sitemap.xml` se genera en el
+> **build**, así que antes del deploy esa URL da 404 y Search Console responde "No se ha podido
+> obtener el sitemap". Y en una propiedad de tipo **Dominio** el campo no lleva el dominio en gris
+> delante, así que hay que escribir la **URL completa**
+> (`https://www.emilseriosacademy.com/sitemap.xml`); escribir solo `sitemap.xml` —que es lo que
+> vale en las propiedades de tipo *Prefijo de URL*— da error.
+>
+> Verificado en build local: las 2 URLs salen en el sitemap, las 7 páginas privadas siguen con
+> `noindex` y el JSON-LD parsea en ES y EN. Rama `claude/google-web-registration-ztpemk`.
 
-## 🗓️ 24 jul 2026 — Fix: el código de acceso es de **8 dígitos**, no 6 (copy + truncado)
+## 🗓️ 24 jul 2026 — Fix: el código de acceso es de **8 dígitos**, no 6 (copy + truncado) ✅ MERGEADO (PR #65)
 > Al probar el flujo nuevo, Adrián vio que el código que llega es de **8 dígitos**, no 6. Dos
 > problemas: (1) el copy decía "6 dígitos" y (2) —más grave— el input tenía `maxlength="6"`, así
 > que **cortaba el código a 6 y `verifyOtp` siempre fallaba** (el flujo estaba roto en prod).
@@ -55,7 +65,7 @@
 > desalinearse, y la guarda de longitud es solo una red — `verifyOtp` es quien valida. Sin BD ni
 > variables. Rama `claude/signup-login-first-visit-zqrt3b`.
 
-## 🗓️ 24 jul 2026 — `/entrar → «Es mi primera vez»`: crear la contraseña EN LA MISMA pantalla (código por correo)
+## 🗓️ 24 jul 2026 — `/entrar → «Es mi primera vez»`: crear la contraseña EN LA MISMA pantalla (código por correo) ✅ MERGEADO (PR #64)
 > **Pedido de Adrián:** que en «Es mi primera vez» se pueda **crear la contraseña ahí mismo**, sin
 > el ida-y-vuelta de "te mando un enlace → abrís el correo → clic → caes en otra página → creás la
 > clave". Seguía con el enlace por correo → se rehízo.
