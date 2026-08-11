@@ -3,6 +3,57 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 11 ago 2026 — Copy nuevo de Emi (paso 1 del cambio de precio a 65 €) — SOLO TEXTO
+> Adrián pasó un PDF de Emi («Textos de membresía para cambiar el precio a 65€») con cambios de
+> copy de la carta. **Este PR es solo el texto**; el cambio de precio real (Stripe + tarjeta de
+> precio) es el paso siguiente y va aparte. Solo se tocó `src/components/membresia/Landing.astro`
+> (los dos idiomas, ES y EN, viven en el mismo objeto `t`); ni BD, ni variables, ni checkout.
+>
+> **Los cuatro cambios:**
+> 1. **CTA temprano nuevo**, justo debajo de la apertura («…los 30 minutos que sí tienes»):
+>    párrafo que resume qué es la membresía —primera para contrabajistas, arco alemán, un
+>    concepto al mes, un ejercicio a la semana— + botón «Acá te unes». Es para quien ya se
+>    convenció con el gancho y no va a leer la carta entera. Claves nuevas `t.pitch` + bloque
+>    `.pitch` en el HTML; el botón reutiliza `t.pay`/`t.payHref`, así que ahora hay **4 botones
+>    de pago** en la página en vez de 3.
+> 2. **Párrafo justo antes del cuadro de precio** (`t.community`) reescrito: «Los cursos se
+>    terminan. Los libros de métodos también. Esta membresía no…». Más corto y directo que el
+>    anterior; mantiene el mensaje de acompañamiento («la contesto yo personalmente»).
+> 3. **FAQ:** entra **«¿Puedo pagar en mi moneda?» como pregunta nº 1** (Stripe detecta la
+>    moneda de la tarjeta; €65/mes ≈ $75 USD; el precio se congela al entrar), y se **reescribe
+>    la del arco francés** (antes nº 2, ahora nº 3). ⚠️ **Ojo, es un cambio de fondo, no de
+>    forma:** la respuesta vieja decía que la membresía **sí** servía para arco francés y que Emi
+>    grabaría los videos con ambas técnicas; la nueva dice que está diseñada **solo para arco
+>    alemán** (los conceptos de mano izquierda sirven igual, los golpes de arco no). Lo pidió Emi
+>    así. El JSON-LD de `FAQPage` se genera desde esta misma lista, o sea que Google ve el texto
+>    nuevo sin tocar nada más.
+> 4. **Cuadro «No es para ti si…»:** se sustituye el **último** punto («No tienes un par de horas
+>    a la semana…») por **dos** nuevos — el de abrir espacio en la agenda («entonces no te
+>    molestes en entrar») y el de la paciencia para estudiar lento. Nota de Emi en el PDF: «con
+>    la finalidad de crear autoridad mediante el no». La columna pasa de 3 a 4 puntos.
+>
+> **Traducción:** el PDF traía el inglés hecho para el CTA nuevo y para las dos FAQ (se copió
+> literal). El párrafo del precio y los dos puntos del «No es para ti» venían **solo en español**
+> → los traduje yo siguiendo la voz del resto de la carta. Conviene que Emi les dé el visto bueno.
+>
+> **⚠️ Desalineación temporal de precio (IMPORTANTE antes de mergear):** la FAQ nueva dice
+> **«€65 al mes, unos $75 USD»** pero la tarjeta de precio sigue mostrando **$80** y el checkout
+> sigue cobrando el Price ID estándar de $80. Es esperado —el cambio de precio es el paso 2—
+> pero significa que **si esto se mergea solo, producción queda con dos precios distintos en la
+> misma página**. Opciones: mergear los dos cambios juntos, o mergear este y hacer el de precio
+> enseguida. Lo decide Adrián.
+>
+> **Pendiente relacionado (para el paso 2):** hoy la carta habla en **dólares** ($57/$80) y el
+> copy nuevo de Emi habla en **euros** (€65). Al cambiar el precio hay que decidir la moneda de
+> la tarjeta y que cuadre con lo que Stripe cobra de verdad; recordar que en Stripe **los precios
+> son inmutables** (se crea un Price nuevo y se apunta `STRIPE_PRICE_STANDARD` en Vercel, ver la
+> entrada del 23 jul). Además la etiqueta heredada `standard_77` de la BD sigue ahí.
+>
+> **Verificado:** `npm run build` ok y comprobado **en Chromium de verdad** (1280×900 y 390×844,
+> ES y EN): el CTA nuevo se ve bien en escritorio y móvil, 4 botones de pago, 4 puntos en «No es
+> para ti», 11 preguntas con la de la moneda de primera, sin desbordes horizontales, y el JSON-LD
+> de la FAQ parsea con las preguntas nuevas en los dos idiomas.
+
 ## 🗓️ 30 jul 2026 — Analítica: Vercel (sin cookies) + GA4 (con consentimiento)
 > Segundo paso tras el registro en Google. **Dos sistemas a la vez, a propósito**, porque miden
 > cosas distintas:
