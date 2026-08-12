@@ -112,12 +112,16 @@ const t = isEN ? {
   titleEcho: 'Estudiemos juntos',
   pricePer: '/mo',
   // Dos estados: fundador (dentro de la ventana) y estándar (cuando cierra).
+  // La ventana de fundador CERRÓ el 23 jul 2026, así que hoy solo se pinta el
+  // estándar; el copy de fundador ($57) se conserva tal cual quedó, inerte, y no
+  // se repinta a menos que alguien vuelva a poner STRIPE_FOUNDER_UNTIL en futuro
+  // (en cuyo caso habría que revisar también ese importe).
   priceLabelFounder: 'Founder price',
   priceLabelStd: 'Price',
   priceAmountFounder: '$57',
-  priceAmountStd: '$80',
+  priceAmountStd: '€65',
   priceInBoxLeadFounder: 'The membership opens at founder price: $57/month, only from July 16 to 23.',
-  priceInBoxLeadStd: 'The membership is $80/month.',
+  priceInBoxLeadStd: 'The membership is €65/month.',
   priceInBoxRestFounder: 'That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
   priceInBoxRestStd: 'That price freezes for you: the day it goes up, you keep paying the same for as long as you stay in.',
   priceFeatures: [
@@ -218,12 +222,16 @@ const t = isEN ? {
   titleEcho: 'Let’s study together',
   pricePer: '/mes',
   // Dos estados: fundador (dentro de la ventana) y estándar (cuando cierra).
+  // La ventana de fundador CERRÓ el 23 jul 2026, así que hoy solo se pinta el
+  // estándar; el copy de fundador ($57) se conserva tal cual quedó, inerte, y no
+  // se repinta a menos que alguien vuelva a poner STRIPE_FOUNDER_UNTIL en futuro
+  // (en cuyo caso habría que revisar también ese importe).
   priceLabelFounder: 'Precio de fundador',
   priceLabelStd: 'Precio',
   priceAmountFounder: '$57',
-  priceAmountStd: '$80',
+  priceAmountStd: '€65',
   priceInBoxLeadFounder: 'La membresía abre con precio de fundador: $57 al mes, solo del 16 al 23 de julio.',
-  priceInBoxLeadStd: 'La membresía cuesta $80 al mes.',
+  priceInBoxLeadStd: 'La membresía cuesta €65 al mes.',
   priceInBoxRestFounder: 'Ese precio se congela para ti: aunque suba (y va a subir), tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
   priceInBoxRestStd: 'Ese precio se congela para ti: el día que suba, tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
   priceFeatures: [
@@ -533,7 +541,7 @@ const jsonLd = {
   @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
 
   /* 7 · Tarjeta de precio — formato de dos columnas (referencia de Emi):
-     izquierda = nombre + $57 + nota; derecha = qué incluye + botón. Cuadrada
+     izquierda = nombre + precio + nota; derecha = qué incluye + botón. Cuadrada
      (coherente con la página) y se invierte de color al pasar el cursor. */
   .plan { margin-top: clamp(40px, 8vw, 60px); }
   .pricecard { width: min(940px, 96vw);

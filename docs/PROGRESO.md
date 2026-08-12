@@ -3,6 +3,48 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 11 ago 2026 — Precio: $80 → **€65/mes** (paso 2, cierra el cambio) 🚀 VA A LIVE
+> Segunda mitad del cambio, en la **misma rama y el mismo PR** que el copy nuevo (entrada de
+> abajo), para que producción no quede ni un minuto con dos precios distintos en la misma página.
+>
+> **Ya hecho por Adrián (config, fuera del repo):** Price nuevo de **65 €/mes** creado en Stripe
+> sobre el mismo producto y `STRIPE_PRICE_STANDARD` apuntado a él en Vercel. Recordatorio de por
+> qué se crea uno nuevo: los Prices de Stripe son **inmutables**, no se edita el importe.
+>
+> **Lo que hace este cambio en código:** la tarjeta de precio de la carta tenía el importe escrito
+> a mano → pasa de `$80` a **`€65`** en los dos idiomas (`priceAmountStd` y `priceInBoxLeadStd`).
+> No hay lógica nueva: el mecanismo dinámico de la entrada del 23 jul sigue igual (dos estados de
+> copy, fundador/estándar, y un script en el cliente que elige según `STRIPE_FOUNDER_UNTIL`).
+> Se alinearon además los comentarios de `src/lib/stripe.ts` y `src/pages/api/checkout.ts` y la
+> documentación (`docs/STRIPE.md`, `docs/ARQUITECTURA.md`), que seguían citando $77/$80.
+>
+> **Ojo, cambia la MONEDA, no solo la cifra:** la carta pasa de hablar en **dólares** a hablar en
+> **euros**. Los miembros que ya pagan **siguen en su Price y su moneda** (Stripe congela el Price
+> de cada suscripción activa) — o sea que en el dashboard van a convivir suscripciones en USD y
+> en EUR. Es lo esperado, pero conviene saberlo antes de mirar los informes.
+>
+> **⬜ Falta que lo haga Adrián — Adaptive Pricing.** La FAQ nueva promete que Stripe "detecta
+> automáticamente la moneda de tu tarjeta y pagas en ella". **Eso no pasa por defecto:** el
+> checkout manda un único Price en una sola moneda. Hay que **activarlo en el dashboard de
+> Stripe** (Settings → Payments → Adaptive Pricing); no hace falta tocar código. Aplica a
+> suscripciones nuevas transfronterizas, solo con tarjeta/Link/Apple Pay/Google Pay, y el tipo de
+> cambio que ve el comprador lleva una **comisión de conversión del 2–4% que paga él**. Si Emi
+> prefiere no activarlo, hay que **suavizar esa respuesta de la FAQ** en `Landing.astro` — tal
+> como está hoy, sin Adaptive Pricing, la carta promete algo que el checkout no hace.
+>
+> **Copy de fundador ($57) inerte:** la ventana cerró el 23 jul 2026, así que ese estado ya no se
+> pinta nunca. Se dejó tal cual, con un comentario avisando de que si alguien vuelve a poner
+> `STRIPE_FOUNDER_UNTIL` en el futuro hay que revisar también ese importe.
+>
+> **Verificado en Chromium** (ES/EN, escritorio y móvil) leyendo el DOM **ya repintado** por el
+> script del cliente: la tarjeta dice `€65/mes` · `€65/mo`, el texto del cuadro cuadra, y la única
+> cifra de precio visible en toda la página es €65 (no quedan restos de $80 ni $57). `npm run
+> build` ok.
+>
+> ⚠️ **Sin credenciales de Stripe en este entorno**, así que el cobro real de 65 € **no está
+> probado end-to-end**: hay que hacer una compra de verdad (o de prueba) tras el deploy y
+> confirmar que Checkout muestra 65 € y que la fila de `subscriptions` queda `active`.
+
 ## 🗓️ 11 ago 2026 — Copy nuevo de Emi (paso 1 del cambio de precio a 65 €) — SOLO TEXTO
 > Adrián pasó un PDF de Emi («Textos de membresía para cambiar el precio a 65€») con cambios de
 > copy de la carta. **Este PR es solo el texto**; el cambio de precio real (Stripe + tarjeta de
@@ -36,18 +78,10 @@
 > literal). El párrafo del precio y los dos puntos del «No es para ti» venían **solo en español**
 > → los traduje yo siguiendo la voz del resto de la carta. Conviene que Emi les dé el visto bueno.
 >
-> **⚠️ Desalineación temporal de precio (IMPORTANTE antes de mergear):** la FAQ nueva dice
-> **«€65 al mes, unos $75 USD»** pero la tarjeta de precio sigue mostrando **$80** y el checkout
-> sigue cobrando el Price ID estándar de $80. Es esperado —el cambio de precio es el paso 2—
-> pero significa que **si esto se mergea solo, producción queda con dos precios distintos en la
-> misma página**. Opciones: mergear los dos cambios juntos, o mergear este y hacer el de precio
-> enseguida. Lo decide Adrián.
->
-> **Pendiente relacionado (para el paso 2):** hoy la carta habla en **dólares** ($57/$80) y el
-> copy nuevo de Emi habla en **euros** (€65). Al cambiar el precio hay que decidir la moneda de
-> la tarjeta y que cuadre con lo que Stripe cobra de verdad; recordar que en Stripe **los precios
-> son inmutables** (se crea un Price nuevo y se apunta `STRIPE_PRICE_STANDARD` en Vercel, ver la
-> entrada del 23 jul). Además la etiqueta heredada `standard_77` de la BD sigue ahí.
+> **~~⚠️ Desalineación temporal de precio~~ RESUELTA:** durante unas horas este cambio dejaba la
+> FAQ diciendo €65 y la tarjeta diciendo $80. Adrián pidió cerrarlo en el mismo PR → ver la
+> entrada de arriba (**cambio de precio a €65**), que va en esta misma rama. **No mergear esta
+> parte sola.**
 >
 > **Verificado:** `npm run build` ok y comprobado **en Chromium de verdad** (1280×900 y 390×844,
 > ES y EN): el CTA nuevo se ve bien en escritorio y móvil, 4 botones de pago, 4 puntos en «No es

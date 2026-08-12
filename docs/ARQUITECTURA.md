@@ -19,6 +19,11 @@
 ## 2. Modelo de negocio (reglas)
 
 ### Precio
+> ⚠️ Las cifras y fechas de abajo son las del **diseño original** (jun 2026) y ya
+> no son las vigentes. **Precio actual: €65/mes**, con la ventana de fundador
+> cerrada desde el 23 jul 2026. El histórico y el porqué de cada cambio están en
+> `docs/PROGRESO.md`; cómo se cambia, en `docs/STRIPE.md`.
+
 - **Fundador: $57 USD/mes** — solo si compran del **1 al 10 de julio**.
 - **Estándar: $77 USD/mes** — del **11 de julio** en adelante.
 - "Para siempre" = el $57 queda congelado **mientras la suscripción siga activa**.
@@ -170,7 +175,7 @@ Un trigger crea el `profile` automáticamente al registrarse un usuario.
   servidor llega con Stripe (webhook como función de Vercel, paso 5).
 
 ## 8. Flujo de Stripe
-- Dos *Prices* en Stripe: fundador ($57) y estándar ($77).
+- Dos *Prices* en Stripe: fundador ($57) y estándar (hoy **€65**; era $77 en el diseño original).
 - El checkout elige el price según la fecha (≤ 10 jul Madrid → fundador; si no → estándar).
 - Webhooks que actualizan `subscriptions`:
   `checkout.session.completed`, `customer.subscription.updated`,
