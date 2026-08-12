@@ -3,7 +3,19 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 11 ago 2026 — Precio: $80 → **€65/mes** (paso 2, cierra el cambio) 🚀 VA A LIVE
+## 🗓️ 11 ago 2026 — Ajuste: el párrafo del CTA nuevo, alineado a la izquierda
+> Adrián vio el CTA nuevo ya en producción y pidió corregir la alineación: yo había centrado el
+> párrafo para que acompañara a la apertura, pero **rompe la columna de lectura** — el resto del
+> cuerpo de la carta va alineado a la izquierda. Ahora: **la apertura (el subtítulo) sigue
+> centrada**, el párrafo del CTA se alinea **a la izquierda como el resto del texto**, y el botón
+> se queda centrado igual que los demás CTA.
+>
+> Una línea de CSS (`.pitch__p` pierde el `text-align: center`); no se toca el copy. Verificado en
+> Chromium midiendo el borde izquierdo real de los dos bloques: el párrafo del CTA y el cuerpo de
+> la carta arrancan en el **mismo píxel** (340 en escritorio, 23 en móvil de 390), la apertura
+> sigue en `center` y el botón sigue centrado. ES y EN. Rama nueva desde `main` (ya con el #69).
+
+## 🗓️ 11 ago 2026 — Precio: $80 → **€65/mes** (paso 2, cierra el cambio) ✅ MERGEADO (PR #69)
 > Segunda mitad del cambio, en la **misma rama y el mismo PR** que el copy nuevo (entrada de
 > abajo), para que producción no quede ni un minuto con dos precios distintos en la misma página.
 >
@@ -45,7 +57,7 @@
 > probado end-to-end**: hay que hacer una compra de verdad (o de prueba) tras el deploy y
 > confirmar que Checkout muestra 65 € y que la fila de `subscriptions` queda `active`.
 
-## 🗓️ 11 ago 2026 — Copy nuevo de Emi (paso 1 del cambio de precio a 65 €) — SOLO TEXTO
+## 🗓️ 11 ago 2026 — Copy nuevo de Emi (paso 1 del cambio de precio a 65 €) ✅ MERGEADO (PR #69)
 > Adrián pasó un PDF de Emi («Textos de membresía para cambiar el precio a 65€») con cambios de
 > copy de la carta. **Este PR es solo el texto**; el cambio de precio real (Stripe + tarjeta de
 > precio) es el paso siguiente y va aparte. Solo se tocó `src/components/membresia/Landing.astro`
