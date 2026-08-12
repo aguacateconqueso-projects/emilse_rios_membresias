@@ -3,6 +3,91 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 11 ago 2026 — Precio: $80 → **€65/mes** (paso 2, cierra el cambio) 🚀 VA A LIVE
+> Segunda mitad del cambio, en la **misma rama y el mismo PR** que el copy nuevo (entrada de
+> abajo), para que producción no quede ni un minuto con dos precios distintos en la misma página.
+>
+> **Ya hecho por Adrián (config, fuera del repo):** Price nuevo de **65 €/mes** creado en Stripe
+> sobre el mismo producto y `STRIPE_PRICE_STANDARD` apuntado a él en Vercel. Recordatorio de por
+> qué se crea uno nuevo: los Prices de Stripe son **inmutables**, no se edita el importe.
+>
+> **Lo que hace este cambio en código:** la tarjeta de precio de la carta tenía el importe escrito
+> a mano → pasa de `$80` a **`€65`** en los dos idiomas (`priceAmountStd` y `priceInBoxLeadStd`).
+> No hay lógica nueva: el mecanismo dinámico de la entrada del 23 jul sigue igual (dos estados de
+> copy, fundador/estándar, y un script en el cliente que elige según `STRIPE_FOUNDER_UNTIL`).
+> Se alinearon además los comentarios de `src/lib/stripe.ts` y `src/pages/api/checkout.ts` y la
+> documentación (`docs/STRIPE.md`, `docs/ARQUITECTURA.md`), que seguían citando $77/$80.
+>
+> **Ojo, cambia la MONEDA, no solo la cifra:** la carta pasa de hablar en **dólares** a hablar en
+> **euros**. Los miembros que ya pagan **siguen en su Price y su moneda** (Stripe congela el Price
+> de cada suscripción activa) — o sea que en el dashboard van a convivir suscripciones en USD y
+> en EUR. Es lo esperado, pero conviene saberlo antes de mirar los informes.
+>
+> **⬜ Falta que lo haga Adrián — Adaptive Pricing.** La FAQ nueva promete que Stripe "detecta
+> automáticamente la moneda de tu tarjeta y pagas en ella". **Eso no pasa por defecto:** el
+> checkout manda un único Price en una sola moneda. Hay que **activarlo en el dashboard de
+> Stripe** (Settings → Payments → Adaptive Pricing); no hace falta tocar código. Aplica a
+> suscripciones nuevas transfronterizas, solo con tarjeta/Link/Apple Pay/Google Pay, y el tipo de
+> cambio que ve el comprador lleva una **comisión de conversión del 2–4% que paga él**. Si Emi
+> prefiere no activarlo, hay que **suavizar esa respuesta de la FAQ** en `Landing.astro` — tal
+> como está hoy, sin Adaptive Pricing, la carta promete algo que el checkout no hace.
+>
+> **Copy de fundador ($57) inerte:** la ventana cerró el 23 jul 2026, así que ese estado ya no se
+> pinta nunca. Se dejó tal cual, con un comentario avisando de que si alguien vuelve a poner
+> `STRIPE_FOUNDER_UNTIL` en el futuro hay que revisar también ese importe.
+>
+> **Verificado en Chromium** (ES/EN, escritorio y móvil) leyendo el DOM **ya repintado** por el
+> script del cliente: la tarjeta dice `€65/mes` · `€65/mo`, el texto del cuadro cuadra, y la única
+> cifra de precio visible en toda la página es €65 (no quedan restos de $80 ni $57). `npm run
+> build` ok.
+>
+> ⚠️ **Sin credenciales de Stripe en este entorno**, así que el cobro real de 65 € **no está
+> probado end-to-end**: hay que hacer una compra de verdad (o de prueba) tras el deploy y
+> confirmar que Checkout muestra 65 € y que la fila de `subscriptions` queda `active`.
+
+## 🗓️ 11 ago 2026 — Copy nuevo de Emi (paso 1 del cambio de precio a 65 €) — SOLO TEXTO
+> Adrián pasó un PDF de Emi («Textos de membresía para cambiar el precio a 65€») con cambios de
+> copy de la carta. **Este PR es solo el texto**; el cambio de precio real (Stripe + tarjeta de
+> precio) es el paso siguiente y va aparte. Solo se tocó `src/components/membresia/Landing.astro`
+> (los dos idiomas, ES y EN, viven en el mismo objeto `t`); ni BD, ni variables, ni checkout.
+>
+> **Los cuatro cambios:**
+> 1. **CTA temprano nuevo**, justo debajo de la apertura («…los 30 minutos que sí tienes»):
+>    párrafo que resume qué es la membresía —primera para contrabajistas, arco alemán, un
+>    concepto al mes, un ejercicio a la semana— + botón «Acá te unes». Es para quien ya se
+>    convenció con el gancho y no va a leer la carta entera. Claves nuevas `t.pitch` + bloque
+>    `.pitch` en el HTML; el botón reutiliza `t.pay`/`t.payHref`, así que ahora hay **4 botones
+>    de pago** en la página en vez de 3.
+> 2. **Párrafo justo antes del cuadro de precio** (`t.community`) reescrito: «Los cursos se
+>    terminan. Los libros de métodos también. Esta membresía no…». Más corto y directo que el
+>    anterior; mantiene el mensaje de acompañamiento («la contesto yo personalmente»).
+> 3. **FAQ:** entra **«¿Puedo pagar en mi moneda?» como pregunta nº 1** (Stripe detecta la
+>    moneda de la tarjeta; €65/mes ≈ $75 USD; el precio se congela al entrar), y se **reescribe
+>    la del arco francés** (antes nº 2, ahora nº 3). ⚠️ **Ojo, es un cambio de fondo, no de
+>    forma:** la respuesta vieja decía que la membresía **sí** servía para arco francés y que Emi
+>    grabaría los videos con ambas técnicas; la nueva dice que está diseñada **solo para arco
+>    alemán** (los conceptos de mano izquierda sirven igual, los golpes de arco no). Lo pidió Emi
+>    así. El JSON-LD de `FAQPage` se genera desde esta misma lista, o sea que Google ve el texto
+>    nuevo sin tocar nada más.
+> 4. **Cuadro «No es para ti si…»:** se sustituye el **último** punto («No tienes un par de horas
+>    a la semana…») por **dos** nuevos — el de abrir espacio en la agenda («entonces no te
+>    molestes en entrar») y el de la paciencia para estudiar lento. Nota de Emi en el PDF: «con
+>    la finalidad de crear autoridad mediante el no». La columna pasa de 3 a 4 puntos.
+>
+> **Traducción:** el PDF traía el inglés hecho para el CTA nuevo y para las dos FAQ (se copió
+> literal). El párrafo del precio y los dos puntos del «No es para ti» venían **solo en español**
+> → los traduje yo siguiendo la voz del resto de la carta. Conviene que Emi les dé el visto bueno.
+>
+> **~~⚠️ Desalineación temporal de precio~~ RESUELTA:** durante unas horas este cambio dejaba la
+> FAQ diciendo €65 y la tarjeta diciendo $80. Adrián pidió cerrarlo en el mismo PR → ver la
+> entrada de arriba (**cambio de precio a €65**), que va en esta misma rama. **No mergear esta
+> parte sola.**
+>
+> **Verificado:** `npm run build` ok y comprobado **en Chromium de verdad** (1280×900 y 390×844,
+> ES y EN): el CTA nuevo se ve bien en escritorio y móvil, 4 botones de pago, 4 puntos en «No es
+> para ti», 11 preguntas con la de la moneda de primera, sin desbordes horizontales, y el JSON-LD
+> de la FAQ parsea con las preguntas nuevas en los dos idiomas.
+
 ## 🗓️ 30 jul 2026 — Analítica: Vercel (sin cookies) + GA4 (con consentimiento)
 > Segundo paso tras el registro en Google. **Dos sistemas a la vez, a propósito**, porque miden
 > cosas distintas:

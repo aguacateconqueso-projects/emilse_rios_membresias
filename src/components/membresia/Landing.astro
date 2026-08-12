@@ -62,6 +62,9 @@ const t = isEN ? {
   photoAlt: 'Emilse Rios',
   ledeA: "The problem isn't that you're short on time to practice.",
   ledeB: "It's that you don't know what to do with the 30 minutes you do have.",
+  // CTA temprano, justo tras el gancho (pedido de Emi, ago 2026): qué es esto en
+  // tres líneas + botón, para quien ya se convenció y no va a leer la carta entera.
+  pitch: 'This is the first membership for bass players. And we focus on the German bow. One concept a month to keep you active with your technique: coordination, vibrato, bow strokes —legato, spiccato, staccato—. One specific exercise a week. If you want to sharpen your technique and have support while you do it, see you inside.',
 
   storyLead: 'In 2012 my only job was to play, as well as I possibly could, the symphonies of the composer I love most in the world. But it wasn’t always like that, and in this story I’ll tell you something that might help you manage your practice time better — if you feel like you don’t have time, this might interest you.',
   storyBody1: [
@@ -101,19 +104,24 @@ const t = isEN ? {
   fitNo: [
     'You’re after an endless library of exercises to save and watch “someday.” There’s no library here, no archive, no “I’ll see it later.” There’s one exercise this week. If you don’t do it, it’s gone and another arrives — no guilt, simple.',
     'You’re looking for help toward a specific goal: getting into a conservatory or an orchestra. That would call for private lessons. This membership is meant to keep you fit and technically active. We won’t work through specific repertoire problems, though these exercises do help you build the foundations to solve them later.',
-    'You don’t have a couple of hours a week. You need a minimum of time available to practice — not every day (though that would be ideal), but at least a couple of days available each week.',
+    'And if you’re not willing to make space in your life to practice, even a couple of days a week, then don’t bother joining. This membership isn’t for you.',
+    'The exercises will be adapted for several levels, but everything starts slow, so you take it in and understand it. If you don’t have the patience to study slowly, it won’t work for you.',
   ],
-  community: 'Courses come to an end, but this membership stays with you. You won’t be alone in this — every week, double bassists in different parts of the world are doing the same exercise as you, the same week. You can ask your questions in the chat, and I’ll gladly answer them; you can also see the community’s questions — you learn from the group too.',
+  community: 'Courses come to an end. So do method books. This membership doesn’t: every week a new exercise comes in that keeps you active with your technique. And yes, there’s support. You ask your question in the chat and I answer it personally.',
 
   titleEcho: 'Estudiemos juntos',
   pricePer: '/mo',
   // Dos estados: fundador (dentro de la ventana) y estándar (cuando cierra).
+  // La ventana de fundador CERRÓ el 23 jul 2026, así que hoy solo se pinta el
+  // estándar; el copy de fundador ($57) se conserva tal cual quedó, inerte, y no
+  // se repinta a menos que alguien vuelva a poner STRIPE_FOUNDER_UNTIL en futuro
+  // (en cuyo caso habría que revisar también ese importe).
   priceLabelFounder: 'Founder price',
   priceLabelStd: 'Price',
   priceAmountFounder: '$57',
-  priceAmountStd: '$80',
+  priceAmountStd: '€65',
   priceInBoxLeadFounder: 'The membership opens at founder price: $57/month, only from July 16 to 23.',
-  priceInBoxLeadStd: 'The membership is $80/month.',
+  priceInBoxLeadStd: 'The membership is €65/month.',
   priceInBoxRestFounder: 'That price freezes for you: even when it goes up (and it will), you keep paying the same for as long as you stay in.',
   priceInBoxRestStd: 'That price freezes for you: the day it goes up, you keep paying the same for as long as you stay in.',
   priceFeatures: [
@@ -133,8 +141,9 @@ const t = isEN ? {
 
   faqH: 'Frequently asked questions',
   faq: [
+    { q: 'Can I pay in my own currency?', a: 'Payments run through Stripe. When you join, it automatically detects your card’s currency and you pay in it. Right now it’s €65 a month, about $75 USD. The price you join at stays frozen for you as long as you’re a member.' },
     { q: 'Do I need to be advanced to join?', a: 'No, but you should at least know the first positions of the instrument. I’ll leave each exercise adapted to a beginner, intermediate or advanced level. These are basic concepts we all need to study throughout our careers, whatever our level — and the sooner you start, the better.' },
-    { q: 'If I play French bow, is this membership for me?', a: 'Yes. These are technical exercises that work the same with French or German bow. When a concept calls for it, I’ll record the video with both techniques; if it’s not necessary, I’ll skip it. And if you have questions specific to your bow, leave them in the forum and I’ll answer — with a video, if needed.' },
+    { q: 'I play French bow. Does this membership work for me?', a: 'This membership is designed specifically for the German bow. Some left-hand concepts will help you either way, but I teach bow strokes with German technique only. Why? Because I consider it easier, faster, and more natural for the body. It’s the one I recommend.' },
     { q: 'What happens if I join mid-month, can I see the previous content?', a: 'You’ll have access to whatever exercise is live that week until it’s replaced — a new one arrives every Thursday and replaces the previous one. The core concept, though, stays for the whole month: it’s a video that helps you understand the foundation of each exercise.' },
     { q: 'How does payment work?', a: 'It’s a monthly subscription, just like your others (Netflix, Disney, etc.) — an automatic monthly charge. In this case you pay the day you join and that becomes your billing day each month. The price you join with freezes for you as long as you’re a member.' },
     { q: 'Can I cancel anytime?', a: 'Yes, from your account, with no explanation. You keep access until the end of the period you already paid for. If you later want to come back, you join at the price in force at that moment, not your previous one — you’d lose the founder price.' },
@@ -163,6 +172,9 @@ const t = isEN ? {
   photoAlt: 'Emilse Rios',
   ledeA: 'El problema no es que te falte tiempo para estudiar.',
   ledeB: 'Es que no sabes qué hacer con los 30 minutos que sí tienes.',
+  // CTA temprano, justo tras el gancho (pedido de Emi, ago 2026): qué es esto en
+  // tres líneas + botón, para quien ya se convenció y no va a leer la carta entera.
+  pitch: 'Esta es la primera membresía para contrabajistas. Y nos enfocamos en el arco alemán. Cada mes un concepto para mantenerte activo con la técnica: coordinación, vibrato, golpes de arco —legato, spiccato, staccato—. Cada semana un ejercicio específico. Si quieres perfeccionar tu técnica y tener acompañamiento mientras lo haces, nos vemos dentro.',
 
   storyLead: 'En 2012 mi único trabajo era tocar lo mejor posible las sinfonías del compositor que más amo en la vida. Pero no siempre fue así, y en esta historia te cuento algo que te va a ayudar a gestionar mejor tu tiempo de estudio, si sientes que no tienes tiempo, tal vez te interese.',
   storyBody1: [
@@ -202,19 +214,24 @@ const t = isEN ? {
   fitNo: [
     'Buscas una biblioteca infinita de ejercicios para guardar y ver “algún día”. Acá no hay biblioteca, no hay archivo, no hay “lo veo después”. Hay un ejercicio esta semana. Si no lo haces, se va y viene otro, sin culpas, simple.',
     'Estás buscando ayuda para lograr una meta específica: entrar a un conservatorio o una orquesta. Para eso necesitarías clases particulares. Esta membresía está pensada para mantenerte en forma y activo técnicamente. No veremos cómo resolver problemas de repertorio específico, aunque estos ejercicios sí te ayudan a crear bases para resolver esos problemas después.',
-    'No tienes un par de horas a la semana. Debes tener un mínimo de tiempo disponible para estudiar, no tiene que ser todos los días (aunque sería ideal), pero sí cada semana por lo menos un par de días disponibles.',
+    'Y si no estás dispuesto a abrir espacio en tu vida para estudiar, aunque sea un par de días a la semana, entonces no te molestes en entrar. Esta membresía no es para ti.',
+    'Los ejercicios estarán adaptados para varios niveles, pero todo se comienza lento, para incorporar y entender. Si no tienes paciencia para estudiar lento, no te va a funcionar.',
   ],
-  community: 'Los cursos se terminan, pero esta membresía siempre está contigo. No vas a estar solo en esto, cada semana, contrabajistas en distintas partes del mundo estamos haciendo el mismo ejercicio que tú, la misma semana, puedes hacer tus preguntas en el chat, con mucho gusto las contestaré, también, puedes ver las preguntas de la comunidad, del grupo también se aprende.',
+  community: 'Los cursos se terminan. Los libros de métodos también. Esta membresía no: cada semana entra un ejercicio nuevo que te mantiene activo con la técnica. Y sí, hay acompañamiento. Haces tu pregunta en el chat y la contesto yo personalmente.',
 
   titleEcho: 'Let’s study together',
   pricePer: '/mes',
   // Dos estados: fundador (dentro de la ventana) y estándar (cuando cierra).
+  // La ventana de fundador CERRÓ el 23 jul 2026, así que hoy solo se pinta el
+  // estándar; el copy de fundador ($57) se conserva tal cual quedó, inerte, y no
+  // se repinta a menos que alguien vuelva a poner STRIPE_FOUNDER_UNTIL en futuro
+  // (en cuyo caso habría que revisar también ese importe).
   priceLabelFounder: 'Precio de fundador',
   priceLabelStd: 'Precio',
   priceAmountFounder: '$57',
-  priceAmountStd: '$80',
+  priceAmountStd: '€65',
   priceInBoxLeadFounder: 'La membresía abre con precio de fundador: $57 al mes, solo del 16 al 23 de julio.',
-  priceInBoxLeadStd: 'La membresía cuesta $80 al mes.',
+  priceInBoxLeadStd: 'La membresía cuesta €65 al mes.',
   priceInBoxRestFounder: 'Ese precio se congela para ti: aunque suba (y va a subir), tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
   priceInBoxRestStd: 'Ese precio se congela para ti: el día que suba, tú sigues pagando lo mismo durante todo el tiempo que estés dentro.',
   priceFeatures: [
@@ -234,8 +251,9 @@ const t = isEN ? {
 
   faqH: 'Preguntas frecuentes',
   faq: [
+    { q: '¿Puedo pagar en mi moneda?', a: 'El pago se procesa con Stripe. Al suscribirte, detecta automáticamente la moneda de tu tarjeta y pagas en ella. Hoy son €65 al mes, unos $75 USD. El precio con el que entras se congela para ti mientras seas miembro.' },
     { q: '¿Debo tener un nivel avanzado para entrar?', a: 'No, pero sí debes tener conocimiento de por lo menos las primeras posiciones del instrumento. Yo dejaré el ejercicio para adaptarlo a un nivel inicial, intermedio o avanzado. Son conceptos básicos que todos debemos estudiar a lo largo de nuestra carrera, sin importar el nivel, y entre más rápido comiences mejor.' },
-    { q: '¿Si toco técnica francesa, esta membresía me sirve?', a: 'Sí. Son ejercicios técnicos que funcionan igual con arco francés o alemán. Cuando un concepto lo amerite, grabaré el video con ambas técnicas; si no es necesario, lo omitiré. Y si tienes preguntas específicas para tu tipo de arco, las dejas en el foro y te respondo — con video, si hace falta.' },
+    { q: '¿Si toco arco francés, esta membresía me sirve?', a: 'Esta membresía está diseñada específicamente para arco alemán. Algunos conceptos de mano izquierda te servirán igual, pero los golpes de arco los enseño solo con técnica alemana. ¿Por qué? Porque considero que es más fácil, más rápida y más natural para el cuerpo. Es la que recomiendo.' },
     { q: '¿Qué pasa si entro a mitad del mes, puedo ver el contenido anterior?', a: 'Podrás tener acceso al ejercicio que esté esa semana hasta que lo reemplace, cada jueves entra un nuevo ejercicio que reemplaza el anterior. Pero el concepto básico sí queda durante todo el mes, es un video que te hace entender las bases de cada ejercicio.' },
     { q: '¿Cómo funciona el pago?', a: 'Es una suscripción mensual, así como tus otras suscripciones (Netflix, Disney, etc.), es un pago automático mensual. En este caso pagas el día que entras y ese será tu día de cobro cada mes. El precio con el que entras se congela para ti mientras seas miembro.' },
     { q: '¿Puedo cancelar cuando quiera?', a: 'Sí, desde tu cuenta, sin explicar nada. Mantienes el acceso hasta el final del período que ya pagaste. Si luego quieres volver, entras con el precio vigente en ese momento, no con el tuyo anterior, perderías el precio de fundador.' },
@@ -471,6 +489,13 @@ const jsonLd = {
   .lede__b { display: block; text-wrap: balance; }
   @media (max-width: 440px) { .lede__a { white-space: normal; text-wrap: balance; } }
 
+  /* 3b · CTA temprano — justo debajo de la apertura. Resume qué es la membresía y
+     ofrece la entrada sin obligar a leer la carta entera. Centrado, como el resto
+     de la cabecera; el botón reutiliza el mismo estilo de los otros CTA. */
+  .pitch { margin: clamp(26px, 5vw, 38px) 0 0; }
+  .pitch__p { margin: 0; text-align: center; text-wrap: pretty; }
+  .cta--pitch { margin: clamp(22px, 4vw, 30px) 0 0; }
+
   /* Cuerpo corrido */
   p { margin: 0 0 1.15em; }
   .body { margin-top: clamp(36px, 7vw, 56px); }
@@ -516,7 +541,7 @@ const jsonLd = {
   @media (max-width: 560px) { .compare { grid-template-columns: 1fr; } }
 
   /* 7 · Tarjeta de precio — formato de dos columnas (referencia de Emi):
-     izquierda = nombre + $57 + nota; derecha = qué incluye + botón. Cuadrada
+     izquierda = nombre + precio + nota; derecha = qué incluye + botón. Cuadrada
      (coherente con la página) y se invierte de color al pasar el cursor. */
   .plan { margin-top: clamp(40px, 8vw, 60px); }
   .pricecard { width: min(940px, 96vw);
@@ -688,6 +713,17 @@ const jsonLd = {
       <span class="lede__a">{t.ledeA}</span>
       <span class="lede__b">{t.ledeB}</span>
     </p>
+
+    <div class="pitch reveal">
+      <p class="pitch__p">{t.pitch}</p>
+      <div class="cta cta--pitch">
+        <a class="btn" href={t.payHref}>
+          <span class="btn__fill" aria-hidden="true"></span>
+          <span class="btn__label">{t.pay}</span>
+          <span class="btn__ar" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </div>
 
     <div class="body reveal">
       <p>{t.storyLead}</p>
