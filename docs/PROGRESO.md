@@ -3,6 +3,83 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 1 sep 2026 — Video de un minuto + el tema del mes en la carta
+> Adrián pasó copy nuevo de Emi y los dos embeds de **Bunny Stream** (uno por idioma). El tramo
+> que va justo debajo del gancho deja de ser «párrafo + botón» y pasa a ser un embudo entero:
+>
+> **párrafo de presentación → «Te lo explico en 1 minuto» → video → el tema del mes → botón.**
+>
+> **El botón NO es nuevo: se bajó.** El que estaba pegado al párrafo de presentación ahora cierra
+> el bloque del mes, después del texto largo. La página **sigue con 4 botones de pago**, los
+> mismos que desde el PR #69 (comprobado en el DOM).
+>
+> **Lo que se tocó** — solo `src/components/membresia/Landing.astro` (los dos idiomas viven en el
+> mismo objeto `t`). Ni BD, ni variables, ni checkout, ni Stripe.
+> - Claves nuevas `videoLead` / `videoSrc` / `videoTitle` y el bloque `month*` (`monthIntro`,
+>   `monthBeauty`, `monthIntro2`, `monthInsideH`, `monthInside`, `monthOutro`, `monthOutroLast`).
+> - HTML: `.videolead`, `.video` + `.video__frame`, `.month`.
+> - FAQ nº 4 reescrita (ver abajo).
+>
+> **⚠️ Estas claves CADUCAN.** Todo lo que empieza por `month*` es **el tema de septiembre**
+> (flexibilidad de la muñeca) y hay que cambiarlo cada mes junto con el video. Están agrupadas y
+> comentadas en `t` justo después de `pitch`, en los dos idiomas, para no tener que buscarlas.
+> El resto de la carta es perenne. Si algún mes no hay video, basta borrar el `<p class=
+> "videolead">` y el `<div class="video">` del HTML; el bloque del mes se sostiene solo.
+>
+> **El video:** iframe de Bunny (`player.mediadelivery.net/embed/741634/…`), uno por idioma, con
+> `loading="lazy"` y el `allow` que trae el embed de Bunny. Marco 16:9 fluido (el truco del
+> `padding-top: 56.25%` + iframe absoluto), **esquinas cuadradas** y la misma sombra marcada que
+> la foto de Emi, para que no se vea plano. Rompe un poco la columna de lectura (**780px** frente
+> a los 680 del texto) igual que hacen el cuadro comparativo (880) y la tarjeta de precio (940);
+> en móvil va al 94vw. El fondo del marco es tinta, así que mientras carga se ve negro (que es
+> justo el color del reproductor de Bunny) en vez de un fogonazo blanco.
+>
+> **«her mo so» / «beau ti ful»:** decisión de Adrián — **línea propia, centrada, grande, con las
+> sílabas muy separadas y en el marrón del instrumento** (`--wood`, el único acento de color de
+> texto de la carta). Es un respiro: se lee tan lento como se dice.
+>
+> **FAQ nº 4 reescrita, y cambia el fondo.** Antes («¿Qué pasa si entro a mitad del mes, puedo ver
+> el contenido anterior?») la respuesta daba por hecho que **siempre** se puede entrar cualquier
+> día. Ahora distingue **dos tipos de mes**: temas independientes → membresía abierta; temas
+> progresivos → **puertas cerradas**, y nombra septiembre con su fecha. Traducida al inglés por mí
+> (el PDF solo traía el español), igual que el bloque del mes salvo lo que ya venía traducido.
+> El JSON-LD de `FAQPage` sale de esta misma lista, así que Google ve el texto nuevo sin tocar
+> nada más (verificado: parsea, 10 entradas, la nº 4 con el título nuevo en ES y EN).
+>
+> **Verificado en Chromium de verdad** (1280×900 y 390×844, ES y EN): el orden sale
+> `pitch>videolead>video>month>body`, el marco da exactamente **1.778** de proporción, cada idioma
+> carga **su** video (`90981ada…` en ES, `6123a4c3…` en EN), los 7 puntos de «¿Qué vas a encontrar
+> dentro?» están, el «her mo so» sale centrado y en `rgb(107,63,42)`, el texto del mes arranca en
+> **el mismo píxel** que el párrafo de presentación (340 en escritorio, 23 en móvil — la misma
+> comprobación de la entrada del 11 ago), no hay desbordes horizontales y siguen siendo 4 botones
+> de pago. `npm run build` ok.
+>
+> **⬜ Falta comprobarlo con el video puesto:** en este entorno el proxy **bloquea
+> `player.mediadelivery.net`**, así que el iframe se pinta pero no carga — se ve el marco negro.
+> Tras el deploy hay que abrir `/` y `/en/` y confirmar que **reproduce**, que es **el video
+> correcto en cada idioma** y que a pantalla completa funciona.
+>
+> **⬜ Cabo suelto grande — las puertas NO se cierran solas.** El copy nuevo (y la FAQ) prometen
+> que el **miércoles 2 a las 23:59 CEST** se cierran las puertas y que **durante septiembre no
+> entra nadie**. Eso hoy **es solo texto**: el 3 de septiembre la carta seguirá diciendo «puertas
+> cerradas» y los 4 botones seguirán llevando al checkout, que cobrará sin problema. Adrián lo
+> sabe y decidió dejarlo así por ahora. **Lo que haría falta para cerrarlas de verdad** (segundo
+> paso, no cabe en este cambio):
+> 1. Una variable tipo `MEMBERSHIP_CLOSED_UNTIL` (o un par abre/cierra) en Vercel, **con zona
+>    horaria explícita**, igual que `STRIPE_FOUNDER_UNTIL`. Misma variable para la carta y para el
+>    cobro, que es lo que hace que no se desalineen.
+> 2. **Cerrar el checkout de verdad en el servidor**, en `src/pages/api/checkout.ts`: si está
+>    cerrado, no crear la sesión de Stripe. Esconder los botones **no basta** — la URL
+>    `/api/checkout?lang=es` se puede pegar a mano.
+> 3. En la carta: los 4 botones pasan a un estado «cerrado» (deshabilitado + texto tipo «Las
+>    puertas abren el 1 de octubre») y, mejor aún, un alta al newsletter para avisar a quien
+>    llegue tarde — hoy esa gente se va sin dejar rastro.
+> 4. El flip visual tiene que hacerlo **un script en el cliente** comparando la hora real con la
+>    fecha, como ya hace el precio de fundador. Si se hornea en el build, la carta no se entera
+>    del cierre hasta el siguiente deploy.
+> 5. Repasar el copy que hoy da por hecho que se puede entrar cualquier día (`priceBelow`, la FAQ
+>    del pago) para que no se contradiga con las puertas cerradas.
+
 ## 🗓️ 11 ago 2026 — Ajuste: el párrafo del CTA nuevo, alineado a la izquierda
 > Adrián vio el CTA nuevo ya en producción y pidió corregir la alineación: yo había centrado el
 > párrafo para que acompañara a la apertura, pero **rompe la columna de lectura** — el resto del
