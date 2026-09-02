@@ -1,5 +1,6 @@
 import type { APIRoute } from 'astro';
 import { stripe, currentTier, priceForTier, siteOrigin } from '../../lib/stripe';
+import { doorsClosed, REOPENS_AT, NEWSLETTER_URL } from '../../lib/membership';
 
 // Endpoint bajo demanda (no se prerenderiza): crea la sesión de Stripe Checkout
 // y redirige. Flujo 2a: pago ANÓNIMO. El comprador no inicia sesión antes; Stripe
@@ -9,11 +10,19 @@ export const prerender = false;
 // GET /api/checkout?lang=es|en  →  302 a la página de pago de Stripe.
 // Es un GET para que los botones de la carta sean un simple <a href> (sin JS).
 export const GET: APIRoute = async ({ request, redirect }) => {
-  if (!stripe) return new Response('Stripe no está configurado.', { status: 500 });
-
   const url = new URL(request.url);
   const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'es';
   const origin = siteOrigin(request);
+
+  // Puertas cerradas → no se crea la sesión de Stripe. Esconder los botones de la
+  // carta NO basta: esta URL se puede pegar a mano, quedó en un correo viejo o la
+  // guardó el navegador. El cierre de verdad es este, y usa las MISMAS fechas que
+  // la carta (src/lib/membership.ts). 403 y no 404: existe, pero está cerrado.
+  // Va ANTES de mirar a Stripe: si las puertas están cerradas da igual cómo esté
+  // configurado el cobro, y así el visitante ve la explicación y no un error.
+  if (doorsClosed()) return closedResponse(lang, origin);
+
+  if (!stripe) return new Response('Stripe no está configurado.', { status: 500 });
 
   // El precio (fundador $57 / estándar €65) lo decide la fecha. El tier queda
   // congelado en la suscripción: Stripe seguirá cobrando ese precio.
@@ -65,3 +74,50 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   if (!session.url) return new Response('No se pudo crear la sesión de pago.', { status: 500 });
   return redirect(session.url, 303);
 };
+
+// Página de «puertas cerradas» del checkout. Es un callejón sin salida (nadie va a
+// pagar hoy), así que al menos deja dos puertas abiertas: volver a la carta y el
+// alta al newsletter, que es como se entera de la reapertura quien llegó tarde.
+function closedResponse(lang: 'es' | 'en', origin: string): Response {
+  const back = `${origin}/${lang === 'en' ? 'en/' : ''}`;
+  const reopens = Date.parse(REOPENS_AT);
+  const date = Number.isNaN(reopens)
+    ? ''
+    : new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'es-ES',
+        { timeZone: 'Europe/Madrid', day: 'numeric', month: 'long' }).format(new Date(reopens));
+  const c = lang === 'en'
+    ? { title: 'The doors are closed',
+        p: date
+          ? `Each week of the month builds on the one before, so nobody comes in halfway through. The doors open on ${date}.`
+          : 'Each week of the month builds on the one before, so nobody comes in halfway through.',
+        news: 'Tell me when they open', back: 'Back to the letter' }
+    : { title: 'Las puertas están cerradas',
+        p: date
+          ? `Cada semana del mes se apoya en la anterior, por eso nadie entra a mitad de camino. Las puertas abren el ${date}.`
+          : 'Cada semana del mes se apoya en la anterior, por eso nadie entra a mitad de camino.',
+        news: 'Avísame cuando abran', back: 'Volver a la carta' };
+  const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const html = `<!doctype html><html lang="${lang}"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>${esc(c.title)}</title>
+<style>
+  body { margin: 0; min-height: 100vh; display: grid; place-items: center;
+         background: #faf7f1; color: #17140f; padding: 40px 24px;
+         font-family: Georgia, 'Times New Roman', serif; line-height: 1.66; }
+  main { max-width: 520px; text-align: center; }
+  h1 { font-size: clamp(1.6rem, 5vw, 2.2rem); line-height: 1.15; margin: 0 0 0.6em; font-weight: 600; }
+  p { margin: 0 0 1.6em; }
+  a.btn { display: inline-flex; align-items: center; gap: 10px; text-decoration: none;
+          color: #17140f; border: 1.5px solid currentColor; padding: 16px 34px;
+          font-family: system-ui, sans-serif; font-size: 0.86rem; font-weight: 600;
+          letter-spacing: 0.16em; text-transform: uppercase; }
+  a.back { display: block; margin-top: 22px; color: #6f6a61; font-size: 0.9rem; }
+</style></head><body><main>
+  <h1>${esc(c.title)}</h1>
+  <p>${esc(c.p)}</p>
+  <a class="btn" href="${esc(NEWSLETTER_URL)}" target="_blank" rel="noopener">${esc(c.news)} →</a>
+  <a class="back" href="${esc(back)}">${esc(c.back)}</a>
+</main></body></html>`;
+  return new Response(html, { status: 403, headers: { 'content-type': 'text/html; charset=utf-8' } });
+}

@@ -177,6 +177,11 @@ Un trigger crea el `profile` automáticamente al registrarse un usuario.
 ## 8. Flujo de Stripe
 - Dos *Prices* en Stripe: fundador ($57) y estándar (hoy **€65**; era $77 en el diseño original).
 - El checkout elige el price según la fecha (≤ 10 jul Madrid → fundador; si no → estándar).
+- **Puertas** (`src/lib/membership.ts`): los meses de tema progresivo la membresía se
+  cierra. `MEMBERSHIP_CLOSES_AT` / `MEMBERSHIP_REOPENS_AT` (ISO con zona) las mandan, y
+  las leen los dos lados: la carta (cuenta atrás bajo cada botón y botones muertos al
+  cerrar, decidido en el cliente con la hora real) y `/api/checkout`, que responde 403
+  sin crear sesión de Stripe. Esconder los botones no basta: la URL se pega a mano.
 - Webhooks que actualizan `subscriptions`:
   `checkout.session.completed`, `customer.subscription.updated`,
   `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`.

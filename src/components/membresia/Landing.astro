@@ -15,12 +15,13 @@
 // (/api/checkout?lang=es|en, GET que redirige a la página de pago). El newsletter
 // apunta al alta real (Klaviyo/kmail).
 import Analitica from '../Analitica.astro';
+import { CLOSES_AT, REOPENS_AT, NEWSLETTER_URL, doorsClosed } from '../../lib/membership';
 
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
 const isEN = lang === 'en';
 const other = isEN ? '/' : '/en/';
-const newsHref = 'https://manage.kmail-lists.com/subscriptions/subscribe?a=TPxGBg&g=SaE8Px';
+const newsHref = NEWSLETTER_URL;
 
 // ---------------------------------------------------------------------------
 // SEO — lo que Google necesita para indexar esta carta (ver docs/GOOGLE.md).
@@ -51,6 +52,44 @@ const googleVerification =
 const FOUNDER_UNTIL = process.env.STRIPE_FOUNDER_UNTIL || '2025-07-10T23:59:59+02:00';
 const founderUntilMs = Date.parse(FOUNDER_UNTIL);
 const builtIsFounder = !Number.isNaN(founderUntilMs) && Date.now() <= founderUntilMs;
+
+// ---------------------------------------------------------------------------
+// Puertas de la membresía (src/lib/membership.ts). MISMAS fechas que usa el
+// checkout, para que la carta y el cobro no se desalineen ni un minuto.
+//
+// Tres estados, y los tres se calculan DOS veces: aquí (para el HTML del build,
+// que es lo que ve quien llega sin JS) y otra vez en el navegador con la hora
+// real del visitante (script `doors` más abajo), para que el cambio ocurra en el
+// segundo exacto del cierre sin depender de un redeploy — igual que el flip de
+// precio fundador/estándar.
+//   · abierto con cuenta atrás → falta para el cierre: botones vivos + contador.
+//   · abierto sin cuenta atrás → no hay cierre a la vista: botones vivos, sin contador.
+//   · cerrado                  → botones muertos (sin href) + salida al newsletter.
+// ---------------------------------------------------------------------------
+const closesAtMs = Date.parse(CLOSES_AT);
+const reopensAtMs = Date.parse(REOPENS_AT);
+const builtClosed = doorsClosed();
+const builtCountdown = !builtClosed && !Number.isNaN(closesAtMs) && Date.now() < closesAtMs;
+const madridLocale = isEN ? 'en-US' : 'es-ES';
+const MADRID = 'Europe/Madrid';
+
+// Formatos de la hora de Madrid. Ojo: el visitante puede estar en cualquier huso,
+// pero la promesa («23:59 CEST») está escrita en la hora de Emi, así que TODO el
+// texto se formatea en Madrid y solo el contador usa la hora local del navegador
+// (que da igual: la diferencia entre dos instantes es la misma en cualquier huso).
+const fmtMadridTime = (ms: number) => new Intl.DateTimeFormat(madridLocale,
+  { timeZone: MADRID, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(new Date(ms));
+const fmtMadridDate = (ms: number) => new Intl.DateTimeFormat(madridLocale,
+  { timeZone: MADRID, day: 'numeric', month: 'long' }).format(new Date(ms));
+const madridDayKey = (ms: number) => new Intl.DateTimeFormat('en-CA',
+  { timeZone: MADRID, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ms));
+// CEST en verano, CET en invierno — se deduce del desfase real de Madrid ese día,
+// así el rótulo no miente cuando el cierre cae fuera del horario de verano.
+const madridTz = (ms: number) => {
+  const parts = new Intl.DateTimeFormat('en-US', { timeZone: MADRID, timeZoneName: 'longOffset' })
+    .formatToParts(new Date(ms));
+  return (parts.find((x) => x.type === 'timeZoneName')?.value === 'GMT+01:00') ? 'CET' : 'CEST';
+};
 
 const t = isEN ? {
   htmlLang: 'en',
@@ -95,6 +134,10 @@ const t = isEN ? {
     'Each week builds on the one before. That’s why the doors close on Wednesday the 2nd at 23:59 CEST and nobody comes in during September. Joining halfway through the month doesn’t leave you with half the topic, it leaves you without the base for what comes next.',
   ],
   monthOutroLast: 'I don’t want that.',
+
+  // Puente entre el bloque del mes (que cierra con el primer botón) y la carta
+  // larga: presenta la historia, que si no arrancaba de la nada.
+  whyH: 'Want to know why I created this membership?',
 
   storyLead: 'In 2012 my only job was to play, as well as I possibly could, the symphonies of the composer I love most in the world. But it wasn’t always like that, and in this story I’ll tell you something that might help you manage your practice time better — if you feel like you don’t have time, this might interest you.',
   storyBody1: [
@@ -164,6 +207,15 @@ const t = isEN ? {
   priceBelow: 'You pay each month on the date you joined. For example, if you join on the 20th, your month runs from the 20th to the 20th. You never lose days. You can cancel whenever you want, no explanations needed. One thing though: if you leave and later want to come back, you join at whatever price is in force at that moment.',
   pay: 'Join here',
   payHref: '/api/checkout?lang=en',
+  // Cuenta atrás bajo cada botón + estado «puertas cerradas» (ver
+  // src/lib/membership.ts). Los marcadores los rellenan el build y el script con
+  // la hora de MADRID: {time} = 23:59, {tz} = CEST/CET, {date} = September 2.
+  closeLeadToday: 'Doors close today at {time} {tz}',
+  closeLeadDay: 'Doors close on {date} at {time} {tz}',
+  payClosed: 'Doors closed',
+  closedNote: 'The doors are closed. They open on {date}.',
+  closedNoteNoDate: 'The doors are closed for now.',
+  closedLink: 'Tell me when they open',
 
   pdLabel: 'P.S.',
   pdText: 'I made this membership for the Emilse of 2016 — the one carrying her double bass up the stairs of that rooftop, full of determination not to give up the instrument, but who over time was left not knowing what to study. I owed it to her. If you’ve ever felt like you don’t know where to begin or what to study, then this is for you too.',
@@ -236,6 +288,10 @@ const t = isEN ? {
   ],
   monthOutroLast: 'No quiero eso.',
 
+  // Puente entre el bloque del mes (que cierra con el primer botón) y la carta
+  // larga: presenta la historia, que si no arrancaba de la nada.
+  whyH: '¿Quieres saber por qué creé esta membresía?',
+
   storyLead: 'En 2012 mi único trabajo era tocar lo mejor posible las sinfonías del compositor que más amo en la vida. Pero no siempre fue así, y en esta historia te cuento algo que te va a ayudar a gestionar mejor tu tiempo de estudio, si sientes que no tienes tiempo, tal vez te interese.',
   storyBody1: [
     'Ese año tocamos todas las sinfonías de Mahler. En el Walt Disney Concert Hall, con la orquesta sinfónica Simón Bolívar y la Filarmónica de Los Ángeles juntas en el escenario, dirigidas por Gustavo Dudamel.',
@@ -304,6 +360,15 @@ const t = isEN ? {
   priceBelow: 'Pagas cada mes en la fecha que entraste. Por ejemplo, si entras un 20, tu mes va del 20 al 20. Nunca pierdes días. Te puedes dar de baja cuando quieras, sin explicaciones. Eso sí: si te vas y luego quieres volver, entras con el precio que esté vigente en ese momento.',
   pay: 'Acá te unes',
   payHref: '/api/checkout?lang=es',
+  // Cuenta atrás bajo cada botón + estado «puertas cerradas» (ver
+  // src/lib/membership.ts). Los marcadores los rellenan el build y el script con
+  // la hora de MADRID: {time} = 23:59, {tz} = CEST/CET, {date} = 2 de septiembre.
+  closeLeadToday: 'Cierra hoy a las {time} {tz}',
+  closeLeadDay: 'Cierra el {date} a las {time} {tz}',
+  payClosed: 'Puertas cerradas',
+  closedNote: 'Las puertas están cerradas. Abren el {date}.',
+  closedNoteNoDate: 'Las puertas están cerradas por ahora.',
+  closedLink: 'Avísame cuando abran',
 
   pdLabel: 'P.D.',
   pdText: 'Esta membresía la hice para la Emilse del 2016, la que subía el contrabajo por las escaleras de esa azotea con todas las ganas de no abandonar el instrumento, pero que con el paso del tiempo fue quedándose sin saber qué estudiar. Se la debía. Si alguna vez has sentido que no sabes por dónde comenzar o qué estudiar, entonces también es para ti.',
@@ -333,6 +398,23 @@ const t = isEN ? {
   footLegal: '© 2026 Emilse Rios',
   enter: 'Entrar',
 };
+
+// Textos de las puertas ya resueltos para el HTML del build (sin JS). El script
+// del navegador vuelve a calcularlos con la hora real del visitante y los pisa;
+// las dos versiones usan las mismas plantillas y la misma zona (Madrid), así que
+// solo cambian si el visitante llega justo del otro lado del corte.
+const closeLeadBuilt = Number.isNaN(closesAtMs) ? '' : (
+  madridDayKey(closesAtMs) === madridDayKey(Date.now()) ? t.closeLeadToday : t.closeLeadDay)
+    .replace('{date}', fmtMadridDate(closesAtMs))
+    .replace('{time}', fmtMadridTime(closesAtMs))
+    .replace('{tz}', madridTz(closesAtMs));
+const closedNoteBuilt = Number.isNaN(reopensAtMs)
+  ? t.closedNoteNoDate
+  : t.closedNote.replace('{date}', fmtMadridDate(reopensAtMs));
+// Con las puertas cerradas el botón deja de ser un enlace: Astro omite el
+// atributo cuando el valor es undefined, así que ni con JS desactivado se puede
+// llegar al checkout desde aquí (y el propio /api/checkout lo corta igual).
+const payHref = builtClosed ? undefined : t.payHref;
 
 // ---------------------------------------------------------------------------
 // Datos estructurados (JSON-LD). Le explican a Google QUÉ es esta página:
@@ -717,6 +799,65 @@ const jsonLd = {
   /* Botón de compra standalone — ancho */
   .cta:not(.cta--inbox) .btn { min-width: min(420px, 80%); }
 
+  /* Título puente — presenta la historia larga que viene después del primer
+     botón. Mismo registro que «¿Necesitas ayuda para llegar?»: centrado, cursiva,
+     y el marrón del instrumento al pasar el cursor. */
+  .whyh { text-align: center; font-weight: 700; font-style: italic;
+          font-size: clamp(1.3rem, 4vw, 1.7rem); line-height: 1.32;
+          margin: clamp(40px, 7.5vw, 62px) 0 0; text-wrap: balance;
+          transition: color 0.4s ease; }
+  .whyh:hover { color: var(--wood); }
+
+  /* Cuenta atrás bajo cada botón de pago. Habla el mismo idioma que el botón
+     (mayúsculas, letra muy espaciada, tinta): la urgencia la ponen los números,
+     no un rojo de rebajas. Los dígitos van en cifras tabulares para que el
+     contador no baile de ancho a cada segundo.
+     El estado lo manda `data-doors` en <main> (build + script): `soon` = falta
+     para el cierre, `closed` = puertas cerradas, `open` = no hay cierre a la
+     vista y el bloque entero desaparece. */
+  .timer { display: none; margin: 14px 0 0; text-align: center;
+           font-size: 0.76rem; letter-spacing: 0.14em; text-transform: uppercase;
+           color: var(--soft); line-height: 1.7; }
+  [data-doors="soon"] .timer,
+  [data-doors="closed"] .timer { display: block; }
+  .timer__lead { display: block; }
+  .timer__clock { display: inline-flex; align-items: baseline; justify-content: center;
+                  gap: 13px; margin-top: 4px; color: var(--ink); }
+  .timer__u { display: inline-flex; align-items: baseline; gap: 3px; }
+  /* El `display` de arriba le gana al `[hidden]` del navegador, así que la
+     casilla de los días (que solo aparece cuando faltan 24h o más) necesita
+     su propia regla o se vería un «0 d» permanente. */
+  .timer__u[hidden] { display: none; }
+  .timer__u b { font-size: 1.16rem; font-weight: 700; letter-spacing: 0.04em;
+                font-variant-numeric: tabular-nums; }
+  .timer__u i { font-style: normal; font-size: 0.7rem; opacity: 0.62; }
+  .timer__closed { display: none; }
+  /* La salida para quien llega tarde: línea propia y subrayada, que si no se
+     confunde con el aviso (todo va en mayúsculas y del mismo color). */
+  .timer__news { display: block; margin-top: 6px; color: var(--ink);
+                 text-decoration: underline; text-underline-offset: 4px;
+                 transition: color 0.3s ease; }
+  .timer__news:hover { color: var(--wood); }
+  [data-doors="closed"] .timer__lead,
+  [data-doors="closed"] .timer__clock { display: none; }
+  [data-doors="closed"] .timer__closed { display: block; }
+
+  /* Puertas cerradas: el botón sigue ahí (la carta se lee igual) pero deja de
+     ser un botón — sin href, sin relleno al pasar el cursor, sin flecha. */
+  .btn__label--closed { display: none; }
+  [data-doors="closed"] .btn--pay { color: var(--soft); border-color: rgba(23, 20, 15, 0.28);
+                                    pointer-events: none; }
+  [data-doors="closed"] .btn--pay .btn__label { display: none; }
+  [data-doors="closed"] .btn--pay .btn__label--closed { display: inline; }
+  [data-doors="closed"] .btn--pay .btn__ar { display: none; }
+  [data-doors="closed"] .pricecard:hover .btn--pay { color: rgba(250, 247, 241, 0.55); }
+
+  /* Dentro de la tarjeta de precio, que se invierte a tinta al pasar el cursor,
+     el contador tiene que invertirse con ella. */
+  .pricecard .timer { margin-top: 2px; transition: color 0.45s ease; }
+  .pricecard:hover .timer { color: rgba(250, 247, 241, 0.6); }
+  .pricecard:hover .timer__clock { color: var(--paper); }
+
   /* Notas musicales de colores que flotan al pasar el cursor por los botones */
   .note-pop { position: fixed; z-index: 60; pointer-events: none; font-weight: 700;
               will-change: transform, opacity; animation: notefloat 1s ease-out forwards; }
@@ -794,7 +935,7 @@ const jsonLd = {
     <a class="langpill__enter" href={isEN ? '/entrar/en/' : '/entrar/'}>{t.enter}</a>
   </nav>
 
-  <main class="page">
+  <main class="page" data-doors={builtClosed ? 'closed' : (builtCountdown ? 'soon' : 'open')}>
 
     <p class="logo">
       <img class="logo__img" src="/img/logo_emi_alpha.png" alt={t.logoAlt}
@@ -836,13 +977,26 @@ const jsonLd = {
       {t.monthOutro.map((p) => (<p>{p}</p>))}
       <p class="month__last">{t.monthOutroLast}</p>
       <div class="cta cta--month">
-        <a class="btn" href={t.payHref}>
+        <a class="btn btn--pay" href={payHref} aria-disabled={builtClosed ? 'true' : undefined} tabindex={builtClosed ? '-1' : undefined}>
           <span class="btn__fill" aria-hidden="true"></span>
           <span class="btn__label">{t.pay}</span>
+          <span class="btn__label btn__label--closed">{t.payClosed}</span>
           <span class="btn__ar" aria-hidden="true">→</span>
         </a>
+        <p class="timer">
+          <span class="timer__lead">{closeLeadBuilt}</span>
+          <span class="timer__clock" aria-hidden="true">
+            <span class="timer__u" data-cd-dbox hidden><b data-cd-d>0</b><i>d</i></span>
+            <span class="timer__u"><b data-cd-h>00</b><i>h</i></span>
+            <span class="timer__u"><b data-cd-m>00</b><i>m</i></span>
+            <span class="timer__u"><b data-cd-s>00</b><i>s</i></span>
+          </span>
+          <span class="timer__closed">{closedNoteBuilt} <a class="timer__news" href={newsHref} target="_blank" rel="noopener">{t.closedLink} →</a></span>
+        </p>
       </div>
     </div>
+
+    <p class="whyh reveal">{t.whyH}</p>
 
     <div class="body reveal">
       <p>{t.storyLead}</p>
@@ -895,11 +1049,22 @@ const jsonLd = {
         <div class="pricecard__right">
           <ul class="pricecard__feat">{t.priceFeatures.map((f) => (<li>{f}</li>))}</ul>
           <div class="pricecard__action">
-            <a class="btn" href={t.payHref}>
+            <a class="btn btn--pay" href={payHref} aria-disabled={builtClosed ? 'true' : undefined} tabindex={builtClosed ? '-1' : undefined}>
               <span class="btn__fill" aria-hidden="true"></span>
               <span class="btn__label">{t.pay}</span>
+              <span class="btn__label btn__label--closed">{t.payClosed}</span>
               <span class="btn__ar" aria-hidden="true">→</span>
             </a>
+            <p class="timer">
+              <span class="timer__lead">{closeLeadBuilt}</span>
+              <span class="timer__clock" aria-hidden="true">
+                <span class="timer__u" data-cd-dbox hidden><b data-cd-d>0</b><i>d</i></span>
+                <span class="timer__u"><b data-cd-h>00</b><i>h</i></span>
+                <span class="timer__u"><b data-cd-m>00</b><i>m</i></span>
+                <span class="timer__u"><b data-cd-s>00</b><i>s</i></span>
+              </span>
+              <span class="timer__closed">{closedNoteBuilt} <a class="timer__news" href={newsHref} target="_blank" rel="noopener">{t.closedLink} →</a></span>
+            </p>
             <p class="pricecard__fine">{t.priceReassure}</p>
           </div>
         </div>
@@ -933,11 +1098,22 @@ const jsonLd = {
     </p>
 
     <div class="cta reveal">
-      <a class="btn" href={t.payHref}>
+      <a class="btn btn--pay" href={payHref} aria-disabled={builtClosed ? 'true' : undefined} tabindex={builtClosed ? '-1' : undefined}>
         <span class="btn__fill" aria-hidden="true"></span>
         <span class="btn__label">{t.pay}</span>
+        <span class="btn__label btn__label--closed">{t.payClosed}</span>
         <span class="btn__ar" aria-hidden="true">→</span>
       </a>
+      <p class="timer">
+        <span class="timer__lead">{closeLeadBuilt}</span>
+        <span class="timer__clock" aria-hidden="true">
+          <span class="timer__u" data-cd-dbox hidden><b data-cd-d>0</b><i>d</i></span>
+          <span class="timer__u"><b data-cd-h>00</b><i>h</i></span>
+          <span class="timer__u"><b data-cd-m>00</b><i>m</i></span>
+          <span class="timer__u"><b data-cd-s>00</b><i>s</i></span>
+        </span>
+        <span class="timer__closed">{closedNoteBuilt} <a class="timer__news" href={newsHref} target="_blank" rel="noopener">{t.closedLink} →</a></span>
+      </p>
     </div>
 
     <div class="pd reveal">
@@ -957,11 +1133,22 @@ const jsonLd = {
     </section>
 
     <div class="cta reveal">
-      <a class="btn" href={t.payHref}>
+      <a class="btn btn--pay" href={payHref} aria-disabled={builtClosed ? 'true' : undefined} tabindex={builtClosed ? '-1' : undefined}>
         <span class="btn__fill" aria-hidden="true"></span>
         <span class="btn__label">{t.pay}</span>
+        <span class="btn__label btn__label--closed">{t.payClosed}</span>
         <span class="btn__ar" aria-hidden="true">→</span>
       </a>
+      <p class="timer">
+        <span class="timer__lead">{closeLeadBuilt}</span>
+        <span class="timer__clock" aria-hidden="true">
+          <span class="timer__u" data-cd-dbox hidden><b data-cd-d>0</b><i>d</i></span>
+          <span class="timer__u"><b data-cd-h>00</b><i>h</i></span>
+          <span class="timer__u"><b data-cd-m>00</b><i>m</i></span>
+          <span class="timer__u"><b data-cd-s>00</b><i>s</i></span>
+        </span>
+        <span class="timer__closed">{closedNoteBuilt} <a class="timer__news" href={newsHref} target="_blank" rel="noopener">{t.closedLink} →</a></span>
+      </p>
     </div>
 
     <div class="news reveal">
@@ -986,6 +1173,112 @@ const jsonLd = {
     </footer>
 
   </main>
+
+<script is:inline define:vars={{ closesAt: CLOSES_AT, reopensAt: REOPENS_AT,
+                                 locale: madridLocale, payHrefOpen: t.payHref,
+                                 copy: { leadToday: t.closeLeadToday, leadDay: t.closeLeadDay } }}>
+  // Puertas de la membresía en el cliente — cuenta atrás + cierre en vivo.
+  //
+  // Por qué en el navegador y no solo en el build: si el estado se horneara, la
+  // carta seguiría diciendo «entra» hasta el siguiente deploy. Así el corte
+  // ocurre en el segundo exacto, y a quien tenga la página abierta se le cierran
+  // las puertas delante. El cobro NO depende de esto: /api/checkout comprueba las
+  // mismas fechas en el servidor (src/lib/membership.ts).
+  //
+  // Todo el texto se formatea en la hora de MADRID (la promesa está escrita en la
+  // hora de Emi: «23:59 CEST»); el contador usa la diferencia entre dos instantes,
+  // que es la misma en cualquier huso, así que sirve igual en Caracas o en Tokio.
+  (function () {
+    var main = document.querySelector('.page');
+    if (!main) return;
+    var closes = Date.parse(closesAt);
+    var reopens = Date.parse(reopensAt);
+    var MADRID = 'Europe/Madrid';
+    var dayOpts = { timeZone: MADRID, year: 'numeric', month: '2-digit', day: '2-digit' };
+    var timeOpts = { timeZone: MADRID, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
+    var dateOpts = { timeZone: MADRID, day: 'numeric', month: 'long' };
+
+    // Si el navegador no sabe de husos horarios, devolvemos '' y dejamos intacto
+    // el texto del build (que ya trae la fecha bien): mejor eso que un hueco.
+    function part(ms, opts, loc) {
+      try { return new Intl.DateTimeFormat(loc || locale, opts).format(new Date(ms)); }
+      catch (e) { return ''; }
+    }
+    function tzName(ms) {
+      try {
+        var ps = new Intl.DateTimeFormat('en-US', { timeZone: MADRID, timeZoneName: 'longOffset' })
+          .formatToParts(new Date(ms));
+        for (var i = 0; i < ps.length; i++) {
+          if (ps[i].type === 'timeZoneName') return ps[i].value === 'GMT+01:00' ? 'CET' : 'CEST';
+        }
+      } catch (e) {}
+      return 'CEST';
+    }
+    // «Cierra hoy» solo si el cierre cae hoy EN MADRID, no en el huso del que lee.
+    function leadText(now) {
+      var date = part(closes, dateOpts), time = part(closes, timeOpts);
+      if (!date || !time) return '';
+      var sameDay = part(closes, dayOpts, 'en-CA') === part(now, dayOpts, 'en-CA');
+      return (sameDay ? copy.leadToday : copy.leadDay)
+        .replace('{date}', date).replace('{time}', time).replace('{tz}', tzName(closes));
+    }
+
+    function doorsState(now) {
+      if (isNaN(closes)) return 'open';
+      if (now <= closes) return 'soon';
+      if (!isNaN(reopens) && now >= reopens) return 'open';
+      return 'closed';
+    }
+
+    var leads = main.querySelectorAll('.timer__lead');
+    var dboxes = main.querySelectorAll('[data-cd-dbox]');
+    var ds = main.querySelectorAll('[data-cd-d]');
+    var hs = main.querySelectorAll('[data-cd-h]');
+    var ms_ = main.querySelectorAll('[data-cd-m]');
+    var ss = main.querySelectorAll('[data-cd-s]');
+    function each(list, fn) { for (var i = 0; i < list.length; i++) fn(list[i]); }
+    function setText(list, txt) { each(list, function (el) { if (el.textContent !== txt) el.textContent = txt; }); }
+    function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+    var lastState = '';
+    var lastLead = '';
+    function tick() {
+      var now = Date.now();
+      var st = doorsState(now);
+      if (st !== lastState) {
+        lastState = st;
+        main.setAttribute('data-doors', st);
+        // No basta con apagarlo en CSS: al cerrar le quitamos el href para que
+        // tampoco se pueda abrir con el teclado, con el menú del botón derecho ni
+        // copiarlo. Y al revés, si reabre con la página abierta, se lo devolvemos.
+        each(main.querySelectorAll('.btn--pay'), function (b) {
+          if (st === 'closed') {
+            b.removeAttribute('href');
+            b.setAttribute('aria-disabled', 'true');
+            b.setAttribute('tabindex', '-1');
+          } else {
+            b.setAttribute('href', payHrefOpen);
+            b.removeAttribute('aria-disabled');
+            b.removeAttribute('tabindex');
+          }
+        });
+      }
+      if (st !== 'soon') return;
+      var lead = leadText(now);
+      if (lead && lead !== lastLead) { lastLead = lead; setText(leads, lead); }
+      var left = Math.max(0, Math.floor((closes - now) / 1000));
+      var d = Math.floor(left / 86400);
+      setText(ds, String(d));
+      each(dboxes, function (el) { el.hidden = d === 0; });
+      setText(hs, pad(Math.floor((left % 86400) / 3600)));
+      setText(ms_, pad(Math.floor((left % 3600) / 60)));
+      setText(ss, pad(left % 60));
+    }
+
+    tick();
+    setInterval(tick, 1000);
+  })();
+</script>
 
 <script is:inline>
   // 13 · Fundido al hacer scroll + notas musicales al hover de los botones.

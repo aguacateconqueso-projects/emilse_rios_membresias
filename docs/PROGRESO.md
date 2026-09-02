@@ -3,6 +3,64 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 2 sep 2026 — Título puente, cuenta atrás y **el cierre ya es de verdad**
+> Tres cosas que pidió Adrián el día del cierre. Las dos primeras son copy y adorno; la
+> tercera cierra **el cabo suelto grande** de la entrada de abajo (las puertas eran solo texto).
+>
+> **1 · Título puente tras el primer botón.** Entre el bloque del mes (que cierra con el primer
+> botón de pago) y la historia larga —«En 2012 mi único trabajo era tocar…»— la carta saltaba
+> sin avisar. Ahora hay una línea que la presenta: **«¿Quieres saber por qué creé esta
+> membresía?»** / «Want to know why I created this membership?». Clave `whyH`, clase `.whyh`,
+> mismo registro que «¿Necesitas ayuda para llegar?» (centrada, cursiva, marrón al hover).
+>
+> **2 · Cuenta atrás bajo CADA botón de pago** (los 4). Dos líneas: el rótulo —«Cierra hoy a las
+> 23:59 CEST»— y el reloj `12h 15m 29s`, con la casilla de días solo cuando faltan 24h o más.
+> Mayúsculas y letra espaciada como los botones; la urgencia la ponen los números, no un rojo
+> de rebajas. Cifras tabulares para que no baile de ancho. Dentro de la tarjeta de precio se
+> invierte de color con ella.
+>
+> **⚠️ Nada de esto está escrito a mano:** la hora, la fecha y hasta el rótulo **CEST/CET**
+> salen de la fecha configurada, formateados **en la hora de Madrid** (la promesa es la hora de
+> Emi, no la del visitante). Si el cierre no cae hoy, el rótulo cambia solo a «Cierra el 2 de
+> septiembre a las 23:59 CEST». El contador usa la diferencia entre dos instantes, que es la
+> misma en Caracas o en Tokio.
+>
+> **3 · El cierre, programado de verdad.** Fichero nuevo **`src/lib/membership.ts`** con las dos
+> fechas y `doorsClosed()`. Es la única fuente de verdad y la leen los **dos** lados, que es lo
+> que impide que se desalineen:
+> - **`MEMBERSHIP_CLOSES_AT`** — por defecto `2026-09-02T23:59:59+02:00` (lo que promete el copy).
+> - **`MEMBERSHIP_REOPENS_AT`** — por defecto `2026-10-01T00:00:00+02:00` (la FAQ dice que durante
+>   septiembre no entra nadie). **Vacío = se quedan cerradas** hasta que alguien ponga fecha.
+> - **La carta**: los 4 botones pasan a «PUERTAS CERRADAS» —sin `href`, sin flecha, sin relleno al
+>   hover, `aria-disabled` y `tabindex="-1"`— y el contador se sustituye por «Las puertas están
+>   cerradas. Abren el 1 de octubre.» + **enlace al newsletter** («Avísame cuando abran»), que
+>   antes era gente que se iba sin dejar rastro. El flip lo hace un script con la hora **real** del
+>   visitante, como el precio de fundador: **no hace falta redeploy**, y a quien tenga la página
+>   abierta se le cierran las puertas delante (comprobado cruzando el corte con reloj falso).
+>   Si reabre con la página abierta, el `href` vuelve solo.
+> - **`/api/checkout`**: si está cerrado **no crea la sesión de Stripe** y devuelve **403** con una
+>   página bilingüe («puertas cerradas» + alta al newsletter + volver a la carta). Esconder los
+>   botones NO basta: la URL `/api/checkout?lang=es` se pega a mano o queda en un correo viejo.
+>   La comprobación va **antes** que la de Stripe, para que un fallo de configuración no tape el
+>   mensaje. Esto es lo único que cierra el grifo de verdad.
+>
+> **Verificado en Chromium** (1280×900 y 390×844, ES y EN) con el reloj falsificado en los cinco
+> estados: hoy (contador de 12h y pico), 30 ago (`3 d 11 h 59 m`, con casilla de días), 3 sep
+> (cerrado: 4 botones sin href, `tabindex -1`, aviso y enlace visibles), 5 oct (**reabierto**, sin
+> contador) y el cruce del corte en vivo a las 23:59:59. Y en servidor con `astro dev`: con fecha
+> pasada `/api/checkout` da **403** en los dos idiomas; con fecha futura sigue su camino normal.
+> Sin desbordes horizontales. `npm run build` ok.
+>
+> **⬜ Lo que hay que hacer CADA MES** (junto con el bloque `month*` y el video): mover
+> `MEMBERSHIP_CLOSES_AT` y `MEMBERSHIP_REOPENS_AT` en Vercel. Si no se tocan, el 1 de octubre las
+> puertas **se abren solas** con el contenido de septiembre todavía puesto. Los valores por
+> defecto viven en el código para que esto funcione aunque las variables no estén en Vercel, pero
+> lo sano es ponerlas allí (se cambian sin deploy… ojo: sí hace falta **redeploy** para que Vercel
+> las tome, igual que `STRIPE_FOUNDER_UNTIL`).
+>
+> **⬜ Sigue pendiente:** repasar el copy que da por hecho que se puede entrar cualquier día
+> (`priceBelow`, la FAQ del pago) para que no choque con las puertas cerradas.
+
 ## 🗓️ 1 sep 2026 — Video de un minuto + el tema del mes en la carta
 > Adrián pasó copy nuevo de Emi y los dos embeds de **Bunny Stream** (uno por idioma). El tramo
 > que va justo debajo del gancho deja de ser «párrafo + botón» y pasa a ser un embudo entero:
@@ -58,6 +116,9 @@
 > `player.mediadelivery.net`**, así que el iframe se pinta pero no carga — se ve el marco negro.
 > Tras el deploy hay que abrir `/` y `/en/` y confirmar que **reproduce**, que es **el video
 > correcto en cada idioma** y que a pantalla completa funciona.
+>
+> **✅ RESUELTO el 2 sep (ver entrada de arriba) — las puertas ya se cierran solas.**
+> Se deja el diagnóstico original porque describe bien el problema:
 >
 > **⬜ Cabo suelto grande — las puertas NO se cierran solas.** El copy nuevo (y la FAQ) prometen
 > que el **miércoles 2 a las 23:59 CEST** se cierran las puertas y que **durante septiembre no
