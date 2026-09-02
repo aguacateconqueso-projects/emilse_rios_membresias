@@ -3,7 +3,7 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 1 sep 2026 — Video de un minuto + el tema del mes en la carta
+## 🗓️ 1 sep 2026 — Video de un minuto + el tema del mes en la carta 🔎 EN REVISIÓN (PR #71)
 > Adrián pasó copy nuevo de Emi y los dos embeds de **Bunny Stream** (uno por idioma). El tramo
 > que va justo debajo del gancho deja de ser «párrafo + botón» y pasa a ser un embudo entero:
 >
@@ -79,6 +79,12 @@
 >    del cierre hasta el siguiente deploy.
 > 5. Repasar el copy que hoy da por hecho que se puede entrar cualquier día (`priceBelow`, la FAQ
 >    del pago) para que no se contradiga con las puertas cerradas.
+>
+> **Estado:** PR #71 abierto contra `main`, **sin mergear**. Adrián lo quiso ver primero en el
+> preview de Vercel, que es justo donde se puede comprobar lo único que no se pudo verificar en
+> la sesión: **que el video carga y reproduce** (ver el cuadro de arriba). Rama:
+> `claude/sales-page-video-text-xn2z9q`.
+> https://github.com/aguacateconqueso-projects/emilse_rios_membresias/pull/71
 
 ## 🗓️ 11 ago 2026 — Ajuste: el párrafo del CTA nuevo, alineado a la izquierda
 > Adrián vio el CTA nuevo ya en producción y pidió corregir la alineación: yo había centrado el
