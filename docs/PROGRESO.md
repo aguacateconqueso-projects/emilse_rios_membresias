@@ -3,7 +3,7 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 2 sep 2026 — Título puente, cuenta atrás y **el cierre ya es de verdad**
+## 🗓️ 2 sep 2026 — Título puente, cuenta atrás y **el cierre ya es de verdad** ⏳ EN PR #72
 > Tres cosas que pidió Adrián el día del cierre. Las dos primeras son copy y adorno; la
 > tercera cierra **el cabo suelto grande** de la entrada de abajo (las puertas eran solo texto).
 >
@@ -57,6 +57,10 @@
 > defecto viven en el código para que esto funcione aunque las variables no estén en Vercel, pero
 > lo sano es ponerlas allí (se cambian sin deploy… ojo: sí hace falta **redeploy** para que Vercel
 > las tome, igual que `STRIPE_FOUNDER_UNTIL`).
+>
+> **⏰ El deploy tiene hora.** Esto hay que mergear y desplegar **antes de las 23:59 CEST de
+> hoy**. Si sale después, el contador nace vencido y lo primero que ve quien entre son las
+> puertas cerradas — que es lo correcto, pero se pierde el día de venta entero.
 >
 > **⬜ Sigue pendiente:** repasar el copy que da por hecho que se puede entrar cualquier día
 > (`priceBelow`, la FAQ del pago) para que no choque con las puertas cerradas.
