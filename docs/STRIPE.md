@@ -59,6 +59,8 @@ Project → **Settings → Environment Variables** (marca Production y Preview):
 | `STRIPE_PRICE_FOUNDER` | Price ID del de fundador ($57) |
 | `STRIPE_PRICE_STANDARD` | Price ID del estándar vigente (**€65** desde ago 2026) |
 | `STRIPE_FOUNDER_UNTIL` | (opcional) fin de la ventana de fundador, ISO Madrid. Cerró el `2026-07-23T23:59:59+02:00`, así que hoy todo el mundo entra por `STRIPE_PRICE_STANDARD` |
+| `MEMBERSHIP_CLOSES_AT` | (opcional) cierre de puertas del ciclo, ISO **con zona** (`2026-09-02T23:59:59+02:00`). Pasada esa hora `/api/checkout` responde 403 con la página de «puertas cerradas» y no crea sesión de Stripe |
+| `MEMBERSHIP_REOPENS_AT` | (opcional) reapertura, mismo formato. Vacío = siguen cerradas. **Las dos se cambian cada mes**, ver `src/lib/membership.ts` |
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase → Settings → API → service_role |
 | `PUBLIC_SITE_URL` | dominio canónico, p. ej. `https://emilseriosacademy.com` (URLs de retorno de Stripe) |
 
