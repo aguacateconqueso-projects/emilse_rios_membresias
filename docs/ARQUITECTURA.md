@@ -182,6 +182,12 @@ Un trigger crea el `profile` automáticamente al registrarse un usuario.
   las leen los dos lados: la carta (cuenta atrás bajo cada botón y botones muertos al
   cerrar, decidido en el cliente con la hora real) y `/api/checkout`, que responde 403
   sin crear sesión de Stripe. Esconder los botones no basta: la URL se pega a mano.
+- **Pase de invitación** (mismo fichero): `MEMBERSHIP_INVITE_CODE` + el parámetro
+  `?pase=…` dejan entrar a UNA persona con las puertas cerradas, pagando lo mismo y por
+  el mismo camino (no es descuento ni regalo; el regalo es el alta manual del panel).
+  Quien decide es el servidor en `/api/checkout`; la carta solo enciende los botones si
+  ve un `?pase=` en la URL, porque comprobarlo en el navegador exigiría publicar el
+  código. `MEMBERSHIP_INVITE_UNTIL` lo caduca solo. Vacío = no hay pase válido.
 - Webhooks que actualizan `subscriptions`:
   `checkout.session.completed`, `customer.subscription.updated`,
   `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`.
