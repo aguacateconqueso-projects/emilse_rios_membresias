@@ -3,7 +3,7 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 3 sep 2026 — Pase de invitación: dejar entrar a UNA persona con las puertas cerradas
+## 🗓️ 3 sep 2026 — Pase de invitación: dejar entrar a UNA persona con las puertas cerradas ✅ MERGEADO (PR #73)
 > Las puertas se cerraron el 2 de septiembre (entrada de abajo) y funcionaron: hoy la carta
 > dice «PUERTAS CERRADAS» y `/api/checkout` responde 403. Emi quiere darle la oportunidad **a
 > una persona concreta** y mandarle su enlace de pago, sin reabrir para todo el mundo.
@@ -56,10 +56,28 @@
 > «PUERTAS CERRADAS»; con pase los 4 vivos apuntando a `/api/checkout?lang=es&pase=…`
 > (`lang=en` en inglés), sin desbordes horizontales. `npm run build` ok.
 >
-> **⬜ Sin claves de Stripe aquí**, así que el cobro real por el enlace del pase no está
-> probado end-to-end: tras el deploy conviene abrir el enlace una vez y confirmar que llega
-> a la página de pago (y, cuando la persona pague, que su fila de `subscriptions` queda
-> `active` y le llega el correo de bienvenida).
+> **✅ CONFIRMADO EN PRODUCCIÓN el mismo 3 sep.** Adrián puso las dos variables en Vercel,
+> mergeó y abrió su enlace: llega a la página de pago de Stripe, y la carta sin pase sigue
+> diciendo «PUERTAS CERRADAS» para todos los demás. El pase quedó vivo hasta el **5 de
+> septiembre a las 23:59** (Madrid).
+>
+> **⚠️ Tropiezo que costó una vuelta, por si se repite:** con las variables ya puestas en
+> Vercel y el redeploy hecho, el enlace seguía dando «puertas cerradas». La causa no era la
+> configuración: **el PR todavía no estaba mergeado**, así que producción era el sitio de
+> ayer, uno que no sabía qué es `?pase=` y lo ignoraba. La llave era correcta; la cerradura
+> no estaba instalada. **Orden obligatorio: mergear → esperar el deploy → poner/ajustar
+> variables → redeploy → probar.** Al revés no funciona y el síntoma engaña, porque el 403
+> de puertas cerradas es exactamente el mismo en los dos casos.
+>
+> **⬜ Lo que queda por hacer a mano cuando la persona pague:**
+> 1. Confirmar en Stripe que la suscripción entró (sale marcada `invited: si` en la metadata)
+>    y que su fila de `subscriptions` quedó `active` con el correo de bienvenida enviado.
+> 2. **Vaciar `MEMBERSHIP_INVITE_CODE` en Vercel + redeploy.** Si se olvida no es grave: la
+>    caducidad lo apaga solo el 5 de septiembre. Es justo para eso que existe.
+>
+> **⬜ Y para la próxima invitación:** código nuevo (`openssl rand -hex 12`), fecha nueva de
+> caducidad, redeploy. **Nunca reutilizar un código ya enviado** — el anterior pudo quedar
+> reenviado en un chat.
 
 ## 🗓️ 2 sep 2026 — Título puente, cuenta atrás y **el cierre ya es de verdad**
 > Tres cosas que pidió Adrián el día del cierre. Las dos primeras son copy y adorno; la
