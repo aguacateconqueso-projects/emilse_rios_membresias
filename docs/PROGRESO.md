@@ -3,6 +3,83 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 3 sep 2026 — El aula pasa a **Bunny Stream**: los videos de Emi ya se reproducen ⬜ FALTA PROBAR EN PRODUCCIÓN
+> **El síntoma.** Emi subió los videos del mes a Bunny, los pegó en el panel y en el aula
+> **no se reproducen**. En la carta el video de Bunny sí funciona desde el 1 sep, así que
+> el problema no era Bunny: era que **el aula todavía hablaba Vimeo**.
+>
+> **La causa exacta, y es fea.** El panel guardaba el enlace pasándolo por `normalizeVimeo()`,
+> que buscaba «la primera ristra de 6 o más dígitos» y la daba por un ID de Vimeo. Un embed
+> de Bunny es `iframe.mediadelivery.net/embed/**741634**/90981ada-e857-…`: esos 6 dígitos son
+> el número de **la biblioteca**, no del video. Así que el panel se quedaba con `741634`,
+> **tiraba el GUID** (que es lo único que identifica el video) y guardaba
+> `https://player.vimeo.com/video/741634?…&responsive=true`. Un video de Vimeo que no existe.
+> Sin error, sin aviso: guardaba «bien» y el aula pintaba un reproductor de Vimeo en error.
+>
+> **⚠️ CONSECUENCIA: lo que Emi guardó antes de este cambio NO SE PUEDE RECUPERAR.** El GUID
+> no quedó en ningún sitio. **Hay que volver a pegar el enlace de Bunny** de cada video que
+> se haya guardado desde el panel. Para que no haya que adivinar cuáles, el aula ahora los
+> reconoce y dice exactamente eso en el hueco del reproductor: *«Este video se guardó con el
+> formato antiguo. Vuelve a pegar su enlace de Bunny en el panel»* (en inglés en `/aula/en/`).
+>
+> **Lo que se hizo** — un módulo nuevo, `src/lib/video.ts`, que es la **única fuente de verdad**
+> del formato de los enlaces, con los **dos lados leyéndolo**, igual que `membership.ts` con las
+> fechas de las puertas. Antes había dos copias de la misma función (una en el panel para
+> guardar, otra en el aula para pintar) y ese es justo el tipo de pareja que se desalinea:
+> - **`normalizeVideoUrl()`** — la usa el panel al **guardar**.
+> - **`videoEmbed()`** — la usa el aula al **pintar** (ejercicio de la semana, Concepto Base y
+>   las tarjetas de Bonus Material, incluido el lightbox).
+>
+> **Qué acepta el campo de video del panel** (Emi pega lo que le sea más cómodo):
+> el código `<iframe …>` entero del botón **Embed** de Bunny, la URL de `embed/` o de `play/`,
+> el enlace del CDN (`vz-….b-cdn.net/GUID/playlist.m3u8`), el GUID pelado… y **los enlaces de
+> Vimeo del contenido viejo siguen funcionando**, que por eso no se borró ese camino: hay
+> material publicado que vive allí y no se va a volver a subir.
+>
+> **Dos parámetros se fuerzan siempre, a propósito:** `autoplay=false` y `muted=false`. El
+> código que da Bunny viene con `autoplay=true` y a veces `muted=true`; en el aula las dos
+> cosas están mal — el video no debe arrancar solo al abrir la pestaña, y un ejercicio de
+> violín **en silencio** no sirve de nada. Todo lo demás que traiga el enlace pegado (tokens
+> de biblioteca protegida, `t=` para empezar en un minuto concreto) **se conserva intacto**.
+> Si el enlace ya venía con host `player.mediadelivery.net` (el que usa la carta) se respeta;
+> cuando hay que construir la URL desde cero se usa `iframe.mediadelivery.net`, que es el que
+> documenta Bunny.
+>
+> **La biblioteca sale del propio enlace.** `PUBLIC_BUNNY_LIBRARY_ID` (nueva, opcional, en
+> `.env.example`) es solo el respaldo para cuando se pega algo que trae el GUID pero no la
+> biblioteca. Por defecto **741634**, la misma de la carta.
+>
+> **Lo que NO se tocó:** la base de datos. Las columnas se siguen llamando `vimeo_url_es` /
+> `vimeo_url_en` — es el nombre histórico y ahí dentro va el enlace de Bunny. Renombrarlas
+> pedía una migración y tocar panel, aula y seed a la vez para no arreglar nada que se vea.
+> Queda anotado en `ARQUITECTURA.md` para que no confunda dentro de seis meses.
+>
+> **Verificado.** 15 formas de enlace pasadas por el módulo (embed, play, iframe pegado, CDN,
+> GUID pelado, con token, otra biblioteca, los cuatro sabores de Vimeo, el enlace roto, basura
+> y vacío) y **en Chromium de verdad** (1280×900, ES y EN) con el aula servida por `astro dev`
+> y Supabase simulado: el ejercicio de la semana pinta el iframe de Bunny con `autoplay=false`
+> y `muted=false`, el selector ES/EN del video **cambia al video del otro idioma**, el Concepto
+> Base con un enlace roto muestra el aviso de «vuelve a pegarlo», un Vimeo viejo **sigue
+> reproduciéndose**, la tarjeta de Bonus es clicable y su lightbox abre el iframe de Bunny.
+> Sin errores de consola, sin desbordes horizontales. En el panel, **guardando de verdad**:
+> se pega el `<iframe>` de Bunny y lo que sale hacia la base de datos es
+> `https://iframe.mediadelivery.net/embed/741634/90981ada-…?autoplay=false&loop=false&muted=false&preload=true&responsive=true`.
+> `npm run build` ok.
+>
+> **⬜ Lo que falta, y hay que hacerlo en este orden** (es la misma lección del pase de
+> invitación: primero se instala la cerradura, después se prueba la llave):
+> 1. **Mergear y esperar el deploy.** Hasta que esto no esté en producción, el panel sigue
+>    rompiendo los enlaces al guardar.
+> 2. **Emi vuelve a pegar los enlaces** de los videos que ya había guardado (los que muestren
+>    el aviso del formato antiguo).
+> 3. **Abrir `/aula/` y `/aula/en/` y confirmar que REPRODUCEN.** En este entorno el proxy
+>    bloquea `mediadelivery.net`, así que aquí solo se pudo comprobar que el iframe se pinta
+>    con la URL correcta — que el video **suene** hay que verlo en el sitio de verdad.
+> 4. Si el reproductor sale negro o con error de dominio: en Bunny → biblioteca 741634 →
+>    Security, revisar los **allowed referrers** (que esté `www.emilseriosacademy.com`) y si
+>    hay **token authentication** encendida. El iframe manda el origen
+>    (`referrerpolicy="strict-origin-when-cross-origin"`), así que la lista de Bunny lo ve.
+
 ## 🗓️ 3 sep 2026 — Pase de invitación: dejar entrar a UNA persona con las puertas cerradas ✅ MERGEADO (PR #73)
 > Las puertas se cerraron el 2 de septiembre (entrada de abajo) y funcionaron: hoy la carta
 > dice «PUERTAS CERRADAS» y `/api/checkout` responde 403. Emi quiere darle la oportunidad **a

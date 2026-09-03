@@ -305,9 +305,9 @@
                 <textarea id="f-desc-es" placeholder="Qué se trabaja, a qué tempo, en qué fijarse…"></textarea>
               </div>
               <div class="field">
-                <label for="f-vimeo-es">Video de Vimeo · ES</label>
-                <input id="f-vimeo-es" type="text" placeholder="URL o código &lt;iframe&gt; de Vimeo" />
-                <span class="hint">Pega el enlace (https://vimeo.com/…) o el código de inserción completo.</span>
+                <label for="f-video-es">Video de Bunny · ES</label>
+                <input id="f-video-es" type="text" placeholder="URL o código &lt;iframe&gt; de Bunny Stream" />
+                <span class="hint">En Bunny, botón <b>Embed</b> del video: pega el enlace (https://iframe.mediadelivery.net/…) o el código entero. Los enlaces de Vimeo del contenido antiguo se siguen aceptando.</span>
               </div>
               <div class="field">
                 <label for="f-pdf-es">PDF de apoyo · ES (opcional)</label>
@@ -326,9 +326,9 @@
                 <textarea id="f-desc-en" placeholder="What it works, at what tempo, what to watch for…"></textarea>
               </div>
               <div class="field">
-                <label for="f-vimeo-en">Vimeo video · EN</label>
-                <input id="f-vimeo-en" type="text" placeholder="Vimeo URL or &lt;iframe&gt; embed code" />
-                <span class="hint">Paste the link (https://vimeo.com/…) or the full embed code.</span>
+                <label for="f-video-en">Video de Bunny · EN</label>
+                <input id="f-video-en" type="text" placeholder="URL o código &lt;iframe&gt; de Bunny Stream" />
+                <span class="hint">El mismo procedimiento, con el video en inglés.</span>
               </div>
               <div class="field">
                 <label for="f-pdf-en">Support PDF · EN (optional)</label>
@@ -469,6 +469,7 @@
 <!-- Datos reales: auth de admin + ejercicios / miembros / foro desde Supabase -->
 <script>
   import { supabase, isSupabaseConfigured } from '../../lib/supabase';
+  import { normalizeVideoUrl } from '../../lib/video';
 
   const $ = (id) => document.getElementById(id);
 
@@ -736,7 +737,7 @@
   const newForm = $('newForm');
   function resetForm() {
     $('f-id').value = '';
-    ['f-week', 'f-title-es', 'f-title-en', 'f-desc-es', 'f-desc-en', 'f-vimeo-es', 'f-vimeo-en', 'f-up', 'f-down', 'f-pdf-es', 'f-pdf-en']
+    ['f-week', 'f-title-es', 'f-title-en', 'f-desc-es', 'f-desc-en', 'f-video-es', 'f-video-en', 'f-up', 'f-down', 'f-pdf-es', 'f-pdf-en']
       .forEach((id) => { const el = $(id); if (el) el.value = ''; });
     $('formErr').hidden = true;
     applyKindUI('semana');
@@ -757,7 +758,7 @@
     $('f-week').value = e.week_label || '';
     $('f-title-es').value = e.title_es || ''; $('f-title-en').value = e.title_en || '';
     $('f-desc-es').value = e.desc_es || ''; $('f-desc-en').value = e.desc_en || '';
-    $('f-vimeo-es').value = e.vimeo_url_es || ''; $('f-vimeo-en').value = e.vimeo_url_en || '';
+    $('f-video-es').value = e.vimeo_url_es || ''; $('f-video-en').value = e.vimeo_url_en || '';
     $('f-up').value = isoToLocalInput(e.publish_at); $('f-down').value = isoToLocalInput(e.unpublish_at);
     $('formTitle').textContent = KIND_META[kind].formEdit;
     newForm.hidden = false; newForm.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -772,26 +773,6 @@
     const { error } = await supabase.storage.from('pdfs').upload(path, f, { contentType: 'application/pdf', upsert: false });
     if (error) throw new Error('PDF (¿existe el bucket "pdfs"?): ' + error.message);
     return path;
-  }
-
-  // Normaliza lo que se pegue en el campo de video (URL normal, enlace del panel
-  // vimeo.com/manage/videos/ID, ID pelado, o el código <iframe> completo) a la
-  // URL limpia del player, conservando el hash de privacidad si lo trae. Si no
-  // reconoce un ID de Vimeo, guarda el texto tal cual para no perder nada.
-  function normalizeVimeo(input) {
-    const s = (input || '').trim();
-    if (!s) return null;
-    let u = s;
-    const src = s.match(/src=["']([^"']+)["']/i);
-    if (src) u = src[1];
-    u = u.replace(/&amp;/g, '&');
-    const id = u.match(/\d{6,}/);
-    if (!id) return s;
-    const base = 'https://player.vimeo.com/video/' + id[0];
-    const qi = u.indexOf('?');
-    if (qi !== -1) return base + u.slice(qi);
-    const ph = u.match(new RegExp('/' + id[0] + '/([A-Za-z0-9]+)'));
-    return base + (ph ? '?h=' + ph[1] : '');
   }
 
   $('newBtn')?.addEventListener('click', () => {
@@ -851,7 +832,8 @@
         week_label: $('f-week').value.trim() || null,
         title_es, title_en,
         desc_es: $('f-desc-es').value.trim() || null, desc_en: $('f-desc-en').value.trim() || null,
-        vimeo_url_es: normalizeVimeo($('f-vimeo-es').value), vimeo_url_en: normalizeVimeo($('f-vimeo-en').value),
+        // Columnas con nombre histórico: hoy guardan el embed de Bunny.
+        vimeo_url_es: normalizeVideoUrl($('f-video-es').value), vimeo_url_en: normalizeVideoUrl($('f-video-en').value),
         publish_at: pubISO, unpublish_at: unpISO,
       };
       if (pdfEs !== undefined) payload.pdf_path_es = pdfEs;

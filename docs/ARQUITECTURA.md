@@ -12,7 +12,7 @@
 | Frontend | Astro (este repo). |
 | Backend / BD / Auth / Archivos | Supabase (Postgres + Auth + Storage). |
 | Pagos | Stripe (suscripción recurrente + portal de cliente + webhooks). |
-| Video | Vimeo (embeds restringidos por dominio). |
+| Video | **Bunny Stream** (desde el 3 sep 2026; antes Vimeo). Mismo proveedor en la carta y en el aula. |
 | Hosting | Vercel (deploy automático desde GitHub). |
 | Hosting actual de Emi | Hostinger. Solo necesitamos que agreguen **1 registro CNAME**. |
 
@@ -65,7 +65,7 @@ contra las fechas de subida/bajada de cada ejercicio (sin cron frágil).
 - Dos públicos: español e inglés. **Landing y aula son bilingües**; el toggle EN/ES
   arriba cambia toda la experiencia a la versión de ese idioma.
   - Rutas: `/` y `/en/`; `/aula/` y `/aula/en/`.
-- **Contenido del ejercicio** (título, descripción, video Vimeo, PDF): Emi lo sube en
+- **Contenido del ejercicio** (título, descripción, video de Bunny, PDF): Emi lo sube en
   **ambos idiomas** desde el panel. En el aula, el video tiene además un selector ES/EN.
 - **Foro: DOS foros separados**, español e inglés. Cada miembro tiene acceso a ambos y
   pasa de uno a otro con el toggle. **Sin traducción automática** (decisión de costo):
@@ -82,7 +82,7 @@ contra las fechas de subida/bajada de cada ejercicio (sin cron frágil).
 
 ## 6. Panel de administración (para Emi, sin tocar código)
 Pantalla protegida donde Emi puede:
-- Crear/editar ejercicios: título, link de Vimeo, PDF, **fecha-hora de subida y
+- Crear/editar ejercicios: título, enlace de Bunny, PDF, **fecha-hora de subida y
   de bajada** (con miércoles 00:00/00:01 Madrid como valores por defecto).
 - Ver miembros y su estado de suscripción.
 - Leer y **responder preguntas** del foro.
@@ -117,8 +117,8 @@ exercises
   title_en          text
   desc_es           text
   desc_en           text
-  vimeo_url_es      text
-  vimeo_url_en      text
+  vimeo_url_es      text   -- nombre histórico: hoy guarda el embed de Bunny
+  vimeo_url_en      text   -- ídem
   pdf_path_es       text   (Supabase Storage; opcional)
   pdf_path_en       text   (Supabase Storage; opcional)
   publish_at        timestamptz   -- cuándo se hace visible (jue 00:01 Madrid)
@@ -215,6 +215,7 @@ Para después: anti-reentrada fina por email, favoritos, setup fee, estética fi
 - [ ] Foro: ¿miembros se responden entre ellos o solo Emi responde?
 - [ ] Claves de Stripe (test primero) y los dos Prices creados.
 - [ ] Proyecto Supabase creado (URL + claves).
-- [ ] Cuenta de Vimeo: confirmar que permite restricción por dominio.
+- [ ] Bunny Stream: confirmar en la biblioteca 741634 los **allowed referrers** (que
+      `www.emilseriosacademy.com` esté en la lista) y si hay token authentication.
 - [ ] Contacto de quien administra el Hostinger (para el CNAME).
 ```
