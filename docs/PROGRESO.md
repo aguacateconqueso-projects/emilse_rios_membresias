@@ -3,6 +3,64 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 3 sep 2026 — Pase de invitación: dejar entrar a UNA persona con las puertas cerradas
+> Las puertas se cerraron el 2 de septiembre (entrada de abajo) y funcionaron: hoy la carta
+> dice «PUERTAS CERRADAS» y `/api/checkout` responde 403. Emi quiere darle la oportunidad **a
+> una persona concreta** y mandarle su enlace de pago, sin reabrir para todo el mundo.
+>
+> **Lo que NO es.** No es regalarle el acceso — eso ya existía y es otra cosa: el alta manual
+> del panel (`/api/admin/add-member`), que concede la suscripción sin cobrar. Aquí la persona
+> **paga lo mismo**, por el mismo Checkout, con el mismo correo de bienvenida y el mismo
+> camino de `/gracias` para crear su contraseña. Lo único que se salta es el cierre.
+>
+> **Cómo se usa** (Adrián, en Vercel — dos variables y un redeploy):
+> 1. `MEMBERSHIP_INVITE_CODE` = un código **largo y aleatorio** (`openssl rand -hex 12`).
+> 2. `MEMBERSHIP_INVITE_UNTIL` = cuándo caduca, ISO **con zona**, corto (24–48 h).
+> 3. Se le manda a esa persona **su enlace**:
+>    `https://www.emilseriosacademy.com/api/checkout?lang=es&pase=EL-CODIGO`
+>    (o la carta entera, `https://www.emilseriosacademy.com/?pase=EL-CODIGO`, si se quiere
+>    que la lea antes; los botones se le encienden y arrastran el pase al checkout).
+> 4. Cuando ya pagó, **vaciar `MEMBERSHIP_INVITE_CODE`**. Con la caducidad puesta se cierra
+>    solo aunque nadie se acuerde, que es justo para lo que está.
+>
+> **Dónde vive** — `src/lib/membership.ts`, al lado de las fechas de las puertas, porque es
+> la misma decisión («¿puede entrar este visitante?») y no quiero dos sitios que se
+> desalineen. `inviteValid()` compara en **tiempo constante** (el enlace es público y se
+> puede llamar mil veces; una comparación normal filtra el código carácter a carácter por el
+> tiempo de respuesta). Sin código configurado, vacío, o caducado → **no hay pase válido**,
+> ni siquiera `?pase=`: el comportamiento es exactamente el de ayer.
+>
+> **Quién decide es el servidor.** `/api/checkout` es el único que sabe el código. La carta
+> **no lo comprueba** — no puede: para comprobarlo en el navegador habría que enviarle el
+> código, o sea publicarlo. Lo que hace la carta es más humilde: si ve un `?pase=` en la URL
+> pinta las puertas abiertas y le cuelga el pase a los 4 botones. ⚠️ **Consecuencia
+> aceptada:** alguien que escriba `?pase=loquesea` a mano verá los botones encendidos… y
+> chocará con el mismo 403 de puertas cerradas al pulsarlos. Nadie entra sin el código.
+>
+> **En Stripe queda la marca.** La sesión y la suscripción llevan `invited: si|no` en la
+> metadata, junto a `tier` y `lang`, para que dentro de tres meses se pueda ver de un vistazo
+> que esa suscripción entró por un pase y no por la carta abierta.
+>
+> **⚠️ Lo que este pase NO garantiza: es un secreto compartido, no un cupón de un solo uso.**
+> Quien tenga el enlace puede reenviarlo y entrarían dos. Para una invitación puntual es el
+> equilibrio correcto (cero estado, cero BD, se activa y se apaga con una variable); si algún
+> día hace falta de verdad **un uso = una persona**, hay que guardar el pase en Supabase y
+> marcarlo como gastado en el webhook. No hoy.
+>
+> **Verificado** con `astro dev` en cuatro configuraciones (puertas cerradas): sin pase 403,
+> pase inventado 403, pase **de la misma longitud** pero distinto 403, `?pase=` vacío 403,
+> pase caducado 403, sin `MEMBERSHIP_INVITE_CODE` 403 incluso con el pase bueno, y con el
+> pase correcto **pasa la puerta** (500 «Stripe no está configurado», que es lo que toca en
+> este entorno sin claves). Con las puertas abiertas, todo sigue igual con pase y sin él.
+> En Chromium (1280×900, ES y EN): sin pase los 4 botones sin `href`, `aria-disabled` y
+> «PUERTAS CERRADAS»; con pase los 4 vivos apuntando a `/api/checkout?lang=es&pase=…`
+> (`lang=en` en inglés), sin desbordes horizontales. `npm run build` ok.
+>
+> **⬜ Sin claves de Stripe aquí**, así que el cobro real por el enlace del pase no está
+> probado end-to-end: tras el deploy conviene abrir el enlace una vez y confirmar que llega
+> a la página de pago (y, cuando la persona pague, que su fila de `subscriptions` queda
+> `active` y le llega el correo de bienvenida).
+
 ## 🗓️ 2 sep 2026 — Título puente, cuenta atrás y **el cierre ya es de verdad**
 > Tres cosas que pidió Adrián el día del cierre. Las dos primeras son copy y adorno; la
 > tercera cierra **el cabo suelto grande** de la entrada de abajo (las puertas eran solo texto).

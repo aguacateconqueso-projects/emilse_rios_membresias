@@ -15,7 +15,7 @@
 // (/api/checkout?lang=es|en, GET que redirige a la página de pago). El newsletter
 // apunta al alta real (Klaviyo/kmail).
 import Analitica from '../Analitica.astro';
-import { CLOSES_AT, REOPENS_AT, NEWSLETTER_URL, doorsClosed } from '../../lib/membership';
+import { CLOSES_AT, REOPENS_AT, NEWSLETTER_URL, INVITE_PARAM, doorsClosed } from '../../lib/membership';
 
 interface Props { lang?: 'es' | 'en'; }
 const { lang = 'es' } = Astro.props;
@@ -1176,6 +1176,7 @@ const jsonLd = {
 
 <script is:inline define:vars={{ closesAt: CLOSES_AT, reopensAt: REOPENS_AT,
                                  locale: madridLocale, payHrefOpen: t.payHref,
+                                 paseParam: INVITE_PARAM,
                                  copy: { leadToday: t.closeLeadToday, leadDay: t.closeLeadDay } }}>
   // Puertas de la membresía en el cliente — cuenta atrás + cierre en vivo.
   //
@@ -1193,6 +1194,15 @@ const jsonLd = {
     if (!main) return;
     var closes = Date.parse(closesAt);
     var reopens = Date.parse(reopensAt);
+
+    // Pase de invitación (?pase=…): quien llega con uno ve la carta ABIERTA y sus
+    // botones se lo llevan al checkout. Aquí NO se comprueba el código —hacerlo
+    // exigiría traer el secreto al navegador, o sea publicarlo—; quien decide es
+    // /api/checkout en el servidor. Un `?pase=loquesea` inventado, por tanto, solo
+    // consigue ver los botones encendidos y chocar con el 403 de puertas cerradas.
+    var pase = '';
+    try { pase = new URLSearchParams(location.search).get(paseParam) || ''; } catch (e) {}
+    var payHref = pase ? payHrefOpen + '&' + paseParam + '=' + encodeURIComponent(pase) : payHrefOpen;
     var MADRID = 'Europe/Madrid';
     var dayOpts = { timeZone: MADRID, year: 'numeric', month: '2-digit', day: '2-digit' };
     var timeOpts = { timeZone: MADRID, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' };
@@ -1227,7 +1237,7 @@ const jsonLd = {
       if (isNaN(closes)) return 'open';
       if (now <= closes) return 'soon';
       if (!isNaN(reopens) && now >= reopens) return 'open';
-      return 'closed';
+      return pase ? 'open' : 'closed';
     }
 
     var leads = main.querySelectorAll('.timer__lead');
@@ -1257,7 +1267,7 @@ const jsonLd = {
             b.setAttribute('aria-disabled', 'true');
             b.setAttribute('tabindex', '-1');
           } else {
-            b.setAttribute('href', payHrefOpen);
+            b.setAttribute('href', payHref);
             b.removeAttribute('aria-disabled');
             b.removeAttribute('tabindex');
           }

@@ -38,3 +38,50 @@ export function doorsClosed(now: Date = new Date()): boolean {
   if (!Number.isNaN(reopens) && now.getTime() >= reopens) return false;
   return true;
 }
+
+// ---------------------------------------------------------------------------
+// PASE DE INVITACIÓN — dejar entrar a UNA persona con las puertas cerradas.
+//
+// El caso real: Emi cierra las puertas del mes, pero quiere darle la oportunidad
+// a alguien concreto (una alumna que escribió tarde, alguien a quien le prometió
+// el cupo). No se le regala el acceso —eso ya existe y es otra cosa: el alta
+// manual del panel, /api/admin/add-member—: aquí PAGA como todo el mundo, con el
+// mismo Checkout, el mismo precio y el mismo correo de bienvenida. Lo único que
+// se salta es el cierre.
+//
+// Cómo funciona: se pone un código secreto en MEMBERSHIP_INVITE_CODE (Vercel) y
+// se le manda a esa persona el enlace
+//     https://www.emilseriosacademy.com/api/checkout?lang=es&pase=EL-CODIGO
+// Sin el `pase` correcto, /api/checkout sigue devolviendo 403 con las puertas
+// cerradas. Vacío (por defecto) = no hay ningún pase válido, ni siquiera `?pase=`.
+//
+// ⚠️ Es un secreto compartido, no un cupón de un solo uso: quien tenga el enlace
+// puede pasarlo. Por eso dos costumbres: un código LARGO y aleatorio (no «emi»),
+// y MEMBERSHIP_INVITE_UNTIL con una fecha corta (48 h suele bastar) para que
+// caduque solo aunque nadie se acuerde de borrarlo. Y cuando la persona ya haya
+// pagado, lo sano es vaciar la variable.
+export const INVITE_CODE = process.env.MEMBERSHIP_INVITE_CODE || '';
+
+// Caducidad del pase (ISO CON ZONA, igual que las otras fechas). Vacío = el pase
+// vale mientras la variable exista.
+export const INVITE_UNTIL = process.env.MEMBERSHIP_INVITE_UNTIL || '';
+
+// Nombre del parámetro en la URL. En español porque el enlace lo ve la persona
+// invitada, no un programa.
+export const INVITE_PARAM = 'pase';
+
+// ¿Este `pase` abre la puerta AHORA? Comparación de largo constante para no
+// filtrar el código carácter a carácter con el tiempo de respuesta (barato de
+// hacer bien; el enlace es público y se puede llamar mil veces).
+export function inviteValid(code: string | null | undefined, now: Date = new Date()): boolean {
+  if (!INVITE_CODE || !code) return false;
+  if (INVITE_UNTIL) {
+    const until = Date.parse(INVITE_UNTIL);
+    // Fecha inválida → se trata como caducado: ante la duda, no se abre.
+    if (Number.isNaN(until) || now.getTime() > until) return false;
+  }
+  if (code.length !== INVITE_CODE.length) return false;
+  let diff = 0;
+  for (let i = 0; i < code.length; i++) diff |= code.charCodeAt(i) ^ INVITE_CODE.charCodeAt(i);
+  return diff === 0;
+}

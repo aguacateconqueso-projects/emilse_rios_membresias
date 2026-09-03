@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import { stripe, currentTier, priceForTier, siteOrigin } from '../../lib/stripe';
-import { doorsClosed, REOPENS_AT, NEWSLETTER_URL } from '../../lib/membership';
+import { doorsClosed, inviteValid, INVITE_PARAM, REOPENS_AT, NEWSLETTER_URL } from '../../lib/membership';
 
 // Endpoint bajo demanda (no se prerenderiza): crea la sesión de Stripe Checkout
 // y redirige. Flujo 2a: pago ANÓNIMO. El comprador no inicia sesión antes; Stripe
@@ -14,13 +14,19 @@ export const GET: APIRoute = async ({ request, redirect }) => {
   const lang = url.searchParams.get('lang') === 'en' ? 'en' : 'es';
   const origin = siteOrigin(request);
 
+  // Pase de invitación: `?pase=…` deja entrar a UNA persona con las puertas
+  // cerradas (ver src/lib/membership.ts). No es un descuento ni un regalo — paga
+  // lo mismo y sigue el mismo camino; solo se salta el cierre. Sin código válido
+  // vale 0: el `if` de abajo se comporta exactamente como antes.
+  const invited = inviteValid(url.searchParams.get(INVITE_PARAM));
+
   // Puertas cerradas → no se crea la sesión de Stripe. Esconder los botones de la
   // carta NO basta: esta URL se puede pegar a mano, quedó en un correo viejo o la
   // guardó el navegador. El cierre de verdad es este, y usa las MISMAS fechas que
   // la carta (src/lib/membership.ts). 403 y no 404: existe, pero está cerrado.
   // Va ANTES de mirar a Stripe: si las puertas están cerradas da igual cómo esté
   // configurado el cobro, y así el visitante ve la explicación y no un error.
-  if (doorsClosed()) return closedResponse(lang, origin);
+  if (doorsClosed() && !invited) return closedResponse(lang, origin);
 
   if (!stripe) return new Response('Stripe no está configurado.', { status: 500 });
 
@@ -37,8 +43,10 @@ export const GET: APIRoute = async ({ request, redirect }) => {
       line_items: [{ price, quantity: 1 }],
       // Guardamos el idioma en el que pagó para enviar el correo de bienvenida
       // (y el enlace de crear contraseña) en ES o EN según corresponda.
-      metadata: { tier, lang },
-      subscription_data: { metadata: { tier, lang } },
+      // `invited` queda escrito en Stripe para que se vea de un vistazo, meses
+      // después, que esa suscripción entró por un pase y no por la carta abierta.
+      metadata: { tier, lang, invited: invited ? 'si' : 'no' },
+      subscription_data: { metadata: { tier, lang, invited: invited ? 'si' : 'no' } },
       // Idioma de la página de pago de Stripe (no hacen falta precios por idioma).
       locale: lang,
       allow_promotion_codes: true,
