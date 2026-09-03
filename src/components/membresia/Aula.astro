@@ -198,6 +198,10 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
           font-family: var(--font-body); font-weight: var(--weight-semibold); font-size: var(--text-sm);
           padding: 7px 16px; border-radius: var(--radius-full); transition: all 220ms var(--ease); }
   .vtab[aria-selected="true"] { background: var(--ink); color: #fff; }
+  /* Idioma sin video guardado: se ve apagado y no se puede pulsar, para que
+     nadie caiga en un hueco vacío (y para que Emi lo note de un vistazo). */
+  .vtab[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
+  .vtab[aria-disabled="true"]:hover { background: transparent; color: var(--color-text-soft); }
 
   .player { position: relative; aspect-ratio: 16/9; width: 100%; background: #0c0c0c; color: #f4f3ef;
             border-radius: var(--radius-lg); overflow: hidden; display: grid; place-items: center; }
@@ -608,8 +612,11 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     if (initial && initial !== 'semana' && panelOf(initial)) select(initial);
   })();
 
-  // Toggles ES/EN de las maquetas (Base/Bonus): solo visual, sin cargar video.
-  document.querySelectorAll('.tabpanel:not(#panel-semana) .vtabs').forEach((group) => {
+  // Toggle ES/EN de la maqueta de Bonus: solo visual, sin cargar video.
+  // ⚠️ Semana y Concepto Base NO entran aquí: los cablea wireVideoLangs, que
+  // además deshabilita el idioma sin video. Si este manejador los tocara,
+  // volvería a marcar como «seleccionado» un idioma que no tiene nada.
+  document.querySelectorAll('#panel-bonus .vtabs').forEach((group) => {
     group.querySelectorAll('.vtab').forEach((tab) => {
       tab.addEventListener('click', () => {
         group.querySelectorAll('.vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
@@ -637,6 +644,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     videoUnavailable: EN
       ? 'This video could not be loaded. Check the Bunny link in the panel.'
       : 'No se pudo cargar el video. Revisa el enlace de Bunny en el panel.',
+    videoNoLang: EN
+      ? 'This exercise doesn’t have the video in this language yet.'
+      : 'Este ejercicio todavía no tiene el video en este idioma.',
     videoRepaste: EN
       ? 'This video was saved in the old format. Paste its Bunny link again in the panel.'
       : 'Este video se guardó con el formato antiguo. Vuelve a pegar su enlace de Bunny en el panel.',
@@ -670,9 +680,18 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   //
   // Qué formas de enlace se entienden y cómo se construye la URL vive en
   // `src/lib/video.ts`, que es el MISMO módulo que usa el panel al guardar.
+  //
+  // ⚠️ NO TOCA EL IFRAME SI EL VIDEO NO CAMBIA. Reemplazarlo mata la
+  // reproducción: el video se corta y vuelve a 0:00. Pasaba al pulsar el
+  // selector ES/EN estando ya en ese idioma, y sobre todo cuando el mismo video
+  // está guardado en los dos idiomas: se veía «igual» pero se cortaba.
   function embedPlayer(player, url) {
     if (!player) return;
     const v = videoEmbed(url);
+    // Huella de lo que TIENE que haber dentro. Si ya es eso, no se toca nada.
+    const key = v.ok ? v.src : 'aviso:' + v.reason;
+    if (player.dataset.videoKey === key) return;
+
     if (v.ok) {
       const iframe = document.createElement('iframe');
       iframe.src = v.src;
@@ -684,16 +703,73 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       iframe.setAttribute('referrerpolicy', 'strict-origin-when-cross-origin');
       iframe.allowFullscreen = true;
       player.replaceChildren(iframe);
-    } else if (v.reason !== 'empty') {
+    } else if (v.reason === 'empty') {
+      // Sin enlace para este idioma. Si el hueco sigue con su placeholder (aún
+      // no se pintó nada), se deja: el ejercicio puede no traer video. Pero si
+      // ya había un video puesto, hay que decirlo — dejar el del OTRO idioma es
+      // lo que hacía parecer que el selector no funcionaba.
+      if (!player.dataset.videoKey) return;
+      player.replaceChildren(playerMsg(T.videoNoLang));
+    } else {
       // Hay enlace guardado pero no se pudo interpretar: no dejar un botón de
       // play muerto. `bunny-lost` lleva su propio texto porque tiene arreglo
       // concreto (volver a pegarlo en el panel).
-      const msg = document.createElement('div');
-      msg.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-size:13px;line-height:1.5';
-      msg.textContent = v.reason === 'bunny-lost' ? T.videoRepaste : T.videoUnavailable;
-      player.replaceChildren(msg);
+      player.replaceChildren(playerMsg(v.reason === 'bunny-lost' ? T.videoRepaste : T.videoUnavailable));
     }
-    // Si no hay enlace para ese idioma, se deja el placeholder tal cual.
+    player.dataset.videoKey = key;
+    // El hueco dejó de ser el botón de play de mentira del placeholder.
+    player.removeAttribute('role'); player.removeAttribute('tabindex'); player.removeAttribute('aria-label');
+  }
+
+  // Aviso dentro del marco negro del reproductor.
+  function playerMsg(text) {
+    const msg = document.createElement('div');
+    msg.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-size:13px;line-height:1.5';
+    msg.textContent = text;
+    return msg;
+  }
+
+  // Selector ES/EN del video (Ejercicio de la semana y Concepto Base).
+  //
+  // Antes cada uno cableaba lo suyo y el idioma SIN video guardado no hacía
+  // nada: se quedaba el video del otro idioma en pantalla y parecía que el
+  // botón estaba roto. Ahora el idioma que no tiene video **se deshabilita**,
+  // así nadie cae en ese hueco, y si el idioma de la página es justo el que
+  // falta se arranca en el otro en vez de enseñar un play que no lleva a nada.
+  function wireVideoLangs(panelSel, playerId, urlEs, urlEn) {
+    const player = $(playerId);
+    const tabs = Array.from(document.querySelectorAll(panelSel + ' .vtab'));
+    if (!player || !tabs.length) return;
+
+    const url = { es: urlEs, en: urlEn };
+    // "Tiene algo" ≠ "se puede reproducir": un enlace roto también se muestra
+    // (con su aviso), porque callarlo es justo lo que escondía el problema.
+    const has = (l) => { const v = videoEmbed(url[l]); return v.ok || v.reason !== 'empty'; };
+
+    if (!has('es') && !has('en')) {
+      // Ejercicio sin video en ningún idioma: no hay nada que elegir.
+      const group = document.querySelector(panelSel + ' .vtabs');
+      if (group) group.hidden = true;
+      return;
+    }
+
+    const render = (l) => {
+      tabs.forEach((x) => x.setAttribute('aria-selected', x.dataset.vlang === l ? 'true' : 'false'));
+      embedPlayer(player, url[l]);
+    };
+
+    tabs.forEach((tab) => {
+      const l = tab.dataset.vlang;
+      if (!has(l)) {
+        tab.setAttribute('aria-disabled', 'true');
+        tab.disabled = true;
+        tab.title = T.videoNoLang;
+        return;
+      }
+      tab.addEventListener('click', () => render(l));
+    });
+
+    render(has(pageLang) ? pageLang : (pageLang === 'es' ? 'en' : 'es'));
   }
 
   // Botón de PDF (Supabase Storage). Con archivo: enlace de descarga real. Sin
@@ -748,14 +824,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       });
     }
 
-    const renderBaseVideo = (which) => embedPlayer($('basePlayer'), which === 'en' ? b.vimeo_url_en : b.vimeo_url_es);
-    renderBaseVideo(pageLang);
-    document.querySelectorAll('#panel-base .vtab').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('#panel-base .vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
-        renderBaseVideo(tab.dataset.vlang);
-      });
-    });
+    wireVideoLangs('#panel-base', 'basePlayer', b.vimeo_url_es, b.vimeo_url_en);
 
     wirePdfButton($('basePdfBtn'), EN ? b.pdf_path_en : b.pdf_path_es);
   }
@@ -780,7 +849,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     const modal = $('vmodal'), frame = $('vmodalFrame');
     if (!modal || modal.hidden) return;
     modal.hidden = true;
-    if (frame) frame.replaceChildren();   // detiene la reproducción
+    if (frame) { frame.replaceChildren(); delete frame.dataset.videoKey; }  // detiene la reproducción
     document.body.style.overflow = '';
     if (lastFocused && lastFocused.focus) lastFocused.focus();
   }
@@ -1012,14 +1081,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     }
 
     // Video con selector ES/EN
-    const renderVideo = (which) => embedPlayer($('player'), which === 'en' ? ex.vimeo_url_en : ex.vimeo_url_es);
-    renderVideo(pageLang);
-    document.querySelectorAll('#panel-semana .vtab').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('#panel-semana .vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
-        renderVideo(tab.dataset.vlang);
-      });
-    });
+    wireVideoLangs('#panel-semana', 'player', ex.vimeo_url_es, ex.vimeo_url_en);
 
     wirePdfButton($('pdfBtn'), EN ? ex.pdf_path_en : ex.pdf_path_es);
 

@@ -3,6 +3,52 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 3 sep 2026 — El selector ES/EN del video: dejaba el video del otro idioma y cortaba la reproducción
+> Con Bunny ya funcionando, Adrián reporta dos cosas en el aula: **al cambiar el idioma del
+> video se queda el español** (y al revés), y **el video se corta** — hay que recargar para que
+> fluya. En la carta no pasa nada de esto, y con razón: allí el iframe está escrito en el HTML
+> y no se toca nunca. En el aula lo pinta JavaScript y **se rehacía en cada clic**.
+>
+> **Fallo 1 — el idioma sin video se quedaba callado.** `embedPlayer()` traía de antes esta
+> regla: «si no hay enlace para ese idioma, se deja el placeholder tal cual». Vale para el
+> primer pintado, pero en un **cambio** de idioma significa que no se toca nada… y lo que
+> queda en pantalla es **el video del otro idioma**. Desde fuera es exactamente «pulso English
+> y sigue el español», sin ningún aviso. Si un ejercicio tiene el video solo en un idioma —que
+> es lo normal mientras Emi sube el mes— el selector mentía.
+>
+> **Fallo 2 — cada clic mataba la reproducción.** El manejador llamaba a `embedPlayer()` sin
+> mirar si el video cambiaba, y `embedPlayer()` siempre hacía `replaceChildren(iframe)`: iframe
+> nuevo, reproducción a cero. Pulsar el idioma **que ya estaba puesto**, o cambiar de idioma
+> cuando **el mismo video está guardado en los dos**, cortaba el video sin cambiar nada. Eso es
+> el «se corta y hay que recargar».
+>
+> **Lo que se hizo:**
+> - **`embedPlayer()` ya no toca el iframe si el video no cambia.** Guarda una huella de lo que
+>   hay dentro (`data-video-key`) y compara. Mismo video → no se toca → **no se corta**.
+> - **El idioma vacío ya no se queda callado**: si el hueco ya tenía un video puesto, se
+>   sustituye por «Este ejercicio todavía no tiene el video en este idioma». Nunca más el video
+>   del otro idioma haciéndose pasar por el que se pidió.
+> - **`wireVideoLangs()`**, uno para Semana y Concepto Base (antes eran dos bloques copiados):
+>   **el idioma sin video se deshabilita** —se ve apagado y no se puede pulsar—, y si el idioma
+>   que falta es justo el de la página, **arranca en el otro** en vez de enseñar un botón de
+>   play que no lleva a ninguna parte. Sin video en ningún idioma, el selector se esconde.
+> - El manejador «solo visual» de las maquetas se acotó a `#panel-bonus`. Tocaba también
+>   `#panel-base` y habría vuelto a marcar como seleccionado un idioma deshabilitado.
+> - El lightbox de Bonus limpia la huella al cerrar, para que el mismo video se pueda reabrir.
+>
+> **Verificado en Chromium** (1280×900) con Supabase simulado, cinco escenarios y **siguiendo
+> la identidad del nodo `<iframe>`** para saber si de verdad se recreaba:
+> 1. dos videos distintos → cambia de video; **volver a pulsar el mismo idioma no lo recrea**.
+> 2. el mismo video en los dos idiomas → **el iframe no se recrea nunca**: cero cortes.
+> 3. sin video en inglés → pill de inglés apagada e inservible, el español sigue sonando.
+> 4. y 5. solo inglés → arranca en inglés aunque la página esté en español, y al revés.
+> Más la regresión completa del cambio anterior (enlace roto avisa, Vimeo viejo reproduce,
+> lightbox de Bonus abre). Sin errores de consola, sin desbordes. `npm run build` ok.
+>
+> **⬜ Si aun así un video concreto se entrecorta al reproducir:** ya no es el aula, es Bunny.
+> Mirar en la biblioteca que el video haya **terminado de codificar** (recién subido va a
+> tirones) y el estado del **allowed referrers** de la biblioteca 741634.
+
 ## 🗓️ 3 sep 2026 — El aula pasa a **Bunny Stream**: los videos de Emi ya se reproducen ⬜ FALTA PROBAR EN PRODUCCIÓN
 > **El síntoma.** Emi subió los videos del mes a Bunny, los pegó en el panel y en el aula
 > **no se reproducen**. En la carta el video de Bunny sí funciona desde el 1 sep, así que
