@@ -285,9 +285,14 @@
 
           <div class="grid2">
             <div class="field">
-              <label for="f-week" id="f-week-label">Etiqueta de semana</label>
+              <label for="f-week" id="f-week-label">Etiqueta de semana · ES</label>
               <input id="f-week" type="text" placeholder="Ej. Semana 24" />
               <span class="help" id="f-week-help">Texto corto que el miembro ve junto al título.</span>
+            </div>
+            <div class="field">
+              <label for="f-week-en" id="f-week-en-label">Etiqueta de semana · EN</label>
+              <input id="f-week-en" type="text" placeholder="Ej. Week 24" />
+              <span class="help">Lo que se ve en <b>/aula/en/</b>. Si la dejas vacía, ahí se usa la de español.</span>
             </div>
           </div>
 
@@ -572,7 +577,7 @@
   const KIND_META = {
     semana: {
       weekLabel: 'Etiqueta de semana', weekHelp: 'Texto corto que el miembro ve junto al título.',
-      weekPh: 'Ej. Semana 24',
+      weekPh: 'Ej. Semana 24', weekPhEn: 'Ej. Week 24',
       upLabel: 'Se publica', upHelp: 'Por defecto: próximo jueves 00:01 (hora local). O usa «Publicar ahora» para saltarte la espera.',
       downLabel: 'Se cierra', downHelp: 'Por defecto: jueves siguiente 00:00 (hora local).',
       formNew: 'Nuevo ejercicio de la semana', formEdit: 'Editar ejercicio de la semana',
@@ -580,7 +585,7 @@
     },
     base: {
       weekLabel: 'Etiqueta del mes', weekHelp: 'Texto corto que el miembro ve junto al título (ej. el mes).',
-      weekPh: 'Ej. Julio',
+      weekPh: 'Ej. Julio', weekPhEn: 'Ej. July',
       upLabel: 'Se publica', upHelp: 'Por defecto: ahora. O usa «Publicar ahora» para saltarte la espera.',
       downLabel: 'Se cierra', downHelp: 'Por defecto: dentro de un mes.',
       formNew: 'Nuevo Concepto Base', formEdit: 'Editar Concepto Base',
@@ -588,7 +593,7 @@
     },
     bonus: {
       weekLabel: 'Etiqueta', weekHelp: 'Texto corto sobre la tarjeta (ej. “Bienvenida”, “Montaje”).',
-      weekPh: 'Ej. Bienvenida',
+      weekPh: 'Ej. Bienvenida', weekPhEn: 'Ej. Welcome',
       upLabel: 'Se publica', upHelp: '',
       downLabel: 'Se cierra', downHelp: '',
       formNew: 'Nuevo Bonus Material', formEdit: 'Editar Bonus Material',
@@ -625,9 +630,11 @@
   // Ajusta labels/ayuda y muestra u oculta las fechas según el destino elegido.
   function applyKindUI(kind) {
     const meta = KIND_META[kind] || KIND_META.semana;
-    $('f-week-label').textContent = meta.weekLabel;
+    $('f-week-label').textContent = meta.weekLabel + ' · ES';
+    $('f-week-en-label').textContent = meta.weekLabel + ' · EN';
     $('f-week-help').textContent = meta.weekHelp;
     $('f-week').placeholder = meta.weekPh;
+    $('f-week-en').placeholder = meta.weekPhEn;
     $('f-up-label').textContent = meta.upLabel; $('f-up-help').textContent = meta.upHelp;
     $('f-down-label').textContent = meta.downLabel; $('f-down-help').textContent = meta.downHelp;
     $('f-dates').hidden = kind === 'bonus';
@@ -737,7 +744,7 @@
   const newForm = $('newForm');
   function resetForm() {
     $('f-id').value = '';
-    ['f-week', 'f-title-es', 'f-title-en', 'f-desc-es', 'f-desc-en', 'f-video-es', 'f-video-en', 'f-up', 'f-down', 'f-pdf-es', 'f-pdf-en']
+    ['f-week', 'f-week-en', 'f-title-es', 'f-title-en', 'f-desc-es', 'f-desc-en', 'f-video-es', 'f-video-en', 'f-up', 'f-down', 'f-pdf-es', 'f-pdf-en']
       .forEach((id) => { const el = $(id); if (el) el.value = ''; });
     $('formErr').hidden = true;
     applyKindUI('semana');
@@ -755,7 +762,7 @@
     const kind = e.kind || 'semana';
     $('f-id').value = e.id;
     applyKindUI(kind);
-    $('f-week').value = e.week_label || '';
+    $('f-week').value = e.week_label || ''; $('f-week-en').value = e.week_label_en || '';
     $('f-title-es').value = e.title_es || ''; $('f-title-en').value = e.title_en || '';
     $('f-desc-es').value = e.desc_es || ''; $('f-desc-en').value = e.desc_en || '';
     $('f-video-es').value = e.vimeo_url_es || ''; $('f-video-en').value = e.vimeo_url_en || '';
@@ -829,7 +836,9 @@
       const pdfEn = await uploadPdf($('f-pdf-en'));
       const payload = {
         kind,
+        // `week_label` es la etiqueta ESPAÑOLA (nombre histórico, ver 0008).
         week_label: $('f-week').value.trim() || null,
+        week_label_en: $('f-week-en').value.trim() || null,
         title_es, title_en,
         desc_es: $('f-desc-es').value.trim() || null, desc_en: $('f-desc-en').value.trim() || null,
         // Columnas con nombre histórico: hoy guardan el embed de Bunny.

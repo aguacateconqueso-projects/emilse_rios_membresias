@@ -5,14 +5,14 @@
 -- =============================================================================
 
 insert into public.exercises
-  (title_es, title_en, desc_es, desc_en, vimeo_url_es, vimeo_url_en, week_label, publish_at, unpublish_at)
+  (title_es, title_en, desc_es, desc_en, vimeo_url_es, vimeo_url_en, week_label, week_label_en, publish_at, unpublish_at)
 values
   ('Détaché controlado: peso y punto de contacto',
    'Controlled détaché: weight and contact point',
    'Trabajamos el détaché desde el peso del brazo, controlando el punto de contacto. Empieza a 60 bpm. Si estás empezando, quédate en la primera parte; si vas más adelantada, continúa con las variaciones.',
    'We work the détaché from the weight of the arm, controlling the contact point. Start at 60 bpm. If you are starting out, stay on the first part; if you are more advanced, continue with the variations.',
    'https://vimeo.com/76979871', 'https://vimeo.com/76979871',
-   'Semana 24', now() - interval '1 day', now() + interval '6 days');
+   'Semana 24', 'Week 24', now() - interval '1 day', now() + interval '6 days');
 
 -- =============================================================================
 -- PASOS MANUALES (reemplaza TU-EMAIL por el correo con el que te registres):

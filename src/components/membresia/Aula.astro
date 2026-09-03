@@ -689,6 +689,12 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
   }
   const avatarLetter = (name) => ((name || '?').trim()[0] || '?').toUpperCase();
 
+  // Etiqueta corta de la fila ("Semana 8" / "Week 8"). La columna histórica
+  // `week_label` es LA ESPAÑOLA y `week_label_en` la inglesa (ver la migración
+  // 0008). Si la inglesa está vacía se usa la española: mejor eso que un hueco
+  // en blanco, y así el cambio no obliga a reescribir el contenido que ya está.
+  const weekLabel = (row) => (EN ? (row.week_label_en || row.week_label) : row.week_label) || '';
+
   // Pinta el reproductor dentro de `player` (o un aviso si el enlace no se pudo
   // interpretar). Compartido por Ejercicio de la semana, Concepto Base y las
   // tarjetas de Bonus Material.
@@ -784,7 +790,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     if (!b) { showBaseLocked(); return; }
 
     $('baseTitle').textContent = EN ? b.title_en : b.title_es;
-    if ($('baseMeta')) $('baseMeta').textContent = b.week_label || '';
+    if ($('baseMeta')) $('baseMeta').textContent = weekLabel(b);
     const desc = (EN ? b.desc_en : b.desc_es) || '';
     const descEl = $('baseDesc');
     if (descEl) {
@@ -849,7 +855,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     }
 
     const body = document.createElement('div'); body.className = 'bonus-card__body';
-    const tag = document.createElement('span'); tag.className = 'ovl'; tag.textContent = b.week_label || '';
+    const tag = document.createElement('span'); tag.className = 'ovl'; tag.textContent = weekLabel(b);
     const h3 = document.createElement('h3'); h3.className = 'bonus-card__title'; h3.textContent = EN ? b.title_en : b.title_es;
     const desc = document.createElement('p'); desc.className = 'bonus-card__desc'; desc.textContent = (EN ? b.desc_en : b.desc_es) || '';
     const langs = document.createElement('span'); langs.className = 'bonus-card__langs'; langs.textContent = 'ES · EN';
@@ -1040,7 +1046,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
 
     // Título, semana, descripción
     $('exTitle').textContent = EN ? ex.title_en : ex.title_es;
-    if ($('exMeta')) $('exMeta').textContent = ex.week_label || '';
+    if ($('exMeta')) $('exMeta').textContent = weekLabel(ex);
     const desc = (EN ? ex.desc_en : ex.desc_es) || '';
     const descEl = $('exDesc');
     if (descEl) {
