@@ -3,6 +3,42 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 3 sep 2026 — La etiqueta corta, por fin bilingüe («Semana 8» / «Week 8») ⬜ PIDE MIGRACIÓN
+> El cabo suelto que se veía en las capturas de Adrián: en `/aula/en/` salía «**Semana 8**»
+> junto a «Available until Thursday». Era el **único trozo del contenido que no era bilingüe**
+> — título, descripción, video y PDF ya lo eran desde el principio; `week_label` no.
+>
+> **Migración `0008_week_label_bilingue.sql`** — agrega `week_label_en`. **`week_label` se
+> queda siendo la española**, con su nombre histórico, igual que `vimeo_url_*` guarda Bunny.
+>
+> **Por qué agregar y no renombrar el par a `_es`/`_en`, que sería más bonito:** renombrar
+> rompe el código que esté vivo mientras se despliega. Lo que Emi tenga abierto en el
+> navegador seguiría mandando `week_label`, que ya no existiría, y **guardar daría error**.
+> Con esta forma **el orden deja de importar**: el código viejo ignora la columna nueva, y el
+> código nuevo, si la columna aún no está, lee `undefined` y **cae en la española**. En ningún
+> momento se rompe nada, se despliegue antes o después de correr el SQL. Precio: un nombre
+> asimétrico. Barato.
+>
+> **En el aula** un solo `weekLabel(row)` para los tres sitios que la pintan (semana,
+> Concepto Base y las tarjetas de Bonus). En inglés usa la inglesa y, **si está vacía, la
+> española**: mejor eso que un hueco en blanco, y así el contenido que ya está publicado no
+> hay que reescribirlo.
+>
+> **En el panel**, el campo pasa a ser dos, uno al lado del otro, con el ejemplo en su idioma
+> según el destino: Semana 24 / Week 24, Julio / July, Bienvenida / Welcome.
+>
+> **Verificado en Chromium** con Supabase simulado: `/aula/` dice «Semana 8» y `/aula/en/`
+> «Week 8»; sin etiqueta inglesa, la página en inglés cae en la española; **con la BD sin
+> migrar todavía** (la columna no viene en la respuesta) el aula no da ningún error y muestra
+> la española; y el panel guarda las dos, con sus rótulos «· ES» / «· EN» y sus ejemplos.
+> `npm run build` ok.
+>
+> **⬜ Hay que correr el SQL:** Supabase → SQL Editor → `supabase/migrations/0008_week_label_bilingue.sql`.
+> Lleva el `notify pgrst, 'reload schema'` al final, que es lo que evita el PGRST204 del
+> incidente de 0005 (PostgREST no ve la columna nueva hasta que relee el esquema). Antes o
+> después del deploy, da igual — por eso se hizo así. **Lo que no funciona sin el SQL es
+> guardar** la etiqueta inglesa desde el panel.
+
 ## 🗓️ 3 sep 2026 — Un solo interruptor de idioma: el selector del video cambia la página entera
 > Con el arreglo anterior ya puesto en producción, Adrián señala lo que de verdad molestaba:
 > **cambias el selector de debajo del título y el título no cambia**. Y tiene razón — eso no

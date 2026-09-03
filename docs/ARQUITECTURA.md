@@ -65,8 +65,8 @@ contra las fechas de subida/bajada de cada ejercicio (sin cron frágil).
 - Dos públicos: español e inglés. **Landing y aula son bilingües**; el toggle EN/ES
   arriba cambia toda la experiencia a la versión de ese idioma.
   - Rutas: `/` y `/en/`; `/aula/` y `/aula/en/`.
-- **Contenido del ejercicio** (título, descripción, video de Bunny, PDF): Emi lo sube en
-  **ambos idiomas** desde el panel. En el aula, el selector Español/English de encima del
+- **Contenido del ejercicio** (título, descripción, **etiqueta corta**, video de Bunny, PDF):
+  Emi lo sube en **ambos idiomas** desde el panel. En el aula, el selector Español/English de encima del
   video es **el mismo interruptor** que el ES/EN de la cabecera: cambia la página entera
   (título, descripción, foro y video). Un idioma = una página; no hay estados mixtos.
 - **Foro: DOS foros separados**, español e inglés. Cada miembro tiene acceso a ambos y
@@ -125,7 +125,8 @@ exercises
   pdf_path_en       text   (Supabase Storage; opcional)
   publish_at        timestamptz   -- cuándo se hace visible (jue 00:01 Madrid)
   unpublish_at      timestamptz   -- cuándo se oculta (jue 00:00 Madrid)
-  week_label        text   (ej. "Semana 2 - Julio")
+  week_label        text   -- etiqueta corta en ESPAÑOL, ej. "Semana 8"
+  week_label_en     text   -- ídem en inglés, ej. "Week 8"; vacía = se usa la española
   created_at        timestamptz
   -- visible si: now() en [publish_at, unpublish_at) y sub activa
 
