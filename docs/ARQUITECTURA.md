@@ -66,7 +66,9 @@ contra las fechas de subida/bajada de cada ejercicio (sin cron frágil).
   arriba cambia toda la experiencia a la versión de ese idioma.
   - Rutas: `/` y `/en/`; `/aula/` y `/aula/en/`.
 - **Contenido del ejercicio** (título, descripción, video de Bunny, PDF): Emi lo sube en
-  **ambos idiomas** desde el panel. En el aula, el video tiene además un selector ES/EN.
+  **ambos idiomas** desde el panel. En el aula, el selector Español/English de encima del
+  video es **el mismo interruptor** que el ES/EN de la cabecera: cambia la página entera
+  (título, descripción, foro y video). Un idioma = una página; no hay estados mixtos.
 - **Foro: DOS foros separados**, español e inglés. Cada miembro tiene acceso a ambos y
   pasa de uno a otro con el toggle. **Sin traducción automática** (decisión de costo):
   quien quiera leer el otro idioma traduce por su cuenta.

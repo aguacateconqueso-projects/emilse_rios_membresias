@@ -19,6 +19,7 @@ const t = isEN ? {
   title: 'Controlled détaché: weight and contact point',
   meta: 'Week 24 · June 12–19', tag: 'Available until Thursday',
   videoEs: 'Spanish', videoEn: 'English', nowPlaying: 'Now playing',
+  langSwitch: 'Content language',
   playerHint: 'This week’s exercise', playerLabel: 'Video',
   desc: [
     'This week we work the <strong>détaché</strong> from the weight of the arm, not from hand pressure. The goal is a round, sustained sound, controlling the <strong>contact point</strong> between the bow and the string.',
@@ -71,6 +72,7 @@ const t = isEN ? {
   title: 'Détaché controlado: peso y punto de contacto',
   meta: 'Semana 24 · del 12 al 19 de junio', tag: 'Disponible hasta el jueves',
   videoEs: 'Español', videoEn: 'English', nowPlaying: 'Reproduciendo',
+  langSwitch: 'Idioma del contenido',
   playerHint: 'Ejercicio de la semana', playerLabel: 'Video',
   desc: [
     'Esta semana trabajamos el <strong>détaché</strong> desde el peso del brazo, no desde la presión de la mano. La idea es que el sonido nazca redondo y sostenido, controlando el <strong>punto de contacto</strong> entre el arco y la cuerda.',
@@ -196,12 +198,10 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
            border-radius: var(--radius-full); background: var(--surface); margin-bottom: 12px; }
   .vtab { appearance: none; border: 0; cursor: pointer; background: transparent; color: var(--color-text-soft);
           font-family: var(--font-body); font-weight: var(--weight-semibold); font-size: var(--text-sm);
-          padding: 7px 16px; border-radius: var(--radius-full); transition: all 220ms var(--ease); }
-  .vtab[aria-selected="true"] { background: var(--ink); color: #fff; }
-  /* Idioma sin video guardado: se ve apagado y no se puede pulsar, para que
-     nadie caiga en un hueco vacío (y para que Emi lo note de un vistazo). */
-  .vtab[aria-disabled="true"] { opacity: 0.4; cursor: not-allowed; }
-  .vtab[aria-disabled="true"]:hover { background: transparent; color: var(--color-text-soft); }
+          padding: 7px 16px; border-radius: var(--radius-full); transition: all 220ms var(--ease);
+          text-decoration: none; display: inline-block; }
+  .vtab[aria-current="true"] { background: var(--ink); color: #fff; }
+
 
   .player { position: relative; aspect-ratio: 16/9; width: 100%; background: #0c0c0c; color: #f4f3ef;
             border-radius: var(--radius-lg); overflow: hidden; display: grid; place-items: center; }
@@ -456,9 +456,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
         </section>
 
         <section aria-label="Video">
-          <div class="vtabs" role="tablist" aria-label="Video language">
-            <button class="vtab" type="button" aria-selected={(!isEN).toString()} data-vlang="es">{t.videoEs}</button>
-            <button class="vtab" type="button" aria-selected={isEN.toString()} data-vlang="en">{t.videoEn}</button>
+          <div class="vtabs" aria-label={t.langSwitch}>
+            <a class="vtab" href="/aula/" aria-current={(!isEN).toString()} data-vlang="es">{t.videoEs}</a>
+            <a class="vtab" href="/aula/en/" aria-current={isEN.toString()} data-vlang="en">{t.videoEn}</a>
           </div>
           <div class="player" id="player" role="button" tabindex="0" aria-label="Play">
             <span class="player__hint">{t.playerHint}</span>
@@ -516,9 +516,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
         </section>
 
         <section aria-label="Video">
-          <div class="vtabs" role="tablist" aria-label="Video language">
-            <button class="vtab" type="button" aria-selected={(!isEN).toString()} data-vlang="es">{t.videoEs}</button>
-            <button class="vtab" type="button" aria-selected={isEN.toString()} data-vlang="en">{t.videoEn}</button>
+          <div class="vtabs" aria-label={t.langSwitch}>
+            <a class="vtab" href="/aula/" aria-current={(!isEN).toString()} data-vlang="es">{t.videoEs}</a>
+            <a class="vtab" href="/aula/en/" aria-current={isEN.toString()} data-vlang="en">{t.videoEn}</a>
           </div>
           <div class="player" id="basePlayer">
             <span class="player__hint">{t.base.playerHint}</span>
@@ -612,17 +612,32 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     if (initial && initial !== 'semana' && panelOf(initial)) select(initial);
   })();
 
-  // Toggle ES/EN de la maqueta de Bonus: solo visual, sin cargar video.
-  // ⚠️ Semana y Concepto Base NO entran aquí: los cablea wireVideoLangs, que
-  // además deshabilita el idioma sin video. Si este manejador los tocara,
-  // volvería a marcar como «seleccionado» un idioma que no tiene nada.
-  document.querySelectorAll('#panel-bonus .vtabs').forEach((group) => {
-    group.querySelectorAll('.vtab').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        group.querySelectorAll('.vtab').forEach((x) => x.setAttribute('aria-selected', x === tab ? 'true' : 'false'));
+  // --- Selector Español/English de encima del video ---
+  //
+  // ⚠️ ANTES cambiaba SOLO el video, y el título y la descripción se quedaban en
+  // el idioma de la página. Quedaba una pantalla mestiza —título en inglés,
+  // video en español— y el botón parecía roto. Ahora es **el mismo interruptor
+  // que el ES/EN de la cabecera**: lleva a `/aula/` o `/aula/en/`, que es donde
+  // vive TODO el contenido de ese idioma (título, descripción, foro y video).
+  //
+  // Se cablea aquí, al cargar la página y no al llegar los datos, para que el
+  // idioma se pueda cambiar aunque el ejercicio no haya cargado.
+  (function wireLangSwitch() {
+    document.querySelectorAll('.vtab').forEach((tab) => {
+      const lang = tab.dataset.vlang;
+      tab.setAttribute('aria-current', String(lang === pageLang));
+      if (lang === pageLang) { tab.removeAttribute('href'); return; }  // el idioma en el que ya estás
+      tab.addEventListener('click', (e) => {
+        // Conserva la pestaña abierta (#base, #bonus) al cruzar de idioma. Sin
+        // el hash, el miembro que estaba en «Concepto Base» aterrizaría en la
+        // pestaña de la semana. Con clic normal; abrir en pestaña nueva sigue
+        // funcionando por el href, solo que sin arrastrar la pestaña abierta.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        window.location.assign(tab.getAttribute('href') + (window.location.hash || ''));
       });
     });
-  });
+  })();
 
   const T = {
     locked: EN
@@ -704,11 +719,9 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       iframe.allowFullscreen = true;
       player.replaceChildren(iframe);
     } else if (v.reason === 'empty') {
-      // Sin enlace para este idioma. Si el hueco sigue con su placeholder (aún
-      // no se pintó nada), se deja: el ejercicio puede no traer video. Pero si
-      // ya había un video puesto, hay que decirlo — dejar el del OTRO idioma es
-      // lo que hacía parecer que el selector no funcionaba.
-      if (!player.dataset.videoKey) return;
+      // Sin video guardado para este idioma. Se dice, en vez de dejar el botón
+      // de play del placeholder, que promete algo que no hay. (Aquí ya no cabe
+      // «enseñar el del otro idioma»: el otro idioma es otra página.)
       player.replaceChildren(playerMsg(T.videoNoLang));
     } else {
       // Hay enlace guardado pero no se pudo interpretar: no dejar un botón de
@@ -727,49 +740,6 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     msg.style.cssText = 'position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;font-size:13px;line-height:1.5';
     msg.textContent = text;
     return msg;
-  }
-
-  // Selector ES/EN del video (Ejercicio de la semana y Concepto Base).
-  //
-  // Antes cada uno cableaba lo suyo y el idioma SIN video guardado no hacía
-  // nada: se quedaba el video del otro idioma en pantalla y parecía que el
-  // botón estaba roto. Ahora el idioma que no tiene video **se deshabilita**,
-  // así nadie cae en ese hueco, y si el idioma de la página es justo el que
-  // falta se arranca en el otro en vez de enseñar un play que no lleva a nada.
-  function wireVideoLangs(panelSel, playerId, urlEs, urlEn) {
-    const player = $(playerId);
-    const tabs = Array.from(document.querySelectorAll(panelSel + ' .vtab'));
-    if (!player || !tabs.length) return;
-
-    const url = { es: urlEs, en: urlEn };
-    // "Tiene algo" ≠ "se puede reproducir": un enlace roto también se muestra
-    // (con su aviso), porque callarlo es justo lo que escondía el problema.
-    const has = (l) => { const v = videoEmbed(url[l]); return v.ok || v.reason !== 'empty'; };
-
-    if (!has('es') && !has('en')) {
-      // Ejercicio sin video en ningún idioma: no hay nada que elegir.
-      const group = document.querySelector(panelSel + ' .vtabs');
-      if (group) group.hidden = true;
-      return;
-    }
-
-    const render = (l) => {
-      tabs.forEach((x) => x.setAttribute('aria-selected', x.dataset.vlang === l ? 'true' : 'false'));
-      embedPlayer(player, url[l]);
-    };
-
-    tabs.forEach((tab) => {
-      const l = tab.dataset.vlang;
-      if (!has(l)) {
-        tab.setAttribute('aria-disabled', 'true');
-        tab.disabled = true;
-        tab.title = T.videoNoLang;
-        return;
-      }
-      tab.addEventListener('click', () => render(l));
-    });
-
-    render(has(pageLang) ? pageLang : (pageLang === 'es' ? 'en' : 'es'));
   }
 
   // Botón de PDF (Supabase Storage). Con archivo: enlace de descarga real. Sin
@@ -824,7 +794,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
       });
     }
 
-    wireVideoLangs('#panel-base', 'basePlayer', b.vimeo_url_es, b.vimeo_url_en);
+    embedPlayer($('basePlayer'), EN ? b.vimeo_url_en : b.vimeo_url_es);
 
     wirePdfButton($('basePdfBtn'), EN ? b.pdf_path_en : b.pdf_path_es);
   }
@@ -1081,7 +1051,7 @@ const altHref = isEN ? '/aula/' : '/aula/en/';
     }
 
     // Video con selector ES/EN
-    wireVideoLangs('#panel-semana', 'player', ex.vimeo_url_es, ex.vimeo_url_en);
+    embedPlayer($('player'), EN ? ex.vimeo_url_en : ex.vimeo_url_es);
 
     wirePdfButton($('pdfBtn'), EN ? ex.pdf_path_en : ex.pdf_path_es);
 
