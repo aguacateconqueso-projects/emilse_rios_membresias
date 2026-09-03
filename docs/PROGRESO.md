@@ -3,6 +3,46 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 3 sep 2026 — Un solo interruptor de idioma: el selector del video cambia la página entera
+> Con el arreglo anterior ya puesto en producción, Adrián señala lo que de verdad molestaba:
+> **cambias el selector de debajo del título y el título no cambia**. Y tiene razón — eso no
+> era un fallo, era **el diseño**, y el diseño estaba mal.
+>
+> **Lo que había.** Dos interruptores de idioma en la misma pantalla: el **ES/EN de la
+> cabecera**, que cambia toda la experiencia (lleva a `/aula/` o `/aula/en/`), y el
+> **Español/English de encima del video**, que cambiaba **solo el video**. Estando en
+> `/aula/en/` y pulsando «Spanish» quedaba una pantalla mestiza: **título y descripción en
+> inglés, video en español**. Nadie lee eso como «dos controles distintos»: se lee como que
+> el botón está roto. Y de paso hacía sospechar del video, que era lo que se cortaba por
+> otro motivo (ver la entrada anterior).
+>
+> **Lo que hay ahora: uno solo.** El selector de encima del video **es** el interruptor de
+> idioma. Pulsar «English» lleva a `/aula/en/`, que es donde vive TODO el contenido en
+> inglés — título, descripción, foro y video. **Un idioma = una página, sin estados mixtos.**
+> - Dejan de ser `<button>` y pasan a ser **enlaces** (`<a href="/aula/en/">`): es lo que son,
+>   y así se pueden abrir en pestaña nueva. El idioma en el que ya estás pierde el `href` y
+>   se queda marcado con `aria-current` (antes `aria-selected`, que solo vale en pestañas).
+> - **Arrastra la pestaña abierta**: si estabas en «Concepto Base» y cambias de idioma,
+>   aterrizas en `/aula/en/#base`, no de vuelta en la semana.
+> - Se cablea **al cargar la página, no al llegar los datos**, para que el idioma se pueda
+>   cambiar aunque el ejercicio no haya cargado.
+> - Cae `wireVideoLangs()` entero (y con él la pill deshabilitada de esta mañana): ya no hay
+>   dos idiomas por página que arbitrar. Si **este** idioma no tiene video, se dice —
+>   «Este ejercicio todavía no tiene el video en este idioma»— en vez de enseñar un botón de
+>   play que no lleva a nada.
+>
+> **Verificado en Chromium** (1280×900) con Supabase simulado: en `/aula/` pulsar «English»
+> cambia **título, descripción y video** a la vez y la URL pasa a `/aula/en/`; desde la
+> pestaña «Concepto Base» el cambio aterriza en `/aula/en/#base` **con esa pestaña abierta** y
+> el título del Concepto Base en inglés; y en `/aula/en/` sin video en inglés sale el aviso en
+> vez de colarse el español. `npm run build` ok.
+>
+> **⬜ Cabo suelto que se ve en las capturas de Adrián: `week_label` no es bilingüe.** En la
+> página en inglés sale «**Semana 8**» junto a «Available until Thursday». Es una sola columna
+> de texto libre en la BD (`week_label`), así que se escribe una vez y se ve igual en los dos
+> idiomas. Arreglarlo pide **migración** (`week_label_en`) + campo nuevo en el panel + leerlo
+> en el aula. No entra aquí; queda anotado.
+
 ## 🗓️ 3 sep 2026 — El selector ES/EN del video: dejaba el video del otro idioma y cortaba la reproducción
 > Con Bunny ya funcionando, Adrián reporta dos cosas en el aula: **al cambiar el idioma del
 > video se queda el español** (y al revés), y **el video se corta** — hay que recargar para que
