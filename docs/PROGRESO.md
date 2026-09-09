@@ -3,6 +3,45 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
+## 🗓️ 9 sep 2026 — Kit de trasplante de la carta a otro proyecto (`docs/PORTAR-CARTA-DE-VENTAS.md`)
+> Adrián copió el repo entero a la web nueva de Emi y **la página de ventas no salió igual**:
+> se pierden las animaciones, los botones, la foto. El diagnóstico es que la carta **no es un
+> archivo**: es `Landing.astro` (~1400 líneas: copy bilingüe + 400 de CSS + 5 scripts) **más**
+> una capa de `public/` servida desde la raíz (`colors_and_type.css`, `foto.jpg`,
+> `logo_emi_alpha.png`, los dos SVG del cursor) **más** `src/lib/membership.ts` **más** tres
+> variables de entorno. Copiando solo el componente, el navegador pide seis archivos que no
+> existen y falla **en silencio** — un 404 de CSS o de imagen no rompe nada, solo deja de pintar.
+>
+> **Los dos fallos que explican casi todo:**
+> 1. **La página queda invisible.** Cada bloque lleva `class="reveal"`, que arranca en
+>    `opacity: 0` y solo se enciende cuando corre el `IntersectionObserver`. Si el script no
+>    corre (o falla algo antes en la consola), se ve el logo y nada más. En el sitio origen
+>    esto está cubierto por la red de seguridad de `public/membresia-ui.js` (revelar todo a los
+>    1,4 s); la carta en sí **no la tiene**, y el documento lo recomienda explícitamente.
+> 2. **`is:inline` no es decorativo.** Sin él Astro *scopea* el CSS y se caen de golpe las
+>    reglas sobre `:root` y `body` (adiós fondo crema y cursor de clave) y las de `.note-pop`
+>    (las notas musicales se crean con JS y se cuelgan de `document.body`, fuera del
+>    componente: quedan invisibles).
+>
+> **Qué se escribió:** `docs/PORTAR-CARTA-DE-VENTAS.md` — pensado para **copiarse al otro
+> repositorio** y decirle allá a Claude «lee esto y reproduce la carta». Lleva: el inventario
+> de los 8 archivos con comandos `git show` para sacarlos (y el aviso de verificar tamaños,
+> que `git show` sobre binarios se corrompe fácil); Ruta A si el destino es Astro y Ruta B si
+> no lo es (cómo traducir `is:inline` y `define:vars` a HTML normal); el **inventario de las 12
+> animaciones con su CSS y su JS verbatim** (relleno desde el cursor, notas musicales, reveal,
+> cursor de clave de fa, foto B&N→color, tarjeta que se invierte, hovers en `--wood`, FAQ,
+> cambio de idioma con posición, contador/puertas, píldora, y los detalles menores); la paleta
+> y los cuatro anchos; los cinco cables que hay que desconectar (checkout, newsletter, puertas,
+> `STRIPE_FOUNDER_UNTIL`, `/entrar/`); una **tabla de diagnóstico por síntoma** (14 filas); y un
+> checklist de verificación en escritorio, móvil y accesibilidad.
+>
+> **La regla que ordena todo el documento:** no reescribir la carta, **trasplantarla** — copiar
+> byte a byte y adaptar solo los enlaces. Cada número del diseño (los `cubic-bezier`, los
+> `560ms`, el `260%` del círculo, los `-66px` de las notas) está elegido, y aproximarlo se nota.
+>
+> **Solo documentación**: no toca código, ni BD, ni migraciones. La carta de este repo queda
+> exactamente igual.
+
 ## 🗓️ 9 sep 2026 — Cierre de la sesión de Bunny: qué quedó en `main` y qué falta comprobar
 > Entrada de traspaso. Las cuatro de abajo (3 sep) cuentan **el porqué** de cada cambio; esta
 > dice **en qué punto quedó todo**, para no tener que reconstruirlo leyendo PRs.
