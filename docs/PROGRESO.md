@@ -3,7 +3,55 @@
 > Bitácora para retomar el proyecto en cualquier sesión/chat. Es la fuente de
 > verdad del estado. Si retomas en un chat nuevo, lee esto primero + `docs/ARQUITECTURA.md`.
 
-## 🗓️ 3 sep 2026 — La etiqueta corta, por fin bilingüe («Semana 8» / «Week 8») ⬜ PIDE MIGRACIÓN
+## 🗓️ 9 sep 2026 — Cierre de la sesión de Bunny: qué quedó en `main` y qué falta comprobar
+> Entrada de traspaso. Las cuatro de abajo (3 sep) cuentan **el porqué** de cada cambio; esta
+> dice **en qué punto quedó todo**, para no tener que reconstruirlo leyendo PRs.
+>
+> **Lo verificable: los cuatro PRs están mergeados**, los cuatro la noche del 3 de septiembre.
+> `main` está en el merge del #78 y **nadie ha tocado el repo desde entonces**.
+>
+> | PR | Qué | Mergeado |
+> |---|---|---|
+> | #75 | El aula entiende Bunny (módulo `src/lib/video.ts`, panel + aula) | 3 sep 20:05 |
+> | #76 | El selector no deja el video del otro idioma ni corta la reproducción | 3 sep 23:36 |
+> | #77 | Un solo interruptor de idioma: el selector cambia la página entera | 3 sep 23:57 |
+> | #78 | Etiqueta corta bilingüe (`week_label_en`) | 3 sep 23:57 |
+>
+> **⚠️ Lo que NO está verificado, y por qué.** Todo lo de arriba se probó en Chromium con
+> Supabase simulado, pero **en este entorno el proxy bloquea `mediadelivery.net` y el propio
+> dominio del sitio**. O sea: está comprobado que el `<iframe>` se pinta con la URL correcta,
+> **no que el video suene**. Eso solo se ve abriendo el sitio de verdad. Al 9 de septiembre no
+> hay confirmación de que se hiciera.
+>
+> **⬜ La lista corta, en orden, para quien retome:**
+> 1. **Correr el SQL de la migración 0008** (`supabase/migrations/0008_week_label_bilingue.sql`)
+>    en Supabase → SQL Editor, si no se hizo ya. El aula funciona sin él (en inglés muestra la
+>    etiqueta española); lo que **no** funciona es guardar la etiqueta inglesa desde el panel:
+>    da PGRST204. Comprobación rápida: abrir el panel, escribir algo en «Etiqueta · EN» y
+>    guardar. Si guarda, la migración está corrida.
+> 2. **Emi vuelve a pegar los enlaces de Bunny** de los videos que guardó ANTES del #75 — esos
+>    se guardaron rotos y no se pueden recuperar (ver la entrada del #75). El aula los señala
+>    sola: «Este video se guardó con el formato antiguo. Vuelve a pegar su enlace de Bunny».
+>    Si no aparece ese aviso en ningún lado, ya está hecho.
+> 3. **Abrir `/aula/` y `/aula/en/` y confirmar que el video REPRODUCE**, que es el video
+>    correcto en cada idioma y que a pantalla completa funciona.
+> 4. Si el reproductor sale negro o con error de dominio: Bunny → biblioteca **741634** →
+>    Security → **allowed referrers** (que esté `www.emilseriosacademy.com`) y si hay **token
+>    authentication** encendida. Y que el video haya **terminado de codificar**: recién subido
+>    va a tirones, y eso no es el aula.
+>
+> **De paso, dos cosas con fecha que ya pasaron y conviene mirar:**
+> - El **pase de invitación** (`MEMBERSHIP_INVITE_CODE`) caducaba el **5 de septiembre**. Ya
+>   está vencido, así que no deja entrar a nadie aunque siga puesto en Vercel; aun así, lo sano
+>   es vaciar la variable. Para la próxima invitación: **código nuevo**, nunca reutilizar.
+> - Las **puertas** reabren solas el **1 de octubre** (`MEMBERSHIP_REOPENS_AT`). Si el contenido
+>   de octubre no está listo para entonces, hay que mover la fecha en Vercel **antes**, o la
+>   carta se abre sola con el mes de septiembre todavía puesto.
+>
+> **⬜ Y lo que sigue pendiente de antes:** repasar el copy que da por hecho que se puede entrar
+> cualquier día (`priceBelow`, la FAQ del pago) para que no choque con las puertas cerradas.
+
+## 🗓️ 3 sep 2026 — La etiqueta corta, por fin bilingüe («Semana 8» / «Week 8») ✅ MERGEADO (PR #78) · ⬜ PIDE MIGRACIÓN
 > El cabo suelto que se veía en las capturas de Adrián: en `/aula/en/` salía «**Semana 8**»
 > junto a «Available until Thursday». Era el **único trozo del contenido que no era bilingüe**
 > — título, descripción, video y PDF ya lo eran desde el principio; `week_label` no.
@@ -39,7 +87,7 @@
 > después del deploy, da igual — por eso se hizo así. **Lo que no funciona sin el SQL es
 > guardar** la etiqueta inglesa desde el panel.
 
-## 🗓️ 3 sep 2026 — Un solo interruptor de idioma: el selector del video cambia la página entera
+## 🗓️ 3 sep 2026 — Un solo interruptor de idioma: el selector del video cambia la página entera ✅ MERGEADO (PR #77)
 > Con el arreglo anterior ya puesto en producción, Adrián señala lo que de verdad molestaba:
 > **cambias el selector de debajo del título y el título no cambia**. Y tiene razón — eso no
 > era un fallo, era **el diseño**, y el diseño estaba mal.
@@ -79,7 +127,7 @@
 > idiomas. Arreglarlo pide **migración** (`week_label_en`) + campo nuevo en el panel + leerlo
 > en el aula. No entra aquí; queda anotado.
 
-## 🗓️ 3 sep 2026 — El selector ES/EN del video: dejaba el video del otro idioma y cortaba la reproducción
+## 🗓️ 3 sep 2026 — El selector ES/EN del video: dejaba el video del otro idioma y cortaba la reproducción ✅ MERGEADO (PR #76)
 > Con Bunny ya funcionando, Adrián reporta dos cosas en el aula: **al cambiar el idioma del
 > video se queda el español** (y al revés), y **el video se corta** — hay que recargar para que
 > fluya. En la carta no pasa nada de esto, y con razón: allí el iframe está escrito en el HTML
@@ -125,7 +173,7 @@
 > Mirar en la biblioteca que el video haya **terminado de codificar** (recién subido va a
 > tirones) y el estado del **allowed referrers** de la biblioteca 741634.
 
-## 🗓️ 3 sep 2026 — El aula pasa a **Bunny Stream**: los videos de Emi ya se reproducen ⬜ FALTA PROBAR EN PRODUCCIÓN
+## 🗓️ 3 sep 2026 — El aula pasa a **Bunny Stream**: los videos de Emi ya se reproducen ✅ MERGEADO (PR #75) · ⬜ FALTA CONFIRMAR EN PRODUCCIÓN
 > **El síntoma.** Emi subió los videos del mes a Bunny, los pegó en el panel y en el aula
 > **no se reproducen**. En la carta el video de Bunny sí funciona desde el 1 sep, así que
 > el problema no era Bunny: era que **el aula todavía hablaba Vimeo**.
